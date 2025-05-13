@@ -1,0 +1,72 @@
+<ion-modal [isOpen]="visible">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeModal()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Employee Details</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list *ngIf="employee">
+        <ion-item>
+          <ion-label>
+            <h2>{{ employee.name }}</h2>
+            <p>{{ employee.position }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Contact Information</h2>
+            <p>Email: {{ employee.email }}</p>
+            <p>Phone: {{ employee.phone }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Address</h2>
+            <p>{{ employee.address }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <h2>QR Code</h2>
+            <ngx-qrcode 
+              [elementType]="'canvas'" 
+              [value]="getQRCodeData()"
+              cssClass="qrcode">
+            </ngx-qrcode>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <h2>QR Code de Identificação</h2>
+            <ngx-qrcode 
+              [elementType]="'canvas'"
+              [value]="getQRCodeValue()"
+              cssClass="qr-code">
+            </ngx-qrcode>
+            <ion-button expand="block" (click)="downloadQRCode()">
+              <ion-icon name="download-outline" slot="start"></ion-icon>
+              Download QR Code
+            </ion-button>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <div class="qr-container">
+        <ngx-qrcode
+          [value]="employee?.qr_code || ''"
+          [elementType]="'canvas'"
+          cssClass="qrcode">
+        </ngx-qrcode>
+        <ion-button expand="block" (click)="downloadQR()">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Download QR Code
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

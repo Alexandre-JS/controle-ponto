@@ -1,14 +1,20 @@
 export interface Employee {
-  id?: string;  // Optional for creation, required after saved
+  id: string;
   name: string;
   position: string;
   department: string;
   internal_code: string;
-  created_at?: string;
+  created_at: string;
+  qr_code: string;
 }
 
 // For creating new employees
-export type CreateEmployeeDto = Omit<Employee, 'id' | 'internal_code'>;
+export interface CreateEmployeeDto {
+  name: string;
+  position: string;
+  department: string;
+  internal_code?: string;
+}
 
 export interface Attendance {
   id?: string;

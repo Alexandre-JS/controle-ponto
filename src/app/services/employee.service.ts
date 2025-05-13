@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Employee, Attendance, WorkSchedule } from '../models/employee.model';
+import { Employee, Attendance, WorkSchedule, CreateEmployeeDto } from '../models/employee.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -21,48 +21,36 @@ export class EmployeeService {
     return `AEM${randomNumber}`;
   }
 
-  async createEmployee(employee: Employee) {
-    console.log('Criando funcionário:', employee);
-    const newCode = this.generateEmployeeCode();
+  async createEmployee(employeeData: CreateEmployeeDto) {
+    const internal_code = await this.generateInternalCode();
     
-    try {
-      const employeeData = {
-        name: employee.name,
-        position: employee.position,
-        internal_code: newCode,
-        department: employee.department,
-        created_at: new Date().toISOString()
-      };
+    const { data, error } = await this.supabase
+      .from('employees')
+      .insert([{ 
+        ...employeeData,
+        internal_code
+      }])
+      .select()
+      .single();
+  
+    if (error) throw error;
+    return data;
+  }
 
-      // Instead of checking for existing code first, handle potential conflicts in the insert
-      const { data, error } = await this.supabase
-        .from(this.EMPLOYEES_TABLE)
-        .insert(employeeData)
-        .select()
-        .single();
+  private async generateInternalCode(): Promise<string> {
+    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `AEM${randomNumber}`;
+  }
 
-      if (error) {
-        // If there's a unique constraint violation, try again with a new code
-        if (error.code === '23505') {
-          employeeData.internal_code = this.generateEmployeeCode();
-          const retryResult = await this.supabase
-            .from(this.EMPLOYEES_TABLE)
-            .insert(employeeData)
-            .select()
-            .single();
-            
-          if (retryResult.error) throw retryResult.error;
-          return retryResult.data;
-        }
-        throw error;
-      }
-
-      console.log('Funcionário criado com sucesso:', data);
-      return data;
-    } catch (error) {
-      console.error('Erro detalhado:', error);
-      throw error;
-    }
+  async findByQRCode(qrCode: string) {
+    const { data, error } = await this.supabase
+      .from('employees')
+      .select('*')
+      .eq('qr_code', qrCode)
+      .single();
+      
+    if (error) throw error;
+    return data;
   }
 
   async getEmployees(): Promise<Employee[]> {
