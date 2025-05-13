@@ -152,13 +152,13 @@
 }
 
 // Modal styles
-.success-modal, .confirm-modal {
-  @extend .app-modal;
+// .success-modal, .confirm-modal {
+//   @extend .app-modal;
   
-  .modal-content {
-    padding: var(--app-padding);
-  }
-}
+//   .modal-content {
+//     padding: var(--app-padding);
+//   }
+// }
 
 // Form styles
 ion-item.app-form-item {
