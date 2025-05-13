@@ -1,15 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, ToastController, AlertController, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
+import { AttendanceConfirmationComponent } from '../../components/attendance-confirmation/attendance-confirmation.component';
 
 @Component({
   selector: 'app-attendance-kiosk',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    IonicModule, 
+    FormsModule, 
+    RouterModule,
+    AttendanceConfirmationComponent
+  ],
   template: `
     <ion-header>
       <ion-toolbar>
@@ -156,7 +163,8 @@ export class AttendanceKioskPage implements OnInit {
     private toastController: ToastController,
     private authService: AuthService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalController: ModalController  // Add this line
   ) {}
 
   ngOnInit() {
@@ -183,21 +191,21 @@ export class AttendanceKioskPage implements OnInit {
         return;
       }
 
+      const employee = await this.employeeService.findEmployeeByCode(this.employeeCode);
+      if (!employee) {
+        this.showToast('Funcionário não encontrado', 'danger');
+        return;
+      }
+
       const currentTime = new Date().toLocaleTimeString().substring(0, 5);
-      const confirmed = await this.showConfirmationAlert(currentTime);
+      const isCheckOut = await this.checkIfCheckOut(employee.id);
       
+      const confirmed = await this.showConfirmationModal(employee.name, currentTime, isCheckOut);
       if (!confirmed) return;
 
       this.isLoading = true;
-      const result = await this.employeeService.registerAttendance(
-        method === 'code' ? this.employeeCode : '',
-        method
-      );
+      await this.employeeService.registerAttendance(this.employeeCode, method);
       
-      this.showToast(
-        result.check_out ? 'Saída registrada!' : 'Entrada registrada!', 
-        'success'
-      );
       this.employeeCode = '';
       this.isValidCode = false;
 
@@ -208,28 +216,36 @@ export class AttendanceKioskPage implements OnInit {
     }
   }
 
-  private async showConfirmationAlert(time: string): Promise<boolean> {
-    const alert = await this.alertController.create({
-      header: 'Confirmar Registro',
-      message: `Deseja registrar seu ponto às ${time}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => false
-        },
-        {
-          text: 'Confirmar',
-          handler: () => true
-        }
-      ],
-      cssClass: 'attendance-alert'
+  private async checkIfCheckOut(employeeId: string): Promise<boolean> {
+    const today = new Date().toISOString().split('T')[0];
+    const attendance = await this.employeeService.getAttendanceByMonth(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1
+    );
+    const todayAttendance = attendance.find(
+      a => a.employee_id === employeeId && a.date === today
+    );
+    return !!todayAttendance?.check_in && !todayAttendance?.check_out;
+  }
+
+  private async showConfirmationModal(
+    employeeName: string, 
+    currentTime: string, 
+    isCheckOut: boolean
+  ): Promise<boolean> {
+    const modal = await this.modalController.create({
+      component: AttendanceConfirmationComponent,
+      componentProps: {
+        employeeName,
+        currentTime,
+        isCheckOut
+      },
+      cssClass: 'confirmation-modal'
     });
 
-    await alert.present();
-    const { data } = await alert.onDidDismiss();
-    return data?.role !== 'cancel';
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    return data;
   }
 
   private async showToast(message: string, color: string) {

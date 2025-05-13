@@ -57,3 +57,131 @@
     font-weight: bold;
   }
 }
+
+// Custom global styles
+.app-card {
+  background: var(--ion-color-light);
+  border-radius: var(--app-border-radius);
+  padding: var(--app-card-padding);
+  box-shadow: var(--app-box-shadow);
+  margin: var(--app-margin) 0;
+}
+
+.app-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 500px;
+  --border-radius: var(--app-modal-border-radius);
+  --box-shadow: var(--app-box-shadow);
+}
+
+.app-button {
+  height: var(--app-button-height);
+  --border-radius: var(--app-border-radius);
+  --box-shadow: var(--app-box-shadow);
+  font-weight: 500;
+  text-transform: none;
+}
+
+.app-input {
+  --padding-start: var(--app-padding);
+  --padding-end: var(--app-padding);
+  --border-radius: var(--app-border-radius);
+  --background: var(--ion-color-light);
+  min-height: var(--app-input-height);
+}
+
+.app-list {
+  background: transparent;
+  padding: var(--app-padding) 0;
+
+  ion-item {
+    --padding-start: var(--app-padding);
+    --padding-end: var(--app-padding);
+    --border-radius: var(--app-border-radius);
+    --background: var(--ion-color-light);
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: var(--app-margin);
+
+  h1 {
+    font-size: var(--app-font-size-xlarge);
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0;
+  }
+
+  p {
+    font-size: var(--app-font-size-base);
+    color: var(--ion-color-medium);
+    margin: 8px 0 0;
+  }
+}
+
+// Animations
+.app-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.app-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Modal styles
+.success-modal, .confirm-modal {
+  @extend .app-modal;
+  
+  .modal-content {
+    padding: var(--app-padding);
+  }
+}
+
+// Form styles
+ion-item.app-form-item {
+  @extend .app-input;
+  margin-bottom: var(--app-margin);
+
+  ion-label {
+    font-size: var(--app-font-size-base);
+    font-weight: 500;
+  }
+
+  ion-note {
+    font-size: var(--app-font-size-small);
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .app-card {
+    background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+}

@@ -1,2 +1,35 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+:root {
+  // Custom color palette
+  --app-primary: #3880ff;
+  --app-secondary: #5260ff;
+  --app-success: #2dd36f;
+  --app-warning: #ffc409;
+  --app-danger: #eb445a;
+  --app-dark: #222428;
+  --app-medium: #92949c;
+  --app-light: #f4f5f8;
+
+  // Standard measurements
+  --app-border-radius: 12px;
+  --app-padding: 16px;
+  --app-margin: 16px;
+  --app-transition: all 0.3s ease;
+  --app-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  // Typography
+  --app-font-family: 'Roboto', sans-serif;
+  --app-font-size-small: 14px;
+  --app-font-size-base: 16px;
+  --app-font-size-large: 18px;
+  --app-font-size-xlarge: 24px;
+  --app-line-height: 1.5;
+
+  // Component specific
+  --app-card-padding: 20px;
+  --app-modal-border-radius: 20px;
+  --app-input-height: 48px;
+  --app-button-height: 48px;
+}

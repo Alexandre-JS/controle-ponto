@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Employee, Attendance, WorkSchedule } from '../models/employee.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +10,11 @@ export class EmployeeService {
   private readonly EMPLOYEES_TABLE = 'employees';
   private readonly ATTENDANCE_TABLE = 'attendance';
   private readonly SCHEDULE_TABLE = 'work_schedule';
+  private supabase: SupabaseClient;
 
-  constructor(private supabase: SupabaseService) {}
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
   private generateEmployeeCode(): string {
     const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -31,7 +35,7 @@ export class EmployeeService {
       };
 
       // Instead of checking for existing code first, handle potential conflicts in the insert
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .insert(employeeData)
         .select()
@@ -41,7 +45,7 @@ export class EmployeeService {
         // If there's a unique constraint violation, try again with a new code
         if (error.code === '23505') {
           employeeData.internal_code = this.generateEmployeeCode();
-          const retryResult = await this.supabase.getClient()
+          const retryResult = await this.supabase
             .from(this.EMPLOYEES_TABLE)
             .insert(employeeData)
             .select()
@@ -61,36 +65,20 @@ export class EmployeeService {
     }
   }
 
-  async getEmployees() {
-    console.log('Iniciando busca de funcionários...');
-    try {
-      const { data, error } = await this.supabase.getClient()
-        .from(this.EMPLOYEES_TABLE)
-        .select('*')
-        .order('name');
+  async getEmployees(): Promise<Employee[]> {
+    const { data, error } = await this.supabase
+      .from(this.EMPLOYEES_TABLE)
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Erro ao buscar funcionários:', error);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('Nenhum funcionário encontrado');
-        return [];
-      }
-
-      console.log('Funcionários encontrados:', data);
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar funcionários:', error);
-      return [];
-    }
+    if (error) throw error;
+    return data || [];
   }
 
   async findEmployeeByCode(code: string) {
     try {
       console.log('Buscando funcionário com código:', code);
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .select('*')
         .eq('internal_code', code.toUpperCase());
@@ -125,7 +113,7 @@ export class EmployeeService {
       const currentTime = now.toTimeString().substring(0, 5);
 
       // Check if employee already has attendance today
-      const { data: existingAttendances, error: searchError } = await this.supabase.getClient()
+      const { data: existingAttendances, error: searchError } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .select('*')
         .eq('employee_id', employee.id)
@@ -169,7 +157,7 @@ export class EmployeeService {
           'Muito cedo para registrar saída');
       }
 
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .upsert(attendanceData)
         .select();
@@ -188,7 +176,7 @@ export class EmployeeService {
       const startDate = new Date(year, month - 1, 1).toISOString();
       const endDate = new Date(year, month, 0).toISOString();
 
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .select(`
           *,
@@ -225,13 +213,13 @@ export class EmployeeService {
       };
 
       // Delete existing schedules first
-      await this.supabase.getClient()
+      await this.supabase
         .from(this.SCHEDULE_TABLE)
         .delete()
         .neq('id', '0'); // Delete all records
 
       // Insert new schedule
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.SCHEDULE_TABLE)
         .insert(scheduleData)
         .select()
@@ -250,7 +238,7 @@ export class EmployeeService {
 
   async getWorkSchedule(): Promise<WorkSchedule> {
     try {
-      const { data, error } = await this.supabase.getClient()
+      const { data, error } = await this.supabase
         .from(this.SCHEDULE_TABLE)
         .select('*')
         .order('created_at', { ascending: false })
@@ -303,5 +291,67 @@ export class EmployeeService {
 
   private determineStatus(lateMinutes: number): Attendance['status'] {
     return lateMinutes > 0 ? 'Atrasado' : 'No horário';
+  }
+
+  async checkDuplicateName(name: string): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from(this.EMPLOYEES_TABLE)
+      .select('id')
+      .ilike('name', name.trim());
+
+    if (error) throw error;
+    return (data || []).length > 0;
+  }
+
+  async updateEmployee(employee: Employee): Promise<Employee> {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .update(employee)
+        .eq('id', employee.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao atualizar funcionário:', error);
+      throw error;
+    }
+  }
+
+  async deleteEmployee(id: string): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Erro ao excluir funcionário:', error);
+      throw error;
+    }
+  }
+
+  async getEmployeeHistory(id: string): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select(`
+          *,
+          employees (name)
+        `)
+        .eq('employee_id', id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
+      throw error;
+    }
   }
 }
