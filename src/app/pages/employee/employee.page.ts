@@ -83,38 +83,29 @@ export class EmployeePage implements OnInit {
   }
 
   async onSubmit() {
-    console.log('onSubmit iniciado - Form válido:', this.employeeForm.valid);
-    console.log('Valores do formulário:', this.employeeForm.value);
-
     if (this.employeeForm.valid) {
       try {
-        // Verificar duplicata antes de criar
-        const isDuplicate = await this.employeeService.checkDuplicateName(this.employeeForm.value.name);
-        
+        const formValue = this.employeeForm.value;
+        const employeeData: CreateEmployeeDto = {
+          name: formValue.name,
+          position: formValue.position,
+          department: formValue.department
+        };
+
+        const isDuplicate = await this.employeeService.checkDuplicateName(employeeData.name);
         if (isDuplicate) {
           this.showToast('Já existe um funcionário cadastrado com este nome', 'warning');
           return;
         }
 
-        console.log('Tentando criar funcionário...');
-        const employee = await this.employeeService.createEmployee(this.employeeForm.value);
-        console.log('Funcionário criado com sucesso:', employee);
-        
+        const employee = await this.employeeService.createEmployee(employeeData);
         await this.showSuccessModal(employee.name, employee.internal_code);
         this.employeeForm.reset();
-        this.loadEmployees();
-      } catch (error) {
+        await this.loadEmployees();
+      } catch (error: any) {
         console.error('Erro ao criar funcionário:', error);
-        this.showErrorModal();
+        await this.showErrorModal(error.message || 'Erro ao cadastrar funcionário');
       }
-    } else {
-      console.warn('Formulário inválido:', this.employeeForm.errors);
-      Object.keys(this.employeeForm.controls).forEach(key => {
-        const control = this.employeeForm.get(key);
-        if (control?.errors) {
-          console.warn(`Erros no campo ${key}:`, control.errors);
-        }
-      });
     }
   }
 
@@ -156,14 +147,16 @@ export class EmployeePage implements OnInit {
     }
   }
 
-  private async showErrorModal() {
-    console.error('Mostrando modal de erro');
+  private async showErrorModal(message: string) {
     const modal = await this.modalController.create({
-      component: SuccessModalComponent,
+      component: ConfirmModalComponent,
       componentProps: {
         title: 'Erro',
-        message: 'Ocorreu um erro ao cadastrar o funcionário. Tente novamente.'
-      }
+        message: message,
+        showCancelButton: false,
+        confirmText: 'OK'
+      },
+      cssClass: 'error-modal'
     });
     await modal.present();
   }

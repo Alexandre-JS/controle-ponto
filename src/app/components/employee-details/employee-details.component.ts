@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Employee } from '../../models/employee.model';
+import { AppQRCodeModule } from '../../shared/qr-code.module';
 
 @Component({
   selector: 'app-employee-details',
@@ -32,6 +33,14 @@ import { Employee } from '../../models/employee.model';
 
       <ion-list lines="none" class="details-list">
         <ion-item>
+          <ion-icon name="finger-print-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h3>ID</h3>
+            <p>{{ employee.id }}</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
           <ion-icon name="briefcase-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>Cargo</h3>
@@ -51,7 +60,24 @@ import { Employee } from '../../models/employee.model';
           <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>Data de Cadastro</h3>
-            <p>{{ employee.created_at | date:'dd/MM/yyyy' }}</p>
+            <p>{{ employee.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-icon name="qr-code-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h3>QR Code de Identificação</h3>
+            <div class="qr-code-container">
+              <app-qr-code
+                [value]="getQRCodeValue()"
+                cssClass="qr-code-image">
+              </app-qr-code>
+              <ion-button size="small" (click)="downloadQRCode()">
+                <ion-icon name="download-outline" slot="start"></ion-icon>
+                Download QR Code
+              </ion-button>
+            </div>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -171,6 +197,19 @@ import { Employee } from '../../models/employee.model';
       }
     }
 
+    .qr-code-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .qr-code-image {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 10px;
+    }
+
     @media (prefers-color-scheme: dark) {
       .employee-header, .details-list {
         background: rgba(var(--ion-color-light-rgb), 0.05);
@@ -186,7 +225,8 @@ import { Employee } from '../../models/employee.model';
     }
   `],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule, AppQRCodeModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class EmployeeDetailsComponent {
   @Input() employee!: Employee;
@@ -203,5 +243,31 @@ export class EmployeeDetailsComponent {
 
   async confirmDelete() {
     this.dismiss({ action: 'delete', employee: this.employee });
+  }
+
+  getQRCodeData(): string {
+    if (!this.employee) return '';
+    return JSON.stringify({
+      id: this.employee.id,
+      name: this.employee.name,
+      internal_code: this.employee.internal_code,
+      department: this.employee.department
+    });
+  }
+
+  getQRCodeValue(): string {
+    if (!this.employee) return '';
+    // Usar o internal_code diretamente
+    return this.employee.internal_code;
+  }
+
+  downloadQRCode(): void {
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = `qrcode-${this.employee?.internal_code}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 }

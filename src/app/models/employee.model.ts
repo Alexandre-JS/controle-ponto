@@ -1,14 +1,22 @@
 export interface Employee {
-  id?: string;  // Optional for creation, required after saved
+  id: string;
   name: string;
-  position: string;
-  department: string;
   internal_code: string;
-  created_at?: string;
+  department: string;
+  position: string;
+  created_at: string;
+  qr_code: string;
 }
 
 // For creating new employees
-export type CreateEmployeeDto = Omit<Employee, 'id' | 'internal_code'>;
+export interface CreateEmployeeDto {
+  name: string;
+  position: string;
+  department: string;
+  internal_code?: string;
+}
+
+export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr'; // matches database enum
 
 export interface Attendance {
   id?: string;
@@ -19,7 +27,7 @@ export interface Attendance {
   status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'No horário' | 'Ausente' | 'Justificado';
   late_minutes?: number;
   observations?: string;
-  auth_method?: 'code' | 'face' | 'fingerprint';
+  auth_method: AuthMethod;
   created_at?: Date;
   updated_at?: Date;
 }

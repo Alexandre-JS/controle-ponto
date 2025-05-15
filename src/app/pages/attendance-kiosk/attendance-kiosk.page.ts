@@ -6,6 +6,9 @@ import { RouterModule, Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
 import { AttendanceConfirmationComponent } from '../../components/attendance-confirmation/attendance-confirmation.component';
+import { QRScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
+import { QRScannerModule } from '../../components/qr-scanner/qr-scanner.module';
+import { AuthMethod } from '../../services/employee.service';
 
 @Component({
   selector: 'app-attendance-kiosk',
@@ -15,7 +18,9 @@ import { AttendanceConfirmationComponent } from '../../components/attendance-con
     IonicModule, 
     FormsModule, 
     RouterModule,
-    AttendanceConfirmationComponent
+    AttendanceConfirmationComponent,
+    QRScannerComponent,
+    QRScannerModule
   ],
   template: `
     <ion-header>
@@ -72,11 +77,36 @@ import { AttendanceConfirmationComponent } from '../../components/attendance-con
               <ion-icon name="finger-print-outline" slot="start" size="large"></ion-icon>
               DIGITAL
             </ion-button>
+
+            <ion-button expand="block" 
+                      class="kiosk-button" 
+                      (click)="showQRScanner()">
+              <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
+              ESCANEAR QR CODE
+            </ion-button>
           </div>
         </div>
 
         <ion-loading [isOpen]="isLoading" message="Processando..."></ion-loading>
       </div>
+
+      <ion-modal [isOpen]="isQRScannerVisible" (didDismiss)="hideQRScanner()">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Escanear QR Code</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="hideQRScanner()">
+                  <ion-icon name="close"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content>
+            <app-qr-scanner (scanComplete)="onQRCodeScanned($event)"></app-qr-scanner>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
     </ion-content>
   `,
   styles: [`
@@ -157,6 +187,7 @@ export class AttendanceKioskPage implements OnInit {
   isValidCode = false;
   isLoading = false;
   showError = false;
+  isQRScannerVisible = false;
 
   constructor(
     private employeeService: EmployeeService,
@@ -164,7 +195,7 @@ export class AttendanceKioskPage implements OnInit {
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private modalController: ModalController  // Add this line
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -184,7 +215,7 @@ export class AttendanceKioskPage implements OnInit {
     this.showError = code?.length > 0 && !this.isValidCode;
   }
 
-  async markAttendance(method: 'code' | 'face' | 'fingerprint') {
+  async markAttendance(method: AuthMethod) {
     try {
       if (method === 'code' && !this.isValidCode) {
         this.showToast('Digite um código válido', 'warning');
@@ -264,6 +295,28 @@ export class AttendanceKioskPage implements OnInit {
 
   async logout() {
     await this.authService.logout();
+  }
+
+  async showQRScanner() {
+    this.isQRScannerVisible = true;
+  }
+
+  hideQRScanner() {
+    this.isQRScannerVisible = false;
+  }
+
+  async onQRCodeScanned(qrData: string) {
+    this.hideQRScanner();
+    try {
+      this.isLoading = true;
+      await this.employeeService.registerAttendanceByQRCode(qrData);
+      this.showToast('Ponto registrado com sucesso!', 'success');
+    } catch (error: any) {
+      console.error('QR Code error:', error);
+      this.showToast(error.message || 'QR Code inválido', 'danger');
+    } finally {
+      this.isLoading = false;
+    }
   }
 }
 
