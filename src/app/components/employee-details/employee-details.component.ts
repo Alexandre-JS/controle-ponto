@@ -257,10 +257,8 @@ export class EmployeeDetailsComponent {
 
   getQRCodeValue(): string {
     if (!this.employee) return '';
-    return this.employee.qr_code || JSON.stringify({
-      id: this.employee.id,
-      internal_code: this.employee.internal_code
-    });
+    // Usar o internal_code diretamente
+    return this.employee.internal_code;
   }
 
   downloadQRCode(): void {

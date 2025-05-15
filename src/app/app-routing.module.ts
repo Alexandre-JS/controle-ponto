@@ -7,11 +7,7 @@ export const routes: Routes = [
     redirectTo: 'kiosk',
     pathMatch: 'full'
   },
-  {
-    path: 'kiosk',
-    loadComponent: () => import('./pages/attendance-kiosk/attendance-kiosk.page')
-      .then(m => m.AttendanceKioskPage)
-  },
+  
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage)
@@ -23,6 +19,11 @@ export const routes: Routes = [
       {
         path: 'attendance',
         loadChildren: () => import('./pages/attendance/attendance.module').then(m => m.AttendancePageModule)
+      },
+      {
+        path: 'kiosk',
+        loadComponent: () => import('./pages/attendance-kiosk/attendance-kiosk.page')
+          .then(m => m.AttendanceKioskPage)
       },
       {
         path: 'employee',
