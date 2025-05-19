@@ -34,9 +34,9 @@ export class EmployeePage implements OnInit {
     'Administracao',
     'Informatica',
     'Costura',
-    'Projecto',
-    'Direccao',
-    'Seguranca'
+    'Biblioteca',
+    'Segurança',
+   
   ];
 
   constructor(

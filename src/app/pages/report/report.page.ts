@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee, Attendance } from '../../models/employee.model';
+import { Chart } from 'chart.js/auto';
+import * as XLSX from 'xlsx';
 
 interface MonthlyReport {
   employeeId: string;
@@ -12,6 +14,13 @@ interface MonthlyReport {
   totalLateDays: number;
   totalLateMinutes: number;
   attendanceRecords: Attendance[];
+  overtimeBalance: number;
+  weeklyStats: {
+    week: number;
+    totalHours: number;
+    delayMinutes: number;
+    absences: number;
+  }[];
 }
 
 @Component({
@@ -21,7 +30,8 @@ interface MonthlyReport {
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule]
 })
-export class ReportPage implements OnInit {
+export class ReportPage implements OnInit, OnDestroy {
+  @ViewChild('attendanceChart') attendanceChart!: ElementRef;
   currentYear = new Date().getFullYear();
   currentMonth = new Date().getMonth() + 1;
   employees: Employee[] = [];
@@ -32,6 +42,8 @@ export class ReportPage implements OnInit {
   selectedDate: string;
   maxDate: string;
   minDate: string;
+  private attendanceChartInstance!: Chart;
+  timelineView: 'day' | 'week' = 'day';
 
   constructor(private employeeService: EmployeeService) {
     const now = new Date();
@@ -88,7 +100,9 @@ export class ReportPage implements OnInit {
             ),
             attendanceRecords: employeeRecords.sort((a, b) => 
               new Date(b.date).getTime() - new Date(a.date).getTime()
-            )
+            ),
+            overtimeBalance: 0, // Placeholder value
+            weeklyStats: [] // Placeholder value
           };
         });
     } catch (error) {
@@ -160,5 +174,119 @@ export class ReportPage implements OnInit {
       case 'Ausente': return 'danger';
       default: return 'medium';
     }
+  }
+
+  getPresencePercentage(): number {
+    const totalDays = this.getWorkDaysInMonth();
+    const totalPresences = this.getTotalWorkDays();
+    return Math.round((totalPresences / totalDays) * 100);
+  }
+
+  getAverageDelay(): number {
+    const totalLateMinutes = this.monthlyReports.reduce(
+      (sum, report) => sum + report.totalLateMinutes, 0
+    );
+    const totalDays = this.getTotalWorkDays();
+    return totalDays ? Math.round(totalLateMinutes / totalDays) : 0;
+  }
+
+  getTotalOvertime(): number {
+    return this.monthlyReports.reduce(
+      (sum, report) => sum + report.overtimeBalance, 0
+    );
+  }
+
+  getEmployeePresencePercentage(report: MonthlyReport): number {
+    const workDays = this.getWorkDaysInMonth();
+    return Math.round((report.totalWorkDays / workDays) * 100);
+  }
+
+  getAverageDelayForEmployee(report: MonthlyReport): number {
+    return report.totalWorkDays ? 
+      Math.round(report.totalLateMinutes / report.totalWorkDays) : 0;
+  }
+
+  updateTimeline() {
+    // Por enquanto apenas recarrega os dados
+    this.generateReport();
+  }
+
+  async exportReport() {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(this.generateExcelData());
+    
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório');
+    XLSX.writeFile(workbook, `relatorio_${this.currentMonth}_${this.currentYear}.xlsx`);
+  }
+
+  private generateExcelData() {
+    return this.monthlyReports.flatMap(report => 
+      report.attendanceRecords.map(record => ({
+        Funcionário: report.employeeName,
+        Data: record.date,
+        Entrada: record.check_in,
+        Saída: record.check_out || '-',
+        Atraso: record.late_minutes || 0,
+        Status: record.status
+      }))
+    );
+  }
+
+  ngAfterViewInit() {
+    if (this.attendanceChart) {
+      this.initCharts();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.attendanceChartInstance) {
+      this.attendanceChartInstance.destroy();
+    }
+  }
+
+  private initCharts() {
+    const ctx = this.attendanceChart.nativeElement.getContext('2d');
+    
+    if (this.attendanceChartInstance) {
+      this.attendanceChartInstance.destroy();
+    }
+
+    this.attendanceChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: this.getLast30Days(),
+        datasets: [{
+          label: 'Presenças',
+          data: this.getAttendanceData(),
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  private getLast30Days(): string[] {
+    const dates = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      dates.push(date.toLocaleDateString('pt-BR'));
+    }
+    return dates;
+  }
+
+  private getAttendanceData(): number[] {
+    // Implementação básica - pode ser expandida conforme necessidade
+    return this.getLast30Days().map(() => 
+      Math.floor(Math.random() * 100)
+    );
   }
 }

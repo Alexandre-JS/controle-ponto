@@ -9,7 +9,7 @@
   border-radius: 8px;
 
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: var(--ion-color-primary);
   }
@@ -50,4 +50,24 @@ ion-datetime {
     color: var(--ion-color-primary);
     font-weight: bold;
   }
+}
+
+.positive {
+  color: var(--ion-color-success);
+}
+
+.negative {
+  color: var(--ion-color-danger);
+}
+
+canvas {
+  margin: 20px 0;
+  max-height: 300px;
+  width: 100%;
+}
+
+.timeline-filters {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
 }
