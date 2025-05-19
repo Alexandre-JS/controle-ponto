@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Employee, Attendance, WorkSchedule, CreateEmployeeDto } from '../models/employee.model';
+import { Employee, Attendance, WorkSchedule, CreateEmployeeDto, AttendanceStatus } from '../models/employee.model';
 import { environment } from '../../environments/environment';
 import { SupabaseService } from './supabase.service';
+import { StatusService } from './status.service';
 
 export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr';
 
@@ -20,7 +21,10 @@ export class EmployeeService {
   private readonly SCHEDULE_TABLE = 'work_schedule';
   private supabase: SupabaseClient;
 
-  constructor(private supabaseService: SupabaseService) {
+  constructor(
+    private supabaseService: SupabaseService,
+    private statusService: StatusService
+  ) {
     this.supabase = this.supabaseService.getClient();
   }
 
@@ -36,7 +40,6 @@ export class EmployeeService {
 
   async createEmployee(employeeData: CreateEmployeeDto) {
     try {
-      console.log('Creating employee:', employeeData);
       const internal_code = await this.generateInternalCode();
       
       const { data, error } = await this.supabase
@@ -45,6 +48,7 @@ export class EmployeeService {
           ...employeeData,
           internal_code,
           qr_code: internal_code,
+          status: this.statusService.getInitialStatus(),
           created_at: new Date().toISOString()
         }])
         .select()
@@ -259,19 +263,44 @@ export class EmployeeService {
     }
   }
 
+  async updateEmployeeStatus(employeeId: string, status: AttendanceStatus) {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .update({
+          status: status,
+          last_attendance_status: status,
+          last_attendance_date: new Date().toISOString()
+        })
+        .eq('id', employeeId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating employee status:', error);
+      throw error;
+    }
+  }
+
+  // private determineStatus(lateMinutes: number): AttendanceStatus {
+  //   return 'Presente'; // Simplified to just present when they check in
+  // }
+
+  private determineStatus(lateMinutes: number): AttendanceStatus {
+    return 'Presente'; // Always return 'Presente' when they check in
+  }
+
   private async registerCheckIn(employee: Employee, date: string, time: string, authMethod: AuthMethod) {
     const workSchedule = await this.getWorkSchedule();
-    const lateMinutes = this.calculateLateMinutes(time, workSchedule.start_time);
-    
-    console.log('Registrando entrada:', { employee, authMethod });
+    const status: AttendanceStatus = 'Presente';
     
     const attendanceData = {
       employee_id: employee.id,
       date: date,
       check_in: time,
-      status: lateMinutes > 0 ? 'Atrasado' : 'No horário',
-      late_minutes: lateMinutes,
-      auth_method: authMethod, // This will now be properly typed
+      status: status,
+      auth_method: authMethod,
       created_at: new Date().toISOString()
     };
 
@@ -285,6 +314,8 @@ export class EmployeeService {
       throw new Error('Erro ao registrar entrada');
     }
     
+    await this.updateEmployeeStatus(employee.id, 'Presente');
+
     return data[0];
   }
 
@@ -300,11 +331,13 @@ export class EmployeeService {
       .select();
 
     if (error) throw error;
+
+    await this.updateEmployeeStatus(record.employee_id, 'Ausente');
+
     return data[0];
   }
 
   async getAttendanceByMonth(year: number, month: number) {
-    console.log(`Buscando presenças para ${month}/${year}`);
     try {
       const startDate = new Date(year, month - 1, 1).toISOString();
       const endDate = new Date(year, month, 0).toISOString();
@@ -313,23 +346,17 @@ export class EmployeeService {
         .from(this.ATTENDANCE_TABLE)
         .select(`
           *,
-          employees (name)
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
         `)
         .gte('date', startDate)
         .lte('date', endDate);
 
-      if (error) {
-        console.error('Erro ao buscar presenças:', error);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('Nenhuma presença encontrada para o período');
-        return [];
-      }
-
-      console.log('Presenças encontradas:', data);
-      return data;
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Erro ao buscar presenças:', error);
       return [];
@@ -422,9 +449,9 @@ export class EmployeeService {
     }
   }
 
-  private determineStatus(lateMinutes: number): Attendance['status'] {
-    return lateMinutes > 0 ? 'Atrasado' : 'No horário';
-  }
+  // private determineStatus(lateMinutes: number): AttendanceStatus {
+  //   return 'Presente'; // Always return 'Presente' when they check in
+  // }
 
   async checkDuplicateName(name: string): Promise<boolean> {
     const { data, error } = await this.supabase

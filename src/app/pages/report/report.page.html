@@ -140,21 +140,19 @@
             <ion-list>
               <ion-item *ngFor="let record of report.attendanceRecords">
                 <ion-label>
-                  <h2>{{ record.date | date:'dd/MM/yyyy' }}</h2>
-                  <p>
-                    <ion-badge color="primary" *ngIf="!record.check_out">Entrada: {{ record.check_in }}</ion-badge>
-                    <ion-badge color="warning" *ngIf="record.check_in && !record.check_out">Em exercício</ion-badge>
-                    <ion-badge color="success" *ngIf="record.check_out">
-                      Entrada: {{ record.check_in }} - Saída: {{ record.check_out }}
-                    </ion-badge>
-                  </p>
-                  <ion-text *ngIf="record.late_minutes" [color]="record.late_minutes > 0 ? 'danger' : 'success'">
-                    <p>{{ record.late_minutes > 0 ? 'Atraso: ' + record.late_minutes + ' min' : 'No horário' }}</p>
-                  </ion-text>
+                  <ion-grid>
+                    <ion-row>
+                      <ion-col size="4">{{ record.employee?.name }}</ion-col>
+                      <ion-col size="3">{{ record.check_in }}</ion-col>
+                      <ion-col size="3">{{ record.check_out || '-' }}</ion-col>
+                      <ion-col size="2">
+                        <ion-badge [color]="getStatusColor(record.status)">
+                          {{ record.status }}
+                        </ion-badge>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
                 </ion-label>
-                <ion-badge slot="end" [color]="getStatusColor(record.status)">
-                  {{ record.status }}
-                </ion-badge>
               </ion-item>
             </ion-list>
           </ion-col>

@@ -41,10 +41,13 @@
       <ion-label>Funcionários Cadastrados</ion-label>
     </ion-list-header>
 
-    <ion-item *ngFor="let employee of employees" (click)="showEmployeeDetails(employee)">
+    <ion-item *ngFor="let employee of employees">
       <ion-label>
         <h2>{{ employee.name }}</h2>
         <p>{{ employee.position }} - {{ employee.department }}</p>
+        <!-- <ion-badge [color]="employee.status === 'Presente' ? 'success' : 'medium'">
+          {{ employee.status || 'Ausente' }}
+        </ion-badge> -->
       </ion-label>
       <ion-note slot="end">{{ employee.internal_code }}</ion-note>
     </ion-item>

@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
-import { Employee, Attendance } from '../../models/employee.model';
+import { Employee, Attendance, AttendanceStatus, WorkStatus } from '../../models/employee.model';
 import { Chart } from 'chart.js/auto';
 import * as XLSX from 'xlsx';
+import { StatusService } from '../../services/status.service';
 
 interface MonthlyReport {
   employeeId: string;
@@ -45,7 +46,10 @@ export class ReportPage implements OnInit, OnDestroy {
   private attendanceChartInstance!: Chart;
   timelineView: 'day' | 'week' = 'day';
 
-  constructor(private employeeService: EmployeeService) {
+  constructor(
+    private employeeService: EmployeeService,
+    private statusService: StatusService
+  ) {
     const now = new Date();
     this.selectedDate = now.toISOString();
     
@@ -79,13 +83,21 @@ export class ReportPage implements OnInit, OnDestroy {
         this.currentYear,
         this.currentMonth
       );
-
+      const schedule = await this.employeeService.getWorkSchedule();
+      
       this.monthlyReports = this.employees
         .filter(emp => !this.selectedEmployee || emp.id === this.selectedEmployee)
         .map(employee => {
-          const employeeRecords = attendanceRecords.filter(
-            record => record.employee_id === employee.id
-          );
+          const employeeRecords = attendanceRecords
+            .filter(record => record.employee_id === employee.id)
+            .map(record => ({
+              ...record,
+              status: this.statusService.determineAttendanceStatus(
+                record.check_in,
+                record.check_out,
+                schedule.start_time
+              )
+            }));
 
           return {
             employeeId: employee.id!,
@@ -164,16 +176,8 @@ export class ReportPage implements OnInit, OnDestroy {
     return workDays;
   }
 
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'No horário': return 'success';
-      case 'Atrasado': return 'warning';
-      case 'Em exercício': return 'primary';
-      case 'Saída': return 'tertiary';
-      case 'Justificado': return 'secondary';
-      case 'Ausente': return 'danger';
-      default: return 'medium';
-    }
+  getStatusColor(status: AttendanceStatus | WorkStatus): string {
+    return this.statusService.getStatusColor(status);
   }
 
   getPresencePercentage(): number {

@@ -19,8 +19,13 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'employee',
+        redirectTo: 'daily-attendance',
         pathMatch: 'full'
+      },
+      {
+        path: 'daily-attendance',
+        loadComponent: () => import('./pages/daily-attendance/daily-attendance.page')
+          .then(m => m.DailyAttendancePageComponent)
       },
       {
         path: 'attendance',

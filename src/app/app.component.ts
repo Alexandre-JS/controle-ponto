@@ -17,6 +17,15 @@ export class AppComponent implements OnInit {
   userAvatar: string | null = null;
   isDesktop = false;
 
+  public appPages = [
+    { title: 'Dashboard', url: '/admin/daily-attendance', icon: 'home' },
+    { title: 'Control de ponto', url: '/kiosk', icon: 'checkmark-circle' },
+    { title: 'Funcionários', url: '/admin/employee', icon: 'people' },
+    { title: 'Relatórios', url: '/admin/report', icon: 'bar-chart' },
+    { title: 'Configurações', url: '/admin/settings', icon: 'settings' },
+    { title: 'Sair', url: '/login', icon: 'log-out' }
+  ];
+
   constructor(
     private authService: AuthService,
     private router: Router
