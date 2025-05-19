@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase.service';
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,20 @@ export class AuthService {
     private supabase: SupabaseService,
     private router: Router
   ) {
-    this.checkAuth();
+    this.initAuth();
+  }
+
+  private async initAuth() {
+    const session = await this.supabase.getClient().auth.getSession();
+    this.authState.next(!!session.data.session);
+    
+    // Subscribe to auth changes
+    this.supabase.session.subscribe((session) => {
+      this.authState.next(!!session);
+      if (!session && !window.location.pathname.includes('/login')) {
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   async login(email: string, password: string) {
@@ -34,6 +48,16 @@ export class AuthService {
       console.error('Erro login:', error);
       return error.message || 'Erro ao fazer login';
     }
+  }
+
+  checkAuthentication() {
+    return this.supabase.session.pipe(
+      map(session => {
+        const isAuth = !!session;
+        this.authState.next(isAuth);
+        return isAuth;
+      })
+    );
   }
 
   async signUp(email: string, password: string) {

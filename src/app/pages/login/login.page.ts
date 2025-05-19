@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, IonicModule]
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
 
@@ -26,6 +27,13 @@ export class LoginPage {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+  }
+
+  async ngOnInit() {
+    const isAuth = await this.authService.isAuthenticated().pipe(take(1)).toPromise();
+    if (isAuth) {
+      await this.router.navigate(['/admin/employee']);
+    }
   }
 
   async onSubmit() {

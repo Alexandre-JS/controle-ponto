@@ -8,10 +8,21 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;
+  private static instance: SupabaseService;
+  private supabase!: SupabaseClient;
   private _session = new BehaviorSubject<any>(null);
 
   constructor(private router: Router) {
+    if (SupabaseService.instance) {
+      return SupabaseService.instance;
+    }
+
+    this.initSupabase();
+    this.loadSession(); // Add initial session load
+    SupabaseService.instance = this;
+  }
+
+  private initSupabase() {
     this.supabase = createClient(
       environment.supabaseUrl,
       environment.supabaseKey,
@@ -20,24 +31,20 @@ export class SupabaseService {
           storage: window.localStorage,
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true,
-          flowType: 'pkce'
+          storageKey: 'app-hoje.auth.token'
         }
       }
     );
 
-    // Carregar sessão do localStorage
-    this.loadSession();
-
-    // Monitorar mudanças na autenticação
     this.supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       this._session.next(session);
-
+      
       if (event === 'SIGNED_IN') {
         console.log('Usuário logado');
+        this.router.navigate(['/admin/employee']);
       } else if (event === 'SIGNED_OUT') {
-        console.log('Usuário deslogado');
+        window.localStorage.removeItem('app-hoje.auth.token');
         this.router.navigate(['/login']);
       }
     });
@@ -46,13 +53,11 @@ export class SupabaseService {
   private async loadSession() {
     try {
       const { data: { session } } = await this.supabase.auth.getSession();
-      console.log('Sessão carregada:', session);
-      this._session.next(session);
-      
-      // Remove auto-redirect to login
-      if (!session && window.location.pathname.includes('/admin')) {
-        console.log('Redirecionando para login...');
-        this.router.navigate(['/login']);
+      if (session) {
+        this._session.next(session);
+        if (window.location.pathname === '/login') {
+          this.router.navigate(['/admin/employee']);
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar sessão:', error);
@@ -66,26 +71,21 @@ export class SupabaseService {
 
   async signIn(email: string, password: string) {
     try {
-      console.log('Tentando login com:', email);
       const { data, error } = await this.supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) {
-        console.error('Erro no login Supabase:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (data.session) {
-        console.log('Login bem sucedido:', data.user?.email);
         this._session.next(data.session);
-        window.localStorage.setItem('supabase.auth.token', data.session.access_token);
+        return { data, error: null };
       }
 
-      return { data, error: null };
+      throw new Error('Sessão não criada');
     } catch (error) {
-      console.error('Erro no processo de login:', error);
+      console.error('Erro no login:', error);
       return { data: null, error };
     }
   }
