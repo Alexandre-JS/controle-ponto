@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
@@ -15,14 +15,26 @@ export class AppComponent implements OnInit {
   isAuthenticated = false;
   userEmail: string = '';
   userAvatar: string | null = null;
+  isDesktop = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router  // Add Router injection
-  ) {}
+    private router: Router
+  ) {
+    this.checkScreenSize();
+  }
 
   ngOnInit() {
     this.loadUserProfile();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    this.isDesktop = window.innerWidth > 768; // Breakpoint para desktop
   }
 
   async loadUserProfile() {
