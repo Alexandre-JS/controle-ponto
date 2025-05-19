@@ -43,30 +43,43 @@
   <ion-card *ngIf="!selectedEmployee">
     <ion-card-header>
       <ion-card-title>Resumo Geral do Mês</ion-card-title>
+      <ion-button fill="clear" slot="end" (click)="exportReport()">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        Exportar
+      </ion-button>
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
         <ion-row>
-          <ion-col size="4">
+          <ion-col size="3">
             <div class="stat-box">
               <div class="stat-value">{{ getTotalWorkDays() }}</div>
               <div class="stat-label">Dias Úteis</div>
             </div>
           </ion-col>
-          <ion-col size="4">
+          <ion-col size="3">
             <div class="stat-box">
-              <div class="stat-value">{{ getTotalLateDays() }}</div>
-              <div class="stat-label">Atrasos</div>
+              <div class="stat-value">{{ getPresencePercentage() }}%</div>
+              <div class="stat-label">Taxa Presença</div>
             </div>
           </ion-col>
-          <ion-col size="4">
+          <ion-col size="3">
             <div class="stat-box">
-              <div class="stat-value">{{ getTotalAbsences() }}</div>
-              <div class="stat-label">Faltas</div>
+              <div class="stat-value">{{ getAverageDelay() }}min</div>
+              <div class="stat-label">Média Atrasos</div>
+            </div>
+          </ion-col>
+          <ion-col size="3">
+            <div class="stat-box">
+              <div class="stat-value">{{ getTotalOvertime() }}h</div>
+              <div class="stat-label">Horas Extras</div>
             </div>
           </ion-col>
         </ion-row>
       </ion-grid>
+
+      <!-- Gráfico de Tendências -->
+      <canvas #attendanceChart></canvas>
     </ion-card-content>
   </ion-card>
 
@@ -80,39 +93,50 @@
     <ion-card-content>
       <ion-grid>
         <ion-row>
-          <ion-col size="6">
+          <ion-col size="4">
             <ion-item lines="none">
               <ion-label>
                 <h3>Presenças</h3>
-                <p>{{ report.totalWorkDays }} dias</p>
+                <p>{{ report.totalWorkDays }} dias ({{ getEmployeePresencePercentage(report) }}%)</p>
               </ion-label>
             </ion-item>
           </ion-col>
-          <ion-col size="6">
+          <ion-col size="4">
             <ion-item lines="none">
               <ion-label>
-                <h3>Atrasos</h3>
-                <p>{{ report.totalLateDays }} dias</p>
+                <h3>Banco de Horas</h3>
+                <p [class.positive]="report.overtimeBalance > 0" [class.negative]="report.overtimeBalance < 0">
+                  {{ formatHours(report.overtimeBalance) }}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="4">
+            <ion-item lines="none">
+              <ion-label>
+                <h3>Média Atrasos</h3>
+                <p>{{ getAverageDelayForEmployee(report) }}min/dia</p>
               </ion-label>
             </ion-item>
           </ion-col>
         </ion-row>
 
-        <ion-row>
-          <ion-col size="12">
-            <ion-item lines="none">
-              <ion-label>
-                <h3>Total de Atrasos</h3>
-                <p>{{ formatHours(report.totalLateMinutes) }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-        </ion-row>
+        <!-- Gráfico Individual -->
+        <canvas [attr.id]="'employeeChart-' + report.employeeId"></canvas>
 
-        <!-- Timeline de Registros -->
+        <!-- Timeline Melhorada -->
         <ion-row>
           <ion-col>
-            <h3 class="ion-padding-top">Registros Diários</h3>
+            <h3 class="ion-padding-top">Registros Detalhados</h3>
+            <ion-segment [(ngModel)]="timelineView" (ionChange)="updateTimeline()">
+              <ion-segment-button value="day">
+                <ion-label>Diário</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="week">
+                <ion-label>Semanal</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+            
             <ion-list>
               <ion-item *ngFor="let record of report.attendanceRecords">
                 <ion-label>
