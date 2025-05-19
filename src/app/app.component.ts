@@ -30,6 +30,16 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router
   ) {
+    // Initialize auth state on app start
+    this.authService.isAuthenticated().subscribe(isAuth => {
+      if (!isAuth) {
+        // Only redirect if not in login page
+        if (!window.location.href.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    });
+
     this.checkScreenSize();
   }
 
@@ -60,7 +70,12 @@ export class AppComponent implements OnInit {
   }
 
   async logout() {
-    await this.authService.logout();
+    try {
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   }
 
   async goToLogin() {

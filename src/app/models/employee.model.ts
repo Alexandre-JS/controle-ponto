@@ -1,18 +1,15 @@
 export type WorkStatus = 'Em andamento' | 'Encerrado' | 'Não iniciado';
 
-export type AttendanceStatus = 'Presente' | 'Ausente';
+export type AttendanceStatus = 'Presente' | 'Atrasado' | 'Ausente';
 
 export interface Employee {
   id: string;
   name: string;
+  position: string; 
   internal_code: string;
   department: string;
-  position: string;
   created_at: string;
   qr_code: string;
-  status?: AttendanceStatus;
-  last_attendance_date?: string;
-  last_attendance_status?: AttendanceStatus;
 }
 
 // For creating new employees
@@ -29,15 +26,15 @@ export interface Attendance {
   id?: string;
   employee_id: string;  // Changed from employeeId
   employee?: Employee; // Add this line for the relation
-  date: Date;
-  check_in: string;    // Changed from timeIn
+  date: string;
+  check_in?: string;    // Changed from timeIn
   check_out?: string;
-  status: AttendanceStatus;  // Update to use standardized status
   late_minutes?: number;
+  status: AttendanceStatus;  // Update to use standardized status
   observations?: string;
-  auth_method: AuthMethod;
-  created_at?: Date;
-  updated_at?: Date;
+  auth_method?: string;
+  created_at?: string;
+  // updated_at?: string;
 }
 
 export interface WorkSchedule {

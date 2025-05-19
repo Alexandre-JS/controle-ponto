@@ -12,6 +12,19 @@ export interface QRCodeData {
   timestamp: number;
 }
 
+export interface Department {
+  id: number;
+  name: string;
+}
+
+export interface AttendanceRecord {
+  employee_id: string;
+  date: string;
+  check_in: string;
+  check_out: string;
+  late_minutes: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -135,43 +148,68 @@ export class EmployeeService {
     }
   }
 
-  async registerAttendance(employeeCode: string, authMethod: AuthMethod) {
+  async registerAttendance(employeeCode: string, method: AuthMethod): Promise<void> {
     try {
       const employee = await this.findEmployeeByCode(employeeCode);
-      if (!employee) {
-        throw new Error('Funcionário não encontrado');
-      }
+      if (!employee) throw new Error('Funcionário não encontrado');
 
       const now = new Date();
       const today = now.toISOString().split('T')[0];
-      const currentTime = now.toTimeString().substring(0, 5);
+      const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
 
-      // Buscar registros do dia
-      const { data: existingAttendances } = await this.supabase
-        .from(this.ATTENDANCE_TABLE)
+      // Check existing attendance
+      const { data: existingRecord } = await this.supabase
+        .from('attendance')
         .select('*')
         .eq('employee_id', employee.id)
         .eq('date', today)
-        .order('created_at', { ascending: false });
+        .single();
 
-      const lastRecord = existingAttendances?.[0];
+      if (!existingRecord) {
+        // Create new record
+        const { error } = await this.supabase
+          .from('attendance')
+          .insert({
+            employee_id: employee.id,
+            date: today,
+            check_in: currentTime,
+            late_minutes: await this.calculateLateMinutes(currentTime),
+            status: 'Presente',
+            auth_method: method,
+            created_at: now.toISOString(),
+          
+          });
 
-      // Lógica de entrada/saída
-      if (!lastRecord) {
-        // Primeira entrada do dia
-        return await this.registerCheckIn(employee, today, currentTime, authMethod);
-      } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        // Saída após 12h
-        return await this.registerCheckOut(lastRecord, currentTime, authMethod);
-      } else if (lastRecord.check_out) {
-        throw new Error('Já finalizou o expediente hoje');
+        if (error) throw error;
+      } else if (!existingRecord.check_out) {
+        // Update with check-out
+        const { error } = await this.supabase
+          .from('attendance')
+          .update({
+            check_out: currentTime,
+            // updated_at: now.toISOString()
+          })
+          .eq('id', existingRecord.id);
+
+        if (error) throw error;
       } else {
-        throw new Error('Muito cedo para registrar saída');
+        throw new Error('Registro de ponto já finalizado para hoje');
       }
     } catch (error) {
       console.error('Erro no registro:', error);
       throw error;
     }
+  }
+
+  private async calculateLateMinutes(checkInTime: string): Promise<number> {
+    const schedule = await this.getWorkSchedule();
+    const [checkInHour, checkInMin] = checkInTime.split(':').map(Number);
+    const [startHour, startMin] = schedule.start_time.split(':').map(Number);
+    
+    const checkInMinutes = checkInHour * 60 + checkInMin;
+    const startMinutes = startHour * 60 + startMin;
+    
+    return Math.max(0, checkInMinutes - startMinutes);
   }
 
   async registerAttendanceByQRCode(qrData: string) {
@@ -424,30 +462,30 @@ export class EmployeeService {
     }
   }
 
-  private calculateLateMinutes(timeIn: string, start_time: string): number {
-    if (!timeIn || !start_time) {
-      console.error('Invalid time parameters:', { timeIn, start_time });
-      return 0;
-    }
+  // private calculateLateMinutes(timeIn: string, start_time: string): number {
+  //   if (!timeIn || !start_time) {
+  //     console.error('Invalid time parameters:', { timeIn, start_time });
+  //     return 0;
+  //   }
 
-    try {
-      const [inHour, inMinute] = timeIn.split(':').map(Number);
-      const [startHour, startMinute] = start_time.split(':').map(Number);
+  //   try {
+  //     const [inHour, inMinute] = timeIn.split(':').map(Number);
+  //     const [startHour, startMinute] = start_time.split(':').map(Number);
 
-      if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
-        console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
-        return 0;
-      }
+  //     if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
+  //       console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
+  //       return 0;
+  //     }
 
-      const totalInMinutes = inHour * 60 + inMinute;
-      const totalStartMinutes = startHour * 60 + startMinute;
+  //     const totalInMinutes = inHour * 60 + inMinute;
+  //     const totalStartMinutes = startHour * 60 + startMinute;
 
-      return Math.max(0, totalInMinutes - totalStartMinutes);
-    } catch (error) {
-      console.error('Error calculating late minutes:', error);
-      return 0;
-    }
-  }
+  //     return Math.max(0, totalInMinutes - totalStartMinutes);
+  //   } catch (error) {
+  //     console.error('Error calculating late minutes:', error);
+  //     return 0;
+  //   }
+  // }
 
   // private determineStatus(lateMinutes: number): AttendanceStatus {
   //   return 'Presente'; // Always return 'Presente' when they check in
@@ -512,6 +550,44 @@ export class EmployeeService {
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
       throw error;
+    }
+  }
+
+  async getAttendanceByDateRange(startDate: string, endDate: string): Promise<AttendanceRecord[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select(`
+          *,
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
+        `)
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar presenças:', error);
+      return [];
+    }
+  }
+
+  async getDepartments(): Promise<Department[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('departments')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar departamentos:', error);
+      return [];
     }
   }
 }

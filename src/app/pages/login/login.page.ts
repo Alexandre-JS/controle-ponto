@@ -40,21 +40,14 @@ export class LoginPage implements OnInit {
     if (this.loginForm.valid) {
       try {
         this.isLoading = true;
-        const { email, password } = this.loginForm.value;
-        
-        const error = await this.authService.login(email, password);
-
-        if (error) {
-          let message = 'Email ou senha incorretos';
-          this.showToast(message, 'danger');
-          return;
-        }
-
-        this.showToast('Login realizado com sucesso!', 'success');
-        // Redirecionamento é feito pelo AuthService
-      } catch (error: any) {
-        console.error('Erro no login:', error);
-        this.showToast('Erro ao fazer login', 'danger');
+        await this.authService.login(
+          this.loginForm.value.email,
+          this.loginForm.value.password
+        );
+        await this.router.navigate(['/admin/daily-attendance'], { replaceUrl: true });
+      } catch (error) {
+        console.error('Login error:', error);
+        this.showToast('Email ou senha inválidos', 'danger'); // Added color parameter
       } finally {
         this.isLoading = false;
       }

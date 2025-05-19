@@ -23,6 +23,11 @@
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
+
+          <ion-item button (click)="logout()">
+            <ion-icon slot="start" name="log-out-outline"></ion-icon>
+            <ion-label>Sair</ion-label>
+          </ion-item>
         </ion-list>
       </ion-content>
     </ion-menu>
