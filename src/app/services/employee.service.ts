@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Employee, Attendance, WorkSchedule, CreateEmployeeDto } from '../models/employee.model';
 import { environment } from '../../environments/environment';
+import { SupabaseService } from './supabase.service';
 
 export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr';
 
@@ -19,8 +20,8 @@ export class EmployeeService {
   private readonly SCHEDULE_TABLE = 'work_schedule';
   private supabase: SupabaseClient;
 
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  constructor(private supabaseService: SupabaseService) {
+    this.supabase = this.supabaseService.getClient();
   }
 
   private generateEmployeeCode(): string {
@@ -34,20 +35,32 @@ export class EmployeeService {
   }
 
   async createEmployee(employeeData: CreateEmployeeDto) {
-    const internal_code = await this.generateInternalCode();
-    
-    const { data, error } = await this.supabase
-      .from('employees')
-      .insert([{ 
-        ...employeeData,
-        internal_code,
-        qr_code: internal_code // Usar o código interno diretamente como QR code
-      }])
-      .select()
-      .single();
+    try {
+      console.log('Creating employee:', employeeData);
+      const internal_code = await this.generateInternalCode();
+      
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .insert([{ 
+          ...employeeData,
+          internal_code,
+          qr_code: internal_code,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error('Error creating employee:', error);
+        throw error;
+      }
+
+      console.log('Employee created:', data);
+      return data;
+    } catch (error) {
+      console.error('Create employee error:', error);
+      throw error;
+    }
   }
 
   private async generateInternalCode(): Promise<string> {
@@ -67,13 +80,30 @@ export class EmployeeService {
   }
 
   async getEmployees(): Promise<Employee[]> {
-    const { data, error } = await this.supabase
-      .from(this.EMPLOYEES_TABLE)
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      console.log('Fetching employees...');
+      
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.log('No data returned');
+        return [];
+      }
+
+      console.log('Fetched employees:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in getEmployees:', error);
+      throw error;
+    }
   }
 
   async findEmployeeByCode(code: string): Promise<Employee | null> {

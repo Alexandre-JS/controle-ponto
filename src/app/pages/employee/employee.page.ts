@@ -69,13 +69,18 @@ export class EmployeePage implements OnInit {
   }
 
   async loadEmployees() {
-    console.log('Iniciando carregamento de funcionários...');
     try {
       this.isLoading = true;
+      console.log('Loading employees...');
+      
       this.employees = await this.employeeService.getEmployees();
-      console.log('Funcionários carregados:', this.employees);
+      console.log('Employees loaded:', this.employees);
+      
+      if (this.employees.length === 0) {
+        this.showToast('Nenhum funcionário cadastrado', 'info');
+      }
     } catch (error) {
-      console.error('Erro ao carregar funcionários:', error);
+      console.error('Error loading employees:', error);
       this.showToast('Erro ao carregar funcionários', 'danger');
     } finally {
       this.isLoading = false;
