@@ -71,18 +71,18 @@ export class EmployeeService {
   }
 
   async createEmployee(employeeData: CreateEmployeeDto) {
-    
-    const internal_code = await this.generateUniqueInternalCode();
+    try {
+      const internal_code = await this.generateUniqueInternalCode();
 
-    const { data, error } = await this.supabase
-      .from('employees')
-      .insert([{
-        ...employeeData,
-        internal_code,
-        qr_code: internal_code // Usar o código interno diretamente como QR code
-      }])
-      .select()
-      .single();
+      const { data, error } = await this.supabase
+        .from('employees')
+        .insert([{
+          ...employeeData,
+          internal_code,
+          qr_code: internal_code // Usar o código interno diretamente como QR code
+        }])
+        .select()
+        .single();
 
       if (error) {
         console.error('Error creating employee:', error);
@@ -160,113 +160,116 @@ export class EmployeeService {
     }
   }
 
-  async registerAttendance(employeeCode: string, method: AuthMethod): Promise<void> {
-    try {
-      const employee = await this.findEmployeeByCode(employeeCode);
-      if (!employee) throw new Error('Funcionário não encontrado');
-
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
-
-      // Check existing attendance
-      const { data: existingRecord } = await this.supabase
-        .from('attendance')
-        .select('*')
-        .eq('employee_id', employee.id)
-        .eq('date', today)
-        .single();
-
-      if (!existingRecord) {
-        // Create new record
-        const { error } = await this.supabase
-          .from('attendance')
-          .insert({
-            employee_id: employee.id,
-            date: today,
-            check_in: currentTime,
-            late_minutes: await this.calculateLateMinutes(currentTime),
-            status: 'Presente',
-            auth_method: method,
-            created_at: now.toISOString(),
-          
-          });
-
-        if (error) throw error;
-      } else if (!existingRecord.check_out) {
-        // Update with check-out
-        const { error } = await this.supabase
-          .from('attendance')
-          .update({
-            check_out: currentTime,
-            // updated_at: now.toISOString()
-          })
-          .eq('id', existingRecord.id);
-
-        if (error) throw error;
-      } else {
-        throw new Error('Registro de ponto já finalizado para hoje');
-      }
-    } catch (error) {
-      console.error('Erro no registro:', error);
-      throw error;
-    }
-  }
-
-  private async calculateLateMinutes(checkInTime: string): Promise<number> {
-    const schedule = await this.getWorkSchedule();
-    const [checkInHour, checkInMin] = checkInTime.split(':').map(Number);
-    const [startHour, startMin] = schedule.start_time.split(':').map(Number);
-    
-    const checkInMinutes = checkInHour * 60 + checkInMin;
-    const startMinutes = startHour * 60 + startMin;
-    
-    return Math.max(0, checkInMinutes - startMinutes);
-  }
-
-  async registerAttendanceByQRCode(qrData: string) {
+ async registerAttendance(employeeCode: string, method: AuthMethod): Promise<void> {
   try {
-    console.log('Processando QR code:', qrData);
-    
-    // Validate QR code format
-    if (!qrData.match(/^AEM\d{3}$/)) {
-      throw new Error('QR Code inválido');
-    }
-
-    const employee = await this.findEmployeeByCode(qrData);
-    if (!employee) {
-      throw new Error('Funcionário não encontrado');
-    }
+    const employee = await this.findEmployeeByCode(employeeCode);
+    if (!employee) throw new Error('Funcionário não encontrado');
 
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().substring(0, 5);
+    const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
+    
+    // Obter o schedule aqui
+    const schedule = await this.getWorkSchedule();
 
-    // Verificar registros existentes
-    const { data: existingAttendances } = await this.supabase
-      .from(this.ATTENDANCE_TABLE)
+    // Check existing attendance
+    const { data: existingRecord } = await this.supabase
+      .from('attendance')
       .select('*')
       .eq('employee_id', employee.id)
       .eq('date', today)
-      .order('created_at', { ascending: false });
+      .single();
 
-    const lastRecord = existingAttendances?.[0];
+    if (!existingRecord) {
+      // Create new record
+      const { error } = await this.supabase
+        .from('attendance')
+        .insert({
+          employee_id: employee.id,
+          date: today,
+          check_in: currentTime,
+          late_minutes: this.calculateLateMinutes(currentTime, schedule.start_time), // Aqui usa os dois argumentos
+          status: 'Presente',
+          auth_method: method,
+          created_at: now.toISOString(),
+        
+        });
 
-    // Use a mesma lógica do método registerAttendance
-    if (!lastRecord) {
-      return await this.registerCheckIn(employee, today, currentTime, 'qr');
-    } else if (!lastRecord.check_out && now.getHours() >= 12) {
-      return await this.registerCheckOut(lastRecord, currentTime, 'qr');
-    } else if (lastRecord.check_out) {
-      throw new Error('Já finalizou o expediente hoje');
+      if (error) throw error;
+    } else if (!existingRecord.check_out) {
+      // Update with check-out
+      const { error } = await this.supabase
+        .from('attendance')
+        .update({
+          check_out: currentTime,
+          // updated_at: now.toISOString()
+        })
+        .eq('id', existingRecord.id);
+
+      if (error) throw error;
     } else {
-      throw new Error('Muito cedo para registrar saída');
+      throw new Error('Registro de ponto já finalizado para hoje');
     }
   } catch (error) {
-    console.error('Erro no registro por QR code:', error);
+    console.error('Erro no registro:', error);
     throw error;
   }
 }
+
+  // private async calculateLateMinutes(checkInTime: string): Promise<number> {
+  //   const schedule = await this.getWorkSchedule();
+  //   const [checkInHour, checkInMin] = checkInTime.split(':').map(Number);
+  //   const [startHour, startMin] = schedule.start_time.split(':').map(Number);
+    
+  //   const checkInMinutes = checkInHour * 60 + checkInMin;
+  //   const startMinutes = startHour * 60 + startMin;
+    
+  //   return Math.max(0, checkInMinutes - startMinutes);
+  // }
+
+  async registerAttendanceByQRCode(qrData: string) {
+    try {
+      console.log('Processando QR code:', qrData);
+      
+      // Validate QR code format
+      if (!qrData.match(/^AEM\d{3}$/)) {
+        throw new Error('QR Code inválido');
+      }
+
+      const employee = await this.findEmployeeByCode(qrData);
+      if (!employee) {
+        throw new Error('Funcionário não encontrado');
+      }
+
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const currentTime = now.toTimeString().substring(0, 5);
+
+      // Verificar registros existentes
+      const { data: existingAttendances } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select('*')
+        .eq('employee_id', employee.id)
+        .eq('date', today)
+        .order('created_at', { ascending: false });
+
+      const lastRecord = existingAttendances?.[0];
+
+      // Use a mesma lógica do método registerAttendance
+      if (!lastRecord) {
+        return await this.registerCheckIn(employee, today, currentTime, 'qr');
+      } else if (!lastRecord.check_out && now.getHours() >= 12) {
+        return await this.registerCheckOut(lastRecord, currentTime, 'qr');
+      } else if (lastRecord.check_out) {
+        throw new Error('Já finalizou o expediente hoje');
+      } else {
+        throw new Error('Muito cedo para registrar saída');
+      }
+    } catch (error) {
+      console.error('Erro no registro por QR code:', error);
+      throw error;
+    }
+  }
 
   async updateEmployeeStatus(employeeId: string, status: AttendanceStatus) {
     try {
@@ -288,24 +291,21 @@ export class EmployeeService {
     }
   }
 
-  // private determineStatus(lateMinutes: number): AttendanceStatus {
-  //   return 'Presente'; // Simplified to just present when they check in
-  // }
-
   private determineStatus(lateMinutes: number): AttendanceStatus {
-    return 'Presente'; // Always return 'Presente' when they check in
+    return lateMinutes > 0 ? 'Atrasado' : 'Presente';
   }
 
   private async registerCheckIn(employee: Employee, date: string, time: string, authMethod: AuthMethod) {
     const workSchedule = await this.getWorkSchedule();
     const lateMinutes = this.calculateLateMinutes(time, workSchedule.start_time);
+    
     console.log('Registrando entrada:', { employee, authMethod });
-
+    
     const attendanceData = {
       employee_id: employee.id,
       date: date,
       check_in: time,
-      status: lateMinutes > 0 ? 'Atrasado' : 'Presente', // Alterado de 'Presente' para 'Presente'
+      status: lateMinutes > 0 ? 'Atrasado' : 'Presente',
       late_minutes: lateMinutes,
       auth_method: authMethod,
       created_at: new Date().toISOString()
@@ -313,16 +313,14 @@ export class EmployeeService {
 
     const { data, error } = await this.supabase
       .from(this.ATTENDANCE_TABLE)
-      .insert(attendanceData)
+      .insert([attendanceData])
       .select();
 
     if (error) {
       console.error('Erro ao registrar entrada:', error);
       throw new Error('Erro ao registrar entrada');
     }
-
-   //  await this.updateEmployeeStatus(employee.id, 'Presente');
-
+    
     return data[0];
   }
 
@@ -431,34 +429,30 @@ export class EmployeeService {
     }
   }
 
-  // private calculateLateMinutes(timeIn: string, start_time: string): number {
-  //   if (!timeIn || !start_time) {
-  //     console.error('Invalid time parameters:', { timeIn, start_time });
-  //     return 0;
-  //   }
+  private calculateLateMinutes(timeIn: string, start_time: string): number {
+    if (!timeIn || !start_time) {
+      console.error('Invalid time parameters:', { timeIn, start_time });
+      return 0;
+    }
 
-  //   try {
-  //     const [inHour, inMinute] = timeIn.split(':').map(Number);
-  //     const [startHour, startMinute] = start_time.split(':').map(Number);
+    try {
+      const [inHour, inMinute] = timeIn.split(':').map(Number);
+      const [startHour, startMinute] = start_time.split(':').map(Number);
 
-  //     if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
-  //       console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
-  //       return 0;
-  //     }
+      if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
+        console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
+        return 0;
+      }
 
-  //     const totalInMinutes = inHour * 60 + inMinute;
-  //     const totalStartMinutes = startHour * 60 + startMinute;
+      const totalInMinutes = inHour * 60 + inMinute;
+      const totalStartMinutes = startHour * 60 + startMinute;
 
-  //     return Math.max(0, totalInMinutes - totalStartMinutes);
-  //   } catch (error) {
-  //     console.error('Error calculating late minutes:', error);
-  //     return 0;
-  //   }
-  // }
-
-  private determineStatus(lateMinutes: number): Attendance['status'] {
-  return lateMinutes > 0 ? 'Atrasado' : 'Presente';
-}
+      return Math.max(0, totalInMinutes - totalStartMinutes);
+    } catch (error) {
+      console.error('Error calculating late minutes:', error);
+      return 0;
+    }
+  }
 
   async checkDuplicateName(name: string): Promise<boolean> {
     const { data, error } = await this.supabase

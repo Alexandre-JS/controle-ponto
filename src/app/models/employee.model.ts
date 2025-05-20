@@ -1,6 +1,7 @@
 export type WorkStatus = 'Em andamento' | 'Encerrado' | 'Não iniciado';
 
-export type AttendanceStatus = 'Presente' | 'Atrasado' | 'Ausente';
+// export type AttendanceStatus = 'Presente' | 'Atrasado' | 'Ausente';
+export type AttendanceStatus = 'Presente' | 'Atrasado' | 'Ausente' | 'Em exercício' | 'Saída' | 'Justificado';
 
 export interface Employee {
   id: string;
