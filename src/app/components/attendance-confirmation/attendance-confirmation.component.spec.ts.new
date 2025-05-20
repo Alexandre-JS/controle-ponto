@@ -1,0 +1,64 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { IonicModule, ModalController } from '@ionic/angular';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AttendanceConfirmationComponent } from './attendance-confirmation.component';
+
+describe('AttendanceConfirmationComponent', () => {
+  let component: AttendanceConfirmationComponent;
+  let fixture: ComponentFixture<AttendanceConfirmationComponent>;
+  let modalCtrlMock: { dismiss: jasmine.Spy };
+
+  beforeEach(async () => {
+    // Create a simple mock that only implements the dismiss method
+    modalCtrlMock = {
+      dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true))
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [
+        IonicModule.forRoot(),
+        AttendanceConfirmationComponent
+      ],
+      providers: [
+        { provide: ModalController, useValue: modalCtrlMock }
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AttendanceConfirmationComponent);
+    component = fixture.componentInstance;
+
+    // Set required inputs
+    component.employeeName = 'John Doe';
+    component.currentTime = '10:00';
+    component.isCheckOut = false;
+
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should show success message on confirm', () => {
+    component.confirm();
+    fixture.detectChanges();
+    
+    expect(component.showSuccess).toBeTrue();
+    expect(component.successMessage).toBe('Ponto de entrada registrado com sucesso!');
+  });
+
+  it('should dismiss modal with true when confirmed', (done) => {
+    component.dismiss(true).then(() => {
+      expect(modalCtrlMock.dismiss).toHaveBeenCalledWith(true);
+      done();
+    });
+  });
+
+  it('should dismiss modal with false when cancelled', (done) => {
+    component.dismiss(false).then(() => {
+      expect(modalCtrlMock.dismiss).toHaveBeenCalledWith(false);
+      done();
+    });
+  });
+});
