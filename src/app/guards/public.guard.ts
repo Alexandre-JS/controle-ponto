@@ -17,7 +17,6 @@ export class PublicGuard implements CanActivate {
       take(1),
       map(isAuth => {
         if (isAuth) {
-          // Se já estiver autenticado, redireciona para página principal
           this.router.navigate(['/admin/employee']);
           return false;
         }

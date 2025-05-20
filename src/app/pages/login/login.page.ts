@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, IonicModule]
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
 
@@ -28,25 +29,25 @@ export class LoginPage {
     });
   }
 
+  async ngOnInit() {
+    const isAuth = await this.authService.isAuthenticated().pipe(take(1)).toPromise();
+    if (isAuth) {
+      await this.router.navigate(['/admin/employee']);
+    }
+  }
+
   async onSubmit() {
     if (this.loginForm.valid) {
       try {
         this.isLoading = true;
-        const { email, password } = this.loginForm.value;
-        
-        const error = await this.authService.login(email, password);
-
-        if (error) {
-          let message = 'Email ou senha incorretos';
-          this.showToast(message, 'danger');
-          return;
-        }
-
-        this.showToast('Login realizado com sucesso!', 'success');
-        // Redirecionamento é feito pelo AuthService
-      } catch (error: any) {
-        console.error('Erro no login:', error);
-        this.showToast('Erro ao fazer login', 'danger');
+        await this.authService.login(
+          this.loginForm.value.email,
+          this.loginForm.value.password
+        );
+        await this.router.navigate(['/admin/daily-attendance'], { replaceUrl: true });
+      } catch (error) {
+        console.error('Login error:', error);
+        this.showToast('Email ou senha inválidos', 'danger'); // Added color parameter
       } finally {
         this.isLoading = false;
       }

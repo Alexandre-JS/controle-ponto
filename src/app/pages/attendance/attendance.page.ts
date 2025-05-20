@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Employee, Attendance } from '../../models/employee.model';
+import { Employee, Attendance, AttendanceStatus, WorkStatus } from '../../models/employee.model';
 import { EmployeeService } from '../../services/employee.service';
 import { Router } from '@angular/router';
+import { StatusService } from '../../services/status.service';
 
 @Component({
   selector: 'app-attendance',
@@ -24,7 +25,8 @@ export class AttendancePage implements OnInit {
     private formBuilder: FormBuilder,
     private employeeService: EmployeeService,
     private toastController: ToastController,
-    private router: Router
+    private router: Router,
+    private statusService: StatusService
   ) {
     this.attendanceForm = this.formBuilder.group({
       employee_id: ['', Validators.required],
@@ -124,6 +126,10 @@ export class AttendancePage implements OnInit {
   getEmployeeName(id: string): string {
     const employee = this.employees.find(emp => emp.id === id);
     return employee ? employee.name : 'Funcionário não encontrado';
+  }
+
+  getStatusColor(status: AttendanceStatus | WorkStatus): string {
+    return this.statusService.getStatusColor(status);
   }
 
   private async showToast(message: string, color: string) {

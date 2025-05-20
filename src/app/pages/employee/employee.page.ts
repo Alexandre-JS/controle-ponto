@@ -69,13 +69,18 @@ export class EmployeePage implements OnInit {
   }
 
   async loadEmployees() {
-    console.log('Iniciando carregamento de funcionários...');
     try {
       this.isLoading = true;
+      console.log('Loading employees...');
+      
       this.employees = await this.employeeService.getEmployees();
-      console.log('Funcionários carregados:', this.employees);
+      console.log('Employees loaded:', this.employees);
+      
+      if (this.employees.length === 0) {
+        this.showToast('Nenhum funcionário cadastrado', 'info');
+      }
     } catch (error) {
-      console.error('Erro ao carregar funcionários:', error);
+      console.error('Error loading employees:', error);
       this.showToast('Erro ao carregar funcionários', 'danger');
     } finally {
       this.isLoading = false;
@@ -240,6 +245,31 @@ export class EmployeePage implements OnInit {
         this.deleteEmployee(data.employee);
       }
     }
+  }
+
+  async openDetails(employee: Employee) {
+    const modal = await this.modalController.create({
+      component: EmployeeDetailsComponent,
+      componentProps: {
+        employee: employee
+      },
+      breakpoints: [0, 0.5, 0.8],
+      initialBreakpoint: 0.8
+    });
+
+    modal.onDidDismiss().then(async (result) => {
+      if (result.data) {
+        if (result.data.action === 'edit') {
+          // Handle edit action
+          this.editEmployee(result.data.employee);
+        } else if (result.data.action === 'delete') {
+          // Handle delete action
+          await this.deleteEmployee(result.data.employee);
+        }
+      }
+    });
+
+    return await modal.present();
   }
 
   async editEmployee(employee: Employee) {

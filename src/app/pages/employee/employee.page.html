@@ -41,7 +41,7 @@
       <ion-label>Funcionários Cadastrados</ion-label>
     </ion-list-header>
 
-    <ion-item *ngFor="let employee of employees" (click)="showEmployeeDetails(employee)">
+    <ion-item *ngFor="let employee of employees" button detail (click)="openDetails(employee)">
       <ion-label>
         <h2>{{ employee.name }}</h2>
         <p>{{ employee.position }} - {{ employee.department }}</p>
@@ -56,5 +56,5 @@
     </ion-item>
   </ion-list>
 
-  <ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading>
+  <!-- <ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading> -->
 </ion-content>
