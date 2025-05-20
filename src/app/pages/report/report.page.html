@@ -149,7 +149,7 @@
                     </ion-badge>
                   </p>
                   <ion-text *ngIf="record.late_minutes" [color]="record.late_minutes > 0 ? 'danger' : 'success'">
-                    <p>{{ record.late_minutes > 0 ? 'Atraso: ' + record.late_minutes + ' min' : 'No horário' }}</p>
+                    <p>{{ record.late_minutes > 0 ? 'Atraso: ' + record.late_minutes + ' min' : 'Presente' }}</p>
                   </ion-text>
                 </ion-label>
                 <ion-badge slot="end" [color]="getStatusColor(record.status)">

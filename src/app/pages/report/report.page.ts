@@ -166,7 +166,7 @@ export class ReportPage implements OnInit, OnDestroy {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'No horário': return 'success';
+      case 'Presente': return 'success';
       case 'Atrasado': return 'warning';
       case 'Em exercício': return 'primary';
       case 'Saída': return 'tertiary';

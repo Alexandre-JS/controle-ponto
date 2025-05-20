@@ -24,12 +24,12 @@ export interface Attendance {
   date: Date;
   check_in: string;    // Changed from timeIn
   check_out?: string;
-  status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'No horário' | 'Ausente' | 'Justificado';
+  status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'Presente' | 'Ausente' | 'Justificado';
   late_minutes?: number;
   observations?: string;
   auth_method: AuthMethod;
   created_at?: Date;
-  updated_at?: Date;
+  // updated_at?: Date;
 }
 
 export interface WorkSchedule {

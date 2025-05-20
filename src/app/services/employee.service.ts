@@ -23,9 +23,28 @@ export class EmployeeService {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
   }
 
-  private generateEmployeeCode(): string {
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `AEM${randomNumber}`;
+  // Novo método unificado para geração de códigos únicos
+  private async generateUniqueInternalCode(): Promise<string> {
+    let isUnique = false;
+    let internal_code = '';
+
+    // Tentar até encontrar um código único
+    while (!isUnique) {
+      // Gerar um código aleatório
+      const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      internal_code = `AEM${randomNumber}`;
+
+      // Verificar se já existe no banco de dados
+      const { data } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .select('id')
+        .eq('internal_code', internal_code);
+
+      // Se não encontrou nenhum registro com este código, é único
+      isUnique = !data || data.length === 0;
+    }
+
+    return internal_code;
   }
 
   private generateQRCodeData(employee: Partial<Employee>): string {
@@ -34,11 +53,11 @@ export class EmployeeService {
   }
 
   async createEmployee(employeeData: CreateEmployeeDto) {
-    const internal_code = await this.generateInternalCode();
-    
+    const internal_code = await this.generateUniqueInternalCode();
+
     const { data, error } = await this.supabase
       .from('employees')
-      .insert([{ 
+      .insert([{
         ...employeeData,
         internal_code,
         qr_code: internal_code // Usar o código interno diretamente como QR code
@@ -50,18 +69,13 @@ export class EmployeeService {
     return data;
   }
 
-  private async generateInternalCode(): Promise<string> {
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `AEM${randomNumber}`;
-  }
-
   async findByQRCode(qrCode: string) {
     const { data, error } = await this.supabase
       .from('employees')
       .select('*')
       .eq('qr_code', qrCode)
       .single();
-      
+
     if (error) throw error;
     return data;
   }
@@ -141,107 +155,62 @@ export class EmployeeService {
   }
 
   async registerAttendanceByQRCode(qrData: string) {
-    try {
-      console.log('Processando QR code:', qrData);
-      
-      // Validate QR code format
-      if (!qrData.match(/^AEM\d{3}$/)) {
-        throw new Error('QR Code inválido');
-      }
-
-      const employee = await this.findEmployeeByCode(qrData);
-      if (!employee) {
-        throw new Error('Funcionário não encontrado');
-      }
-
-      // Get current date/time
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const currentTime = now.toTimeString().substring(0, 5);
-
-      // Check existing attendance
-      const { data: existingAttendances, error: fetchError } = await this.supabase
-        .from(this.ATTENDANCE_TABLE)
-        .select('*')
-        .eq('employee_id', employee.id)
-        .eq('date', today)
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        console.error('Erro ao buscar registros:', fetchError);
-        throw new Error('Erro ao verificar registros existentes');
-      }
-
-      const lastRecord = existingAttendances?.[0];
-
-      // Handle check-in/check-out
-      if (!lastRecord) {
-        // First entry of the day
-        const attendanceData = {
-          employee_id: employee.id,
-          date: today,
-          check_in: currentTime,
-          status: 'No horário',
-          late_minutes: 0,
-          auth_method: 'qr' as AuthMethod,
-          created_at: now.toISOString()
-        };
-
-        const { data, error } = await this.supabase
-          .from(this.ATTENDANCE_TABLE)
-          .insert([attendanceData])
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Erro na inserção:', error);
-          throw new Error('Erro ao registrar entrada');
-        }
-
-        return data;
-      } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        // Check-out after 12h
-        const { data, error } = await this.supabase
-          .from(this.ATTENDANCE_TABLE)
-          .update({
-            check_out: currentTime,
-            auth_method: 'qr',
-            updated_at: now.toISOString()
-          })
-          .eq('id', lastRecord.id)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Erro na atualização:', error);
-          throw new Error('Erro ao registrar saída');
-        }
-
-        return data;
-      } else if (lastRecord.check_out) {
-        throw new Error('Já finalizou o expediente hoje');
-      } else {
-        throw new Error('Muito cedo para registrar saída');
-      }
-    } catch (error) {
-      console.error('Erro no registro por QR code:', error);
-      throw error;
+  try {
+    console.log('Processando QR code:', qrData);
+    
+    // Validate QR code format
+    if (!qrData.match(/^AEM\d{3}$/)) {
+      throw new Error('QR Code inválido');
     }
+
+    const employee = await this.findEmployeeByCode(qrData);
+    if (!employee) {
+      throw new Error('Funcionário não encontrado');
+    }
+
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().substring(0, 5);
+
+    // Verificar registros existentes
+    const { data: existingAttendances } = await this.supabase
+      .from(this.ATTENDANCE_TABLE)
+      .select('*')
+      .eq('employee_id', employee.id)
+      .eq('date', today)
+      .order('created_at', { ascending: false });
+
+    const lastRecord = existingAttendances?.[0];
+
+    // Use a mesma lógica do método registerAttendance
+    if (!lastRecord) {
+      return await this.registerCheckIn(employee, today, currentTime, 'qr');
+    } else if (!lastRecord.check_out && now.getHours() >= 12) {
+      return await this.registerCheckOut(lastRecord, currentTime, 'qr');
+    } else if (lastRecord.check_out) {
+      throw new Error('Já finalizou o expediente hoje');
+    } else {
+      throw new Error('Muito cedo para registrar saída');
+    }
+  } catch (error) {
+    console.error('Erro no registro por QR code:', error);
+    throw error;
   }
+}
 
   private async registerCheckIn(employee: Employee, date: string, time: string, authMethod: AuthMethod) {
     const workSchedule = await this.getWorkSchedule();
     const lateMinutes = this.calculateLateMinutes(time, workSchedule.start_time);
-    
+
     console.log('Registrando entrada:', { employee, authMethod });
-    
+
     const attendanceData = {
       employee_id: employee.id,
       date: date,
       check_in: time,
-      status: lateMinutes > 0 ? 'Atrasado' : 'No horário',
+      status: lateMinutes > 0 ? 'Atrasado' : 'Presente', // Alterado de 'Presente' para 'Presente'
       late_minutes: lateMinutes,
-      auth_method: authMethod, // This will now be properly typed
+      auth_method: authMethod,
       created_at: new Date().toISOString()
     };
 
@@ -254,7 +223,7 @@ export class EmployeeService {
       console.error('Erro ao registrar entrada:', error);
       throw new Error('Erro ao registrar entrada');
     }
-    
+
     return data[0];
   }
 
@@ -264,7 +233,7 @@ export class EmployeeService {
       .update({
         check_out: time,
         auth_method: authMethod,
-        updated_at: new Date().toISOString()
+        // updated_at: new Date().toISOString()
       })
       .eq('id', record.id)
       .select();
@@ -393,8 +362,8 @@ export class EmployeeService {
   }
 
   private determineStatus(lateMinutes: number): Attendance['status'] {
-    return lateMinutes > 0 ? 'Atrasado' : 'No horário';
-  }
+  return lateMinutes > 0 ? 'Atrasado' : 'Presente';
+}
 
   async checkDuplicateName(name: string): Promise<boolean> {
     const { data, error } = await this.supabase
