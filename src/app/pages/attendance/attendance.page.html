@@ -71,7 +71,11 @@
           </p>
           <p *ngIf="record.observations">Obs: {{ record.observations }}</p>
         </ion-label>
-        <ion-badge [color]="record.status === 'Presente' ? 'success' : 'danger'">
+        <ion-badge [color]="record.status === 'Presente' ? 'success' : 
+                           record.status === 'Atrasado' ? 'warning' : 
+                           record.status === 'Em exercício' ? 'primary' :
+                           record.status === 'Saída' ? 'tertiary' :
+                           record.status === 'Justificado' ? 'secondary' : 'danger'">
           {{ record.status }}
         </ion-badge>
       </ion-item>

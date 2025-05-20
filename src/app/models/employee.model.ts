@@ -29,12 +29,13 @@ export interface Attendance {
   date: string;
   check_in?: string;    // Changed from timeIn
   check_out?: string;
+//   status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'Presente' | 'Ausente' | 'Justificado';
   late_minutes?: number;
   status: AttendanceStatus;  // Update to use standardized status
   observations?: string;
-  auth_method?: string;
-  created_at?: string;
-  // updated_at?: string;
+  auth_method: AuthMethod;
+  created_at?: Date;
+  // updated_at?: Date;
 }
 
 export interface WorkSchedule {

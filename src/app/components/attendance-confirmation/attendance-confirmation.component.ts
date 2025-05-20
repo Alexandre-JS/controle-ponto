@@ -1,125 +1,48 @@
 import { Component, Input } from '@angular/core';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-attendance-confirmation',
+  standalone: true,
+  imports: [CommonModule, IonicModule],
   template: `
-    <ion-content class="confirmation-modal">
-      <div class="modal-container" [class.success-state]="showSuccess">
-        <ion-icon *ngIf="!showSuccess"
-                 [name]="isCheckOut ? 'log-out-outline' : 'log-in-outline'" 
-                 [color]="isCheckOut ? 'warning' : 'primary'">
-        </ion-icon>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Confirmar Registro</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div *ngIf="!showSuccess">
+        <h2>{{ employeeName }}</h2>
+        <p>{{ currentTime }}</p>
+        <p>{{ isCheckOut ? 'Saída' : 'Entrada' }}</p>
         
-        <ion-icon *ngIf="showSuccess" 
-                  name="checkmark-circle" 
-                  color="success" 
-                  class="success-icon">
-        </ion-icon>
-
-        <ng-container *ngIf="!showSuccess">
-          <h2>{{ isCheckOut ? 'Confirmação de Saída' : 'Confirmação de Entrada' }}</h2>
-          <p class="employee-name">{{ employeeName }}</p>
-          <p class="time">{{ currentTime }}</p>
-
-          <div class="confirmation-buttons">
-            <ion-button fill="outline" (click)="dismiss(false)">
-              <ion-icon name="close-outline" slot="start"></ion-icon>
-              Cancelar
-            </ion-button>
-            <ion-button (click)="confirm()" [color]="isCheckOut ? 'warning' : 'primary'">
-              <ion-icon [name]="isCheckOut ? 'log-out-outline' : 'log-in-outline'" slot="start"></ion-icon>
-              {{ isCheckOut ? 'Confirmar Saída' : 'Confirmar Entrada' }}
-            </ion-button>
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="showSuccess">
-          <h2>{{ successMessage }}</h2>
-          <p class="employee-name">{{ employeeName }}</p>
-          <div class="confirmation-buttons">
-            <ion-button (click)="dismiss(true)" color="success">
-              <ion-icon name="checkmark-outline" slot="start"></ion-icon>
-              OK
-            </ion-button>
-          </div>
-        </ng-container>
+        <ion-button expand="block" (click)="confirm()">Confirmar</ion-button>
+        <ion-button expand="block" color="medium" (click)="dismiss(false)">Cancelar</ion-button>
+      </div>
+      
+      <div *ngIf="showSuccess" class="success-message">
+        <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        <h2>{{ successMessage }}</h2>
+        <ion-button expand="block" (click)="dismiss(true)">OK</ion-button>
       </div>
     </ion-content>
   `,
   styles: [`
-    .confirmation-modal {
-      --background: rgba(var(--ion-color-light-rgb), 0.95);
-    }
-    .modal-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100%;
-      padding: 2rem;
+    .success-message {
       text-align: center;
-      animation: fadeInScale 0.3s ease-out;
-    }
-    @keyframes fadeInScale {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      padding: 2rem;
     }
     ion-icon {
       font-size: 64px;
-      margin-bottom: 1rem;
+      color: var(--ion-color-success);
     }
     h2 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--ion-color-dark);
+      margin: 1rem 0;
     }
-    .employee-name {
-      font-size: 20px;
-      color: var(--ion-color-primary);
-      margin-bottom: 0.5rem;
-    }
-    .time {
-      font-size: 32px;
-      font-weight: bold;
-      color: var(--ion-color-dark);
-      margin-bottom: 2rem;
-    }
-    .confirmation-buttons {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    ion-button {
-      min-width: 150px;
-    }
-    .success-state {
-      animation: successPulse 0.5s ease-out;
-    }
-    .success-icon {
-      font-size: 80px;
-      animation: scaleIn 0.5s ease-out;
-    }
-    @keyframes successPulse {
-      0% { transform: scale(0.95); opacity: 0; }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes scaleIn {
-      from { transform: scale(0); }
-      to { transform: scale(1); }
-    }
-  `],
-  standalone: true,
-  imports: [IonicModule, CommonModule]
+  `]
 })
 export class AttendanceConfirmationComponent {
   @Input() employeeName: string = '';
@@ -127,29 +50,16 @@ export class AttendanceConfirmationComponent {
   @Input() isCheckOut: boolean = false;
   
   showSuccess = false;
-  successMessage: string = '';
+  successMessage = '';
 
   constructor(private modalCtrl: ModalController) {}
 
-  private getSuccessMessage(): string {
-    const messages = this.isCheckOut ? [
-      'Até amanhã!',
-      'Tenha um bom descanso!',
-      'Bom retorno para casa!'
-    ] : [
-      'Bom trabalho!',
-      'Tenha um ótimo dia!',
-      'Bem-vindo(a)!'
-    ];
-    return messages[Math.floor(Math.random() * messages.length)];
-  }
-
-  async confirm() {
+  confirm() {
     this.showSuccess = true;
-    this.successMessage = this.getSuccessMessage();
+    this.successMessage = `Ponto ${this.isCheckOut ? 'de saída' : 'de entrada'} registrado com sucesso!`;
   }
 
-  dismiss(confirmed: boolean) {
-    this.modalCtrl.dismiss(confirmed);
+  async dismiss(result: boolean) {
+    await this.modalCtrl.dismiss(result);
   }
 }
