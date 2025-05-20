@@ -40,9 +40,7 @@
           <ion-label position="floating">Status</ion-label>
           <ion-select formControlName="status">
             <ion-select-option value="Presente">Presente</ion-select-option>
-            <ion-select-option value="Atrasado">Atrasado</ion-select-option>
             <ion-select-option value="Ausente">Ausente</ion-select-option>
-            <ion-select-option value="Justificado">Justificado</ion-select-option>
           </ion-select>
         </ion-item>
 
@@ -73,7 +71,7 @@
           </p>
           <p *ngIf="record.observations">Obs: {{ record.observations }}</p>
         </ion-label>
-        <ion-badge [color]="record.status === 'No horário' ? 'success' : 
+        <ion-badge [color]="record.status === 'Presente' ? 'success' : 
                            record.status === 'Atrasado' ? 'warning' : 
                            record.status === 'Em exercício' ? 'primary' :
                            record.status === 'Saída' ? 'tertiary' :

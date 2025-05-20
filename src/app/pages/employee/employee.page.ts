@@ -247,6 +247,31 @@ export class EmployeePage implements OnInit {
     }
   }
 
+  async openDetails(employee: Employee) {
+    const modal = await this.modalController.create({
+      component: EmployeeDetailsComponent,
+      componentProps: {
+        employee: employee
+      },
+      breakpoints: [0, 0.5, 0.8],
+      initialBreakpoint: 0.8
+    });
+
+    modal.onDidDismiss().then(async (result) => {
+      if (result.data) {
+        if (result.data.action === 'edit') {
+          // Handle edit action
+          this.editEmployee(result.data.employee);
+        } else if (result.data.action === 'delete') {
+          // Handle delete action
+          await this.deleteEmployee(result.data.employee);
+        }
+      }
+    });
+
+    return await modal.present();
+  }
+
   async editEmployee(employee: Employee) {
     this.employeeForm.patchValue(employee);
     // Adicionar lógica para mostrar formulário de edição

@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
-import { Employee, Attendance } from '../../models/employee.model';
+import { Attendance, AttendanceStatus, WorkStatus } from '../../models/employee.model';
 import { Chart } from 'chart.js/auto';
 import * as XLSX from 'xlsx';
+import { StatusService } from '../../services/status.service';
 
 interface MonthlyReport {
-  employeeId: string;
+  employeeId: number; // Changed from string to number
   employeeName: string;
   totalWorkDays: number;
   totalLateDays: number;
@@ -21,6 +22,29 @@ interface MonthlyReport {
     delayMinutes: number;
     absences: number;
   }[];
+}
+
+interface Department {
+  id: number;
+  name: string;
+}
+
+interface Employee {
+  id: string; // Changed to string to match API
+  name: string;
+  departmentId: number;
+  department?: string; // Added optional department field
+}
+
+interface DetailedReport {
+  employeeName: string;
+  departmentName: string;
+  internal_code: string;
+  check_in?: string;
+  check_out?: string;
+  totalDelay: number;
+  totalDelayHours: number;
+  attendanceRate: number;
 }
 
 @Component({
@@ -37,7 +61,7 @@ export class ReportPage implements OnInit, OnDestroy {
   employees: Employee[] = [];
   monthlyReports: MonthlyReport[] = [];
   isLoading = false;
-  selectedEmployee = '';
+  selectedEmployee = 0; // Changed from string to number
   attendanceRecords: Attendance[] = [];
   selectedDate: string;
   maxDate: string;
@@ -45,7 +69,31 @@ export class ReportPage implements OnInit, OnDestroy {
   private attendanceChartInstance!: Chart;
   timelineView: 'day' | 'week' = 'day';
 
-  constructor(private employeeService: EmployeeService) {
+  // Date filters
+  startDate: string;
+  endDate: string;
+  
+  // Department filter
+  departments: Department[] = [];
+  selectedDepartment: number = 0;
+  
+  // Employee filter
+  filteredEmployees: Employee[] = [];
+  selectedEmployeeId: number = 0;
+  
+  // Report data
+  detailedReports: DetailedReport[] = [];
+
+  // Pagination properties
+  itemsPerPage = 10;
+  currentPage = 1;
+  totalPages = 1;
+  paginatedReports: DetailedReport[] = [];
+
+  constructor(
+    private employeeService: EmployeeService,
+    private statusService: StatusService
+  ) {
     const now = new Date();
     this.selectedDate = now.toISOString();
     
@@ -57,38 +105,60 @@ export class ReportPage implements OnInit, OnDestroy {
     const max = new Date();
     max.setMonth(max.getMonth() + 1);
     this.maxDate = max.toISOString();
+
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    this.startDate = firstDayOfMonth.toISOString();
+    this.endDate = today.toISOString();
   }
 
   async ngOnInit() {
     await this.loadEmployees();
     this.generateReport();
+    this.loadDepartments();
   }
 
   async loadEmployees() {
     try {
-      this.employees = await this.employeeService.getEmployees();
+      const apiEmployees = await this.employeeService.getEmployees();
+      this.employees = apiEmployees.map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        departmentId: parseInt(emp.department) || 0, // Convert department to number
+        department: emp.department
+      }));
+      this.filteredEmployees = [...this.employees];
     } catch (error) {
       console.error('Erro ao carregar funcionários:', error);
     }
   }
 
-  async generateReport() {
+  async generateReport() { // Added async keyword
     try {
       this.isLoading = true;
       const attendanceRecords = await this.employeeService.getAttendanceByMonth(
         this.currentYear,
         this.currentMonth
       );
-
+      const schedule = await this.employeeService.getWorkSchedule();
+      
       this.monthlyReports = this.employees
-        .filter(emp => !this.selectedEmployee || emp.id === this.selectedEmployee)
+        .filter(emp => !this.selectedEmployee || emp.id === this.selectedEmployee.toString())
         .map(employee => {
-          const employeeRecords = attendanceRecords.filter(
-            record => record.employee_id === employee.id
-          );
+          const employeeRecords = attendanceRecords
+            .filter(record => record.employee_id === employee.id)
+            .map(record => ({
+              ...record,
+              status: this.statusService.determineAttendanceStatus(
+                record.check_in,
+                record.check_out,
+                schedule.start_time
+              )
+            }));
 
           return {
-            employeeId: employee.id!,
+            employeeId: parseInt(employee.id), // Convert string ID to number
             employeeName: employee.name,
             totalWorkDays: employeeRecords.length,
             totalLateDays: employeeRecords.filter(
@@ -129,7 +199,7 @@ export class ReportPage implements OnInit, OnDestroy {
     return `${hours}h${remainingMinutes}min`;
   }
 
-  getEmployeeName(id: string): string {
+  getEmployeeName(id: string): string { // Changed parameter type to string
     const employee = this.employees.find(emp => emp.id === id);
     return employee ? employee.name : 'Funcionário não encontrado';
   }
@@ -164,16 +234,8 @@ export class ReportPage implements OnInit, OnDestroy {
     return workDays;
   }
 
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'No horário': return 'success';
-      case 'Atrasado': return 'warning';
-      case 'Em exercício': return 'primary';
-      case 'Saída': return 'tertiary';
-      case 'Justificado': return 'secondary';
-      case 'Ausente': return 'danger';
-      default: return 'medium';
-    }
+  getStatusColor(status: AttendanceStatus | WorkStatus): string {
+    return this.statusService.getStatusColor(status);
   }
 
   getPresencePercentage(): number {
@@ -274,7 +336,7 @@ export class ReportPage implements OnInit, OnDestroy {
   }
 
   private getLast30Days(): string[] {
-    const dates = [];
+    const dates: string[] = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -288,5 +350,189 @@ export class ReportPage implements OnInit, OnDestroy {
     return this.getLast30Days().map(() => 
       Math.floor(Math.random() * 100)
     );
+  }
+
+  onDateChange() {
+    this.updateReport();
+  }
+
+  onFilterChange() {
+    this.updateFilteredEmployees();
+    this.updateReport();
+  }
+
+  private updateFilteredEmployees() {
+    if (this.selectedDepartment) {
+      this.filteredEmployees = this.employees.filter(
+        emp => emp.departmentId === this.selectedDepartment
+      );
+    } else {
+      this.filteredEmployees = [...this.employees];
+    }
+  }
+
+  private loadDepartments() {
+    // TODO: Replace with actual API call
+    this.departments = [
+      { id: 1, name: 'Administrativo' },
+      { id: 2, name: 'Operacional' },
+      { id: 3, name: 'Comercial' }
+    ];
+  }
+
+  private async updateReport() {
+    this.isLoading = true;
+    try {
+      const attendanceRecords = await this.employeeService.getAttendanceByDateRange(
+        this.startDate,
+        this.endDate
+      );
+
+      const employees = await this.employeeService.getEmployees();
+      const departments = await this.employeeService.getDepartments();
+
+      this.detailedReports = employees
+        .filter(emp => {
+          const empDeptId = parseInt(emp.department) || 0;
+          const matchesDepartment = !this.selectedDepartment || empDeptId === this.selectedDepartment;
+          const matchesEmployee = !this.selectedEmployee || emp.id === String(this.selectedEmployee);
+          return matchesDepartment && matchesEmployee;
+        })
+        .map(employee => {
+          const employeeAttendance = attendanceRecords.filter(
+            record => record.employee_id === employee.id
+          );
+
+          const totalDelay = this.calculateTotalDelay(employeeAttendance);
+          const totalDelayHours = Number((totalDelay / 60).toFixed(2)); // Convert minutes to hours
+          const attendanceRate = this.calculateAttendanceRate(employeeAttendance, this.startDate, this.endDate);
+
+          const department = departments.find(
+            d => d.id === parseInt(employee.department)
+          );
+
+          // Get the latest attendance record for check-in/check-out times
+          const latestAttendance = employeeAttendance[0] || {};
+
+          return {
+            employeeName: employee.name,
+            internal_code: employee.internal_code,
+            departmentName: department?.name || 'Sem departamento',
+            check_in: latestAttendance.check_in,
+            check_out: latestAttendance.check_out,
+            totalDelay: totalDelay,
+            totalDelayHours: totalDelayHours,
+            attendanceRate: attendanceRate
+          };
+        });
+
+      this.updatePagination();
+
+    } catch (error) {
+      console.error('Erro ao atualizar relatório:', error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private updatePagination() {
+    this.totalPages = Math.ceil(this.detailedReports.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.updatePaginatedReports();
+  }
+
+  private updatePaginatedReports() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedReports = this.detailedReports.slice(startIndex, endIndex);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedReports();
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedReports();
+    }
+  }
+
+  async exportDetailedReport() {
+    this.isLoading = true;
+    try {
+      const workbook = XLSX.utils.book_new();
+      
+      // Convert report data to Excel format
+      const excelData = this.detailedReports.map(report => ({
+        'Código': report.internal_code,
+        'Nome': report.employeeName,
+        'Total Atraso (Horas)': report.totalDelayHours
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório de Atrasos');
+      
+      // Generate filename with current date
+      const date = new Date();
+      const fileName = `relatorio_atrasos_${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}.xlsx`;
+      
+      // Save file
+      XLSX.writeFile(workbook, fileName);
+
+      console.log('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private calculateExpectedHours(startDate: string, endDate: string): number {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const workDays = this.countWorkDays(start, end);
+    return workDays * 8; // 8 hours per work day
+  }
+
+  private calculateWorkedHours(attendance: any[]): number {
+    return attendance.reduce((total, record) => {
+      if (record.check_in && record.check_out) {
+        const checkIn = new Date(record.check_in);
+        const checkOut = new Date(record.check_out);
+        const hours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
+        return total + hours;
+      }
+      return total;
+    }, 0);
+  }
+
+  private calculateTotalDelay(attendance: any[]): number {
+    return attendance.reduce((total, record) => {
+      return total + (record.late_minutes || 0);
+    }, 0);
+  }
+
+  private calculateAttendanceRate(attendance: any[], startDate: string, endDate: string): number {
+    const workDays = this.countWorkDays(new Date(startDate), new Date(endDate));
+    const daysPresent = new Set(attendance.map(record => record.date.split('T')[0])).size;
+    return Math.round((daysPresent / workDays) * 100);
+  }
+
+  private countWorkDays(start: Date, end: Date): number {
+    let count = 0;
+    const current = new Date(start);
+    while (current <= end) {
+      if (current.getDay() !== 0 && current.getDay() !== 6) { // not weekend
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
   }
 }

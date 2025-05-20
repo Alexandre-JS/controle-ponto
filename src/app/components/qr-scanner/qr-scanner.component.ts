@@ -10,9 +10,13 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="scanner-container">
       <zxing-scanner
-        [formats]="[BarcodeFormat.QR_CODE]"
-        (scanSuccess)="onScanSuccess($event)">
+        [formats]="allowedFormats"
+        (scanSuccess)="onScanSuccess($event)"
+        [enable]="scannerEnabled">
       </zxing-scanner>
+    </div>
+    <div *ngIf="lastResult" class="result-container">
+      <p>Código lido: {{lastResult}}</p>
     </div>
   `,
   styles: [`
@@ -21,17 +25,28 @@ import { CommonModule } from '@angular/common';
       height: 300px;
       margin: 0 auto;
     }
+    .result-container {
+      margin-top: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
   `]
 })
 export class QRScannerComponent {
-  protected BarcodeFormat = BarcodeFormat;
-
+  protected allowedFormats = [BarcodeFormat.QR_CODE];
+  protected scannerEnabled = true;
+  protected lastResult: string | null = null;
+  
   @Output() scanComplete: EventEmitter<string> = new EventEmitter<string>();
-
-  onScanSuccess(result: string) {
+  
+  onScanSuccess(resultString: string) {
     try {
-      const cleanResult = result.trim();
+      // Desabilitar temporariamente o scanner para evitar múltiplas leituras
+      this.scannerEnabled = false;
+      
+      const cleanResult = resultString.trim();
       console.log('QR Code escaneado:', cleanResult);
+      this.lastResult = cleanResult;
       
       // Validar se é um código válido AEM + 3 números
       if (cleanResult.match(/^AEM\d{3}$/)) {
@@ -39,9 +54,19 @@ export class QRScannerComponent {
         this.scanComplete.emit(cleanResult);
       } else {
         console.error('Formato inválido:', cleanResult);
+        // Reativar o scanner após um tempo para permitir nova leitura
+        setTimeout(() => this.scannerEnabled = true, 2000);
       }
     } catch (error) {
       console.error('Erro ao processar QR code:', error);
+      // Reativar o scanner em caso de erro
+      setTimeout(() => this.scannerEnabled = true, 2000);
     }
+  }
+  
+  // Método para reativar o scanner (pode ser chamado pelo componente pai)
+  resetScanner() {
+    this.lastResult = null;
+    this.scannerEnabled = true;
   }
 }

@@ -1,9 +1,13 @@
+export type WorkStatus = 'Em andamento' | 'Encerrado' | 'Não iniciado';
+
+export type AttendanceStatus = 'Presente' | 'Atrasado' | 'Ausente';
+
 export interface Employee {
   id: string;
   name: string;
+  position: string; 
   internal_code: string;
   department: string;
-  position: string;
   created_at: string;
   qr_code: string;
 }
@@ -21,15 +25,17 @@ export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr'; // matches data
 export interface Attendance {
   id?: string;
   employee_id: string;  // Changed from employeeId
-  date: Date;
-  check_in: string;    // Changed from timeIn
+  employee?: Employee; // Add this line for the relation
+  date: string;
+  check_in?: string;    // Changed from timeIn
   check_out?: string;
-  status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'No horário' | 'Ausente' | 'Justificado';
+//   status: 'Entrada' | 'Em exercício' | 'Saída' | 'Atrasado' | 'Presente' | 'Ausente' | 'Justificado';
   late_minutes?: number;
+  status: AttendanceStatus;  // Update to use standardized status
   observations?: string;
   auth_method: AuthMethod;
   created_at?: Date;
-  updated_at?: Date;
+  // updated_at?: Date;
 }
 
 export interface WorkSchedule {

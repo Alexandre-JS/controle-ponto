@@ -17,10 +17,29 @@ export class AppComponent implements OnInit {
   userAvatar: string | null = null;
   isDesktop = false;
 
+  public appPages = [
+    { title: 'Dashboard', url: '/admin/daily-attendance', icon: 'home' },
+    { title: 'Control de ponto', url: '/kiosk', icon: 'checkmark-circle' },
+    { title: 'Funcionários', url: '/admin/employee', icon: 'people' },
+    { title: 'Relatórios', url: '/admin/report', icon: 'bar-chart' },
+    { title: 'Configurações', url: '/admin/settings', icon: 'settings' },
+    { title: 'Sair', url: '/login', icon: 'log-out' }
+  ];
+
   constructor(
     private authService: AuthService,
     private router: Router
   ) {
+    // Initialize auth state on app start
+    this.authService.isAuthenticated().subscribe(isAuth => {
+      if (!isAuth) {
+        // Only redirect if not in login page
+        if (!window.location.href.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    });
+
     this.checkScreenSize();
   }
 
@@ -51,7 +70,12 @@ export class AppComponent implements OnInit {
   }
 
   async logout() {
-    await this.authService.logout();
+    try {
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   }
 
   async goToLogin() {

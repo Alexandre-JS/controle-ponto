@@ -1,14 +1,28 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Employee, Attendance, WorkSchedule, CreateEmployeeDto } from '../models/employee.model';
+import { Employee, Attendance, WorkSchedule, CreateEmployeeDto, AttendanceStatus } from '../models/employee.model';
 import { environment } from '../../environments/environment';
 import { SupabaseService } from './supabase.service';
+import { StatusService } from './status.service';
 
 export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr';
 
 export interface QRCodeData {
   internal_code: string;
   timestamp: number;
+}
+
+export interface Department {
+  id: number;
+  name: string;
+}
+
+export interface AttendanceRecord {
+  employee_id: string;
+  date: string;
+  check_in: string;
+  check_out: string;
+  late_minutes: number;
 }
 
 @Injectable({
@@ -20,13 +34,35 @@ export class EmployeeService {
   private readonly SCHEDULE_TABLE = 'work_schedule';
   private supabase: SupabaseClient;
 
-  constructor(private supabaseService: SupabaseService) {
+  constructor(
+    private supabaseService: SupabaseService,
+    private statusService: StatusService
+  ) {
     this.supabase = this.supabaseService.getClient();
   }
 
-  private generateEmployeeCode(): string {
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `AEM${randomNumber}`;
+  // Novo método unificado para geração de códigos únicos
+  private async generateUniqueInternalCode(): Promise<string> {
+    let isUnique = false;
+    let internal_code = '';
+
+    // Tentar até encontrar um código único
+    while (!isUnique) {
+      // Gerar um código aleatório
+      const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      internal_code = `AEM${randomNumber}`;
+
+      // Verificar se já existe no banco de dados
+      const { data } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .select('id')
+        .eq('internal_code', internal_code);
+
+      // Se não encontrou nenhum registro com este código, é único
+      isUnique = !data || data.length === 0;
+    }
+
+    return internal_code;
   }
 
   private generateQRCodeData(employee: Partial<Employee>): string {
@@ -35,20 +71,18 @@ export class EmployeeService {
   }
 
   async createEmployee(employeeData: CreateEmployeeDto) {
-    try {
-      console.log('Creating employee:', employeeData);
-      const internal_code = await this.generateInternalCode();
-      
-      const { data, error } = await this.supabase
-        .from(this.EMPLOYEES_TABLE)
-        .insert([{ 
-          ...employeeData,
-          internal_code,
-          qr_code: internal_code,
-          created_at: new Date().toISOString()
-        }])
-        .select()
-        .single();
+    
+    const internal_code = await this.generateUniqueInternalCode();
+
+    const { data, error } = await this.supabase
+      .from('employees')
+      .insert([{
+        ...employeeData,
+        internal_code,
+        qr_code: internal_code // Usar o código interno diretamente como QR code
+      }])
+      .select()
+      .single();
 
       if (error) {
         console.error('Error creating employee:', error);
@@ -63,18 +97,13 @@ export class EmployeeService {
     }
   }
 
-  private async generateInternalCode(): Promise<string> {
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `AEM${randomNumber}`;
-  }
-
   async findByQRCode(qrCode: string) {
     const { data, error } = await this.supabase
       .from('employees')
       .select('*')
       .eq('qr_code', qrCode)
       .single();
-      
+
     if (error) throw error;
     return data;
   }
@@ -131,38 +160,52 @@ export class EmployeeService {
     }
   }
 
-  async registerAttendance(employeeCode: string, authMethod: AuthMethod) {
+  async registerAttendance(employeeCode: string, method: AuthMethod): Promise<void> {
     try {
       const employee = await this.findEmployeeByCode(employeeCode);
-      if (!employee) {
-        throw new Error('Funcionário não encontrado');
-      }
+      if (!employee) throw new Error('Funcionário não encontrado');
 
       const now = new Date();
       const today = now.toISOString().split('T')[0];
-      const currentTime = now.toTimeString().substring(0, 5);
+      const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
 
-      // Buscar registros do dia
-      const { data: existingAttendances } = await this.supabase
-        .from(this.ATTENDANCE_TABLE)
+      // Check existing attendance
+      const { data: existingRecord } = await this.supabase
+        .from('attendance')
         .select('*')
         .eq('employee_id', employee.id)
         .eq('date', today)
-        .order('created_at', { ascending: false });
+        .single();
 
-      const lastRecord = existingAttendances?.[0];
+      if (!existingRecord) {
+        // Create new record
+        const { error } = await this.supabase
+          .from('attendance')
+          .insert({
+            employee_id: employee.id,
+            date: today,
+            check_in: currentTime,
+            late_minutes: await this.calculateLateMinutes(currentTime),
+            status: 'Presente',
+            auth_method: method,
+            created_at: now.toISOString(),
+          
+          });
 
-      // Lógica de entrada/saída
-      if (!lastRecord) {
-        // Primeira entrada do dia
-        return await this.registerCheckIn(employee, today, currentTime, authMethod);
-      } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        // Saída após 12h
-        return await this.registerCheckOut(lastRecord, currentTime, authMethod);
-      } else if (lastRecord.check_out) {
-        throw new Error('Já finalizou o expediente hoje');
+        if (error) throw error;
+      } else if (!existingRecord.check_out) {
+        // Update with check-out
+        const { error } = await this.supabase
+          .from('attendance')
+          .update({
+            check_out: currentTime,
+            // updated_at: now.toISOString()
+          })
+          .eq('id', existingRecord.id);
+
+        if (error) throw error;
       } else {
-        throw new Error('Muito cedo para registrar saída');
+        throw new Error('Registro de ponto já finalizado para hoje');
       }
     } catch (error) {
       console.error('Erro no registro:', error);
@@ -170,108 +213,101 @@ export class EmployeeService {
     }
   }
 
+  private async calculateLateMinutes(checkInTime: string): Promise<number> {
+    const schedule = await this.getWorkSchedule();
+    const [checkInHour, checkInMin] = checkInTime.split(':').map(Number);
+    const [startHour, startMin] = schedule.start_time.split(':').map(Number);
+    
+    const checkInMinutes = checkInHour * 60 + checkInMin;
+    const startMinutes = startHour * 60 + startMin;
+    
+    return Math.max(0, checkInMinutes - startMinutes);
+  }
+
   async registerAttendanceByQRCode(qrData: string) {
+  try {
+    console.log('Processando QR code:', qrData);
+    
+    // Validate QR code format
+    if (!qrData.match(/^AEM\d{3}$/)) {
+      throw new Error('QR Code inválido');
+    }
+
+    const employee = await this.findEmployeeByCode(qrData);
+    if (!employee) {
+      throw new Error('Funcionário não encontrado');
+    }
+
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().substring(0, 5);
+
+    // Verificar registros existentes
+    const { data: existingAttendances } = await this.supabase
+      .from(this.ATTENDANCE_TABLE)
+      .select('*')
+      .eq('employee_id', employee.id)
+      .eq('date', today)
+      .order('created_at', { ascending: false });
+
+    const lastRecord = existingAttendances?.[0];
+
+    // Use a mesma lógica do método registerAttendance
+    if (!lastRecord) {
+      return await this.registerCheckIn(employee, today, currentTime, 'qr');
+    } else if (!lastRecord.check_out && now.getHours() >= 12) {
+      return await this.registerCheckOut(lastRecord, currentTime, 'qr');
+    } else if (lastRecord.check_out) {
+      throw new Error('Já finalizou o expediente hoje');
+    } else {
+      throw new Error('Muito cedo para registrar saída');
+    }
+  } catch (error) {
+    console.error('Erro no registro por QR code:', error);
+    throw error;
+  }
+}
+
+  async updateEmployeeStatus(employeeId: string, status: AttendanceStatus) {
     try {
-      console.log('Processando QR code:', qrData);
-      
-      // Validate QR code format
-      if (!qrData.match(/^AEM\d{3}$/)) {
-        throw new Error('QR Code inválido');
-      }
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .update({
+          status: status,
+          last_attendance_status: status,
+          last_attendance_date: new Date().toISOString()
+        })
+        .eq('id', employeeId)
+        .single();
 
-      const employee = await this.findEmployeeByCode(qrData);
-      if (!employee) {
-        throw new Error('Funcionário não encontrado');
-      }
-
-      // Get current date/time
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const currentTime = now.toTimeString().substring(0, 5);
-
-      // Check existing attendance
-      const { data: existingAttendances, error: fetchError } = await this.supabase
-        .from(this.ATTENDANCE_TABLE)
-        .select('*')
-        .eq('employee_id', employee.id)
-        .eq('date', today)
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        console.error('Erro ao buscar registros:', fetchError);
-        throw new Error('Erro ao verificar registros existentes');
-      }
-
-      const lastRecord = existingAttendances?.[0];
-
-      // Handle check-in/check-out
-      if (!lastRecord) {
-        // First entry of the day
-        const attendanceData = {
-          employee_id: employee.id,
-          date: today,
-          check_in: currentTime,
-          status: 'No horário',
-          late_minutes: 0,
-          auth_method: 'qr' as AuthMethod,
-          created_at: now.toISOString()
-        };
-
-        const { data, error } = await this.supabase
-          .from(this.ATTENDANCE_TABLE)
-          .insert([attendanceData])
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Erro na inserção:', error);
-          throw new Error('Erro ao registrar entrada');
-        }
-
-        return data;
-      } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        // Check-out after 12h
-        const { data, error } = await this.supabase
-          .from(this.ATTENDANCE_TABLE)
-          .update({
-            check_out: currentTime,
-            auth_method: 'qr',
-            updated_at: now.toISOString()
-          })
-          .eq('id', lastRecord.id)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Erro na atualização:', error);
-          throw new Error('Erro ao registrar saída');
-        }
-
-        return data;
-      } else if (lastRecord.check_out) {
-        throw new Error('Já finalizou o expediente hoje');
-      } else {
-        throw new Error('Muito cedo para registrar saída');
-      }
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Erro no registro por QR code:', error);
+      console.error('Error updating employee status:', error);
       throw error;
     }
+  }
+
+  // private determineStatus(lateMinutes: number): AttendanceStatus {
+  //   return 'Presente'; // Simplified to just present when they check in
+  // }
+
+  private determineStatus(lateMinutes: number): AttendanceStatus {
+    return 'Presente'; // Always return 'Presente' when they check in
   }
 
   private async registerCheckIn(employee: Employee, date: string, time: string, authMethod: AuthMethod) {
     const workSchedule = await this.getWorkSchedule();
     const lateMinutes = this.calculateLateMinutes(time, workSchedule.start_time);
-    
     console.log('Registrando entrada:', { employee, authMethod });
-    
+
     const attendanceData = {
       employee_id: employee.id,
       date: date,
       check_in: time,
-      status: lateMinutes > 0 ? 'Atrasado' : 'No horário',
+      status: lateMinutes > 0 ? 'Atrasado' : 'Presente', // Alterado de 'Presente' para 'Presente'
       late_minutes: lateMinutes,
-      auth_method: authMethod, // This will now be properly typed
+      auth_method: authMethod,
       created_at: new Date().toISOString()
     };
 
@@ -284,7 +320,9 @@ export class EmployeeService {
       console.error('Erro ao registrar entrada:', error);
       throw new Error('Erro ao registrar entrada');
     }
-    
+
+   //  await this.updateEmployeeStatus(employee.id, 'Presente');
+
     return data[0];
   }
 
@@ -294,17 +332,19 @@ export class EmployeeService {
       .update({
         check_out: time,
         auth_method: authMethod,
-        updated_at: new Date().toISOString()
+        // updated_at: new Date().toISOString()
       })
       .eq('id', record.id)
       .select();
 
     if (error) throw error;
+
+    await this.updateEmployeeStatus(record.employee_id, 'Ausente');
+
     return data[0];
   }
 
   async getAttendanceByMonth(year: number, month: number) {
-    console.log(`Buscando presenças para ${month}/${year}`);
     try {
       const startDate = new Date(year, month - 1, 1).toISOString();
       const endDate = new Date(year, month, 0).toISOString();
@@ -313,23 +353,17 @@ export class EmployeeService {
         .from(this.ATTENDANCE_TABLE)
         .select(`
           *,
-          employees (name)
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
         `)
         .gte('date', startDate)
         .lte('date', endDate);
 
-      if (error) {
-        console.error('Erro ao buscar presenças:', error);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('Nenhuma presença encontrada para o período');
-        return [];
-      }
-
-      console.log('Presenças encontradas:', data);
-      return data;
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Erro ao buscar presenças:', error);
       return [];
@@ -397,34 +431,34 @@ export class EmployeeService {
     }
   }
 
-  private calculateLateMinutes(timeIn: string, start_time: string): number {
-    if (!timeIn || !start_time) {
-      console.error('Invalid time parameters:', { timeIn, start_time });
-      return 0;
-    }
+  // private calculateLateMinutes(timeIn: string, start_time: string): number {
+  //   if (!timeIn || !start_time) {
+  //     console.error('Invalid time parameters:', { timeIn, start_time });
+  //     return 0;
+  //   }
 
-    try {
-      const [inHour, inMinute] = timeIn.split(':').map(Number);
-      const [startHour, startMinute] = start_time.split(':').map(Number);
+  //   try {
+  //     const [inHour, inMinute] = timeIn.split(':').map(Number);
+  //     const [startHour, startMinute] = start_time.split(':').map(Number);
 
-      if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
-        console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
-        return 0;
-      }
+  //     if (isNaN(inHour) || isNaN(inMinute) || isNaN(startHour) || isNaN(startMinute)) {
+  //       console.error('Invalid time format:', { inHour, inMinute, startHour, startMinute });
+  //       return 0;
+  //     }
 
-      const totalInMinutes = inHour * 60 + inMinute;
-      const totalStartMinutes = startHour * 60 + startMinute;
+  //     const totalInMinutes = inHour * 60 + inMinute;
+  //     const totalStartMinutes = startHour * 60 + startMinute;
 
-      return Math.max(0, totalInMinutes - totalStartMinutes);
-    } catch (error) {
-      console.error('Error calculating late minutes:', error);
-      return 0;
-    }
-  }
+  //     return Math.max(0, totalInMinutes - totalStartMinutes);
+  //   } catch (error) {
+  //     console.error('Error calculating late minutes:', error);
+  //     return 0;
+  //   }
+  // }
 
   private determineStatus(lateMinutes: number): Attendance['status'] {
-    return lateMinutes > 0 ? 'Atrasado' : 'No horário';
-  }
+  return lateMinutes > 0 ? 'Atrasado' : 'Presente';
+}
 
   async checkDuplicateName(name: string): Promise<boolean> {
     const { data, error } = await this.supabase
@@ -485,6 +519,44 @@ export class EmployeeService {
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
       throw error;
+    }
+  }
+
+  async getAttendanceByDateRange(startDate: string, endDate: string): Promise<AttendanceRecord[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select(`
+          *,
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
+        `)
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar presenças:', error);
+      return [];
+    }
+  }
+
+  async getDepartments(): Promise<Department[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('departments')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar departamentos:', error);
+      return [];
     }
   }
 }
