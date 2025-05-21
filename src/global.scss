@@ -152,13 +152,50 @@
 }
 
 // Modal styles
-// .success-modal, .confirm-modal {
-//   @extend .app-modal;
+.success-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 400px;
+  --border-radius: var(--app-border-radius);
   
-//   .modal-content {
-//     padding: var(--app-padding);
-//   }
-// }
+  &::part(content) {
+    border-radius: var(--app-border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .success-icon {
+    ion-icon {
+      font-size: 64px;
+      color: var(--app-success);
+      animation: scaleIn 0.5s ease-out;
+    }
+  }
+
+  .title {
+    margin: 16px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--app-dark);
+  }
+
+  .content {
+    margin: 16px 0;
+    font-size: 16px;
+    color: var(--app-medium);
+  }
+
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
 
 // Form styles
 ion-item.app-form-item {
@@ -183,5 +220,43 @@ ion-item.app-form-item {
 
   .app-card {
     background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+}
+
+.welcome-toast {
+  --background: var(--app-success);
+  --color: var(--app-light);
+  --border-radius: var(--app-border-radius);
+  --button-color: var(--app-light);
+  font-weight: 500;
+  text-align: center;
+  
+  &::part(message) {
+    padding: 10px;
+  }
+}
+
+.welcome-modal {
+  --width: 100%;
+  --height: 100%;
+  --background: transparent;
+  
+  &::part(content) {
+    --background: transparent;
+  }
+
+  ion-content {
+    --background: transparent;
+  }
+
+  .modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
