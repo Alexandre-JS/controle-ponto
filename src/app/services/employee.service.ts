@@ -233,12 +233,12 @@ export class EmployeeService {
       
       // Validate QR code format
       if (!qrData.match(/^AEM\d{3}$/)) {
-        throw new Error('QR Code inválido');
+        throw new Error('Código QR inválido. Use o código fornecido pelo sistema.');
       }
 
       const employee = await this.findEmployeeByCode(qrData);
       if (!employee) {
-        throw new Error('Funcionário não encontrado');
+        throw new Error(`Funcionário não encontrado com o código ${qrData}`);
       }
 
       const now = new Date();
@@ -255,19 +255,31 @@ export class EmployeeService {
 
       const lastRecord = existingAttendances?.[0];
 
-      // Use a mesma lógica do método registerAttendance
+      // Melhorar mensagens de feedback
       if (!lastRecord) {
-        return await this.registerCheckIn(employee, today, currentTime, 'qr');
+        const result = await this.registerCheckIn(employee, today, currentTime, 'qr');
+        await this.updateEmployeeStatus(employee.id, 'Presente');
+        return {
+          success: true,
+          message: `Bom dia ${employee.name}! Entrada registrada com sucesso às ${currentTime}.`,
+          data: result
+        };
       } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        return await this.registerCheckOut(lastRecord, currentTime, 'qr');
+        const result = await this.registerCheckOut(lastRecord, currentTime, 'qr');
+        await this.updateEmployeeStatus(employee.id, 'Ausente');
+        return {
+          success: true,
+          message: `Até amanhã ${employee.name}! Saída registrada com sucesso às ${currentTime}.`,
+          data: result
+        };
       } else if (lastRecord.check_out) {
-        throw new Error('Já finalizou o expediente hoje');
+        throw new Error(`${employee.name}, você já finalizou seu expediente hoje.`);
       } else {
-        throw new Error('Muito cedo para registrar saída');
+        throw new Error(`${employee.name}, ainda é muito cedo para registrar saída.`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro no registro por QR code:', error);
-      throw error;
+      throw new Error(error.message || 'Erro ao processar registro de ponto');
     }
   }
 
@@ -275,12 +287,9 @@ export class EmployeeService {
     try {
       const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
-        .update({
-          status: status,
-          last_attendance_status: status,
-          last_attendance_date: new Date().toISOString()
-        })
+        .update({ status }) // Simplify to only update status
         .eq('id', employeeId)
+        .select()
         .single();
 
       if (error) throw error;

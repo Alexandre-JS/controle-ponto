@@ -48,6 +48,7 @@ export class AttendanceConfirmationComponent {
   @Input() employeeName: string = '';
   @Input() currentTime: string = '';
   @Input() isCheckOut: boolean = false;
+  @Input() successResponse: any; // Adicionar novo input para receber a resposta
   
   showSuccess = false;
   successMessage = '';
@@ -56,7 +57,11 @@ export class AttendanceConfirmationComponent {
 
   confirm() {
     this.showSuccess = true;
-    this.successMessage = `Ponto ${this.isCheckOut ? 'de saída' : 'de entrada'} registrado com sucesso!`;
+    if (this.successResponse?.message) {
+      this.successMessage = this.successResponse.message;
+    } else {
+      this.successMessage = `Ponto ${this.isCheckOut ? 'de saída' : 'de entrada'} registrado com sucesso!`;
+    }
   }
 
   async dismiss(result: boolean) {

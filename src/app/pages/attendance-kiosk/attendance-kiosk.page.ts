@@ -309,14 +309,27 @@ export class AttendanceKioskPage implements OnInit {
     this.hideQRScanner();
     try {
       this.isLoading = true;
-      await this.employeeService.registerAttendanceByQRCode(qrData);
-      this.showToast('Ponto registrado com sucesso!', 'success');
+      const result = await this.employeeService.registerAttendanceByQRCode(qrData);
+      
+      // Usar a mensagem personalizada retornada do serviço
+      this.showToast(result.message, result.success ? 'success' : 'warning');
+      
+      if (result.success) {
+        // Tocar um som de sucesso ou realizar outras ações necessárias
+        this.playSuccessSound();
+      }
     } catch (error: any) {
       console.error('QR Code error:', error);
       this.showToast(error.message || 'QR Code inválido', 'danger');
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private playSuccessSound() {
+    // Opcional: Implementar som de sucesso
+    const audio = new Audio('assets/sounds/success.mp3');
+    audio.play().catch(() => console.log('Som não pôde ser reproduzido'));
   }
 }
 
