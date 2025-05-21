@@ -1,18 +1,69 @@
 .login-container {
-  max-width: 400px;
-  margin: 2rem auto;
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: var(--app-light);
+
   ion-card {
-    margin: 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
+    width: 100%;
+    max-width: 400px;
+    border-radius: var(--app-border-radius);
+    box-shadow: var(--app-box-shadow);
 
-  ion-card-header {
-    text-align: center;
-    background: var(--ion-color-light);
-  }
+    ion-card-header {
+      background-color: var(--app-primary);
+      border-top-left-radius: var(--app-border-radius);
+      border-top-right-radius: var(--app-border-radius);
+      padding: var(--app-card-padding);
 
-  ion-button {
-    margin-top: 1rem;
+      ion-card-title {
+        color: var(--app-light);
+        font-size: var(--app-font-size-xlarge);
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+
+    ion-card-content {
+      padding: var(--app-card-padding);
+
+      ion-item {
+        --background: transparent;
+        --border-color: var(--app-medium);
+        margin-bottom: var(--app-margin);
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        ion-label {
+          color: var(--app-dark);
+        }
+
+        ion-input {
+          --padding-start: 0;
+          color: var(--app-dark);
+        }
+      }
+
+      ion-button {
+        margin-top: calc(var(--app-margin) * 2);
+        --background: var(--app-secondary);
+        --color: var(--app-light);
+        height: var(--app-button-height);
+        font-weight: bold;
+        text-transform: uppercase;
+        
+        &:hover {
+          --background: var(--app-primary);
+        }
+
+        &[disabled] {
+          --background: var(--app-medium);
+          opacity: 0.7;
+        }
+      }
+    }
   }
 }

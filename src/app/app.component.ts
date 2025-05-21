@@ -32,6 +32,7 @@ export class AppComponent implements OnInit {
   ) {
     // Initialize auth state on app start
     this.authService.isAuthenticated().subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
       if (!isAuth) {
         // Only redirect if not in login page
         if (!window.location.href.includes('/login')) {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -41,11 +41,24 @@ export class AuthService {
         return null;
       }
 
+      // Verifica se é um erro de LockManager mas o login foi bem-sucedido
+      const session = await this.supabaseService.getClient().auth.getSession();
+      if (session.data.session) {
+        const isAuth = await this.isAuthenticated().pipe(take(1)).toPromise();
+        if (isAuth) {
+          console.log('Login successful despite LockManager error');
+          localStorage.setItem(this.AUTH_KEY, JSON.stringify(session.data.session));
+          this.authStateSubject.next(true);
+          await this.router.navigate(['/admin/employee']);
+          return null;
+        }
+      }
+
       throw new Error('Erro ao fazer login');
     } catch (error: any) {
       this.authStateSubject.next(false);
       console.error('Erro login:', error);
-      return error.message || 'Erro ao fazer login';
+      throw error;
     }
   }
 

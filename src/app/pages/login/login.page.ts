@@ -40,14 +40,24 @@ export class LoginPage implements OnInit {
     if (this.loginForm.valid) {
       try {
         this.isLoading = true;
+        
         await this.authService.login(
           this.loginForm.value.email,
           this.loginForm.value.password
         );
+        
         await this.router.navigate(['/admin/daily-attendance'], { replaceUrl: true });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Login error:', error);
-        this.showToast('Email ou senha inválidos', 'danger'); // Added color parameter
+        
+        // Tratamento específico para diferentes tipos de erro
+        if (error.message?.includes('Invalid login credentials')) {
+          this.showToast('Email ou senha incorretos', 'danger');
+        } else if (error.message?.includes('Email not confirmed')) {
+          this.showToast('Por favor, confirme seu email antes de fazer login', 'warning');
+        } else {
+          this.showToast(error.message || 'Erro ao fazer login', 'danger');
+        }
       } finally {
         this.isLoading = false;
       }
