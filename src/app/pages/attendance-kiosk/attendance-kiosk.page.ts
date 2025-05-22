@@ -66,20 +66,6 @@ import { AuthMethod } from '../../services/employee.service';
           <div class="alternative-methods">
             <ion-button expand="block" 
                       class="kiosk-button" 
-                      (click)="markAttendance('face')">
-              <ion-icon name="camera-outline" slot="start" size="large"></ion-icon>
-              FACE ID
-            </ion-button>
-
-            <ion-button expand="block" 
-                      class="kiosk-button" 
-                      (click)="markAttendance('fingerprint')">
-              <ion-icon name="finger-print-outline" slot="start" size="large"></ion-icon>
-              DIGITAL
-            </ion-button>
-
-            <ion-button expand="block" 
-                      class="kiosk-button" 
                       (click)="showQRScanner()">
               <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
               ESCANEAR QR CODE
@@ -109,123 +95,130 @@ import { AuthMethod } from '../../services/employee.service';
       </ion-modal>
     </ion-content>
   `,
-  // styles: [`
-  //   .attendance-kiosk {
-  //     --background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
-  //     min-height: 100vh;
-  //     display: flex;
-  //     align-items: center;
-  //     justify-content: center;
-  //     padding: var(--app-padding);
-  //   }
+  styles: [`
+    .attendance-kiosk {
+      --background: var(--app-neutral-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--app-padding);
+    }
 
-  //   .kiosk-container {
-  //     width: 100%;
-  //     max-width: 500px;
-  //     margin: 0 auto;
-  //     padding: calc(var(--app-padding) * 2);
-  //     background: var(--app-light);
-  //     border-radius: var(--app-border-radius);
-  //     box-shadow: var(--app-box-shadow);
-  //   }
+    .kiosk-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: calc(var(--app-padding) * 2);
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
+    }
 
-  //   h1, h2 {
-  //     font-weight: bold;
-  //     color: var(--app-primary);
-  //     text-align: center;
-  //     margin: 0;
-  //   }
+    h1, h2 {
+      font-weight: bold;
+      color: var(--app-primary);
+      text-align: center;
+      margin: 0;
+    }
 
-  //   h1 {
-  //     font-size: var(--app-font-size-xlarge);
-  //     margin-bottom: 0.5rem;
-  //   }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 0.5rem;
+    }
 
-  //   h2 {
-  //     font-size: var(--app-font-size-large);
-  //     color: var(--app-secondary);
-  //     margin-bottom: 2rem;
-  //   }
+    h2 {
+      font-size: 18px;
+      color: var(--app-secondary);
+      margin-bottom: 2rem;
+    }
 
-  //   .kiosk-buttons {
-  //     margin-top: calc(var(--app-margin) * 2);
-  //   }
+    .kiosk-buttons {
+      margin-top: 24px;
+    }
 
-  //   .code-input {
-  //     margin-bottom: calc(var(--app-margin) * 1.5);
-  //     --background: rgba(var(--app-medium-rgb), 0.1);
-  //     border-radius: var(--app-border-radius);
-  //     --highlight-color: var(--app-primary);
+    .code-input {
+      margin-bottom: 16px;
+      --background: rgba(var(--app-medium-rgb), 0.1);
+      border-radius: 12px;
+      --highlight-color: var(--app-primary);
 
-  //     ion-input {
-  //       --padding-start: var(--app-padding);
-  //       --padding-end: var(--app-padding);
-  //       font-size: var(--app-font-size-large);
-  //     }
+      ion-input {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        font-size: 18px;
+      }
 
-  //     ion-note {
-  //       padding: 0 var(--app-padding);
-  //       &[color="medium"] {
-  //         color: var(--app-medium);
-  //       }
-  //       &[slot="error"] {
-  //         color: var(--app-danger);
-  //       }
-  //     }
-  //   }
+      ion-note {
+        padding: 0 16px;
+        &[color="medium"] {
+          color: var(--app-medium);
+        }
+        &[slot="error"] {
+          color: var(--app-danger);
+        }
+      }
+    }
 
-  //   .kiosk-button {
-  //     margin: calc(var(--app-margin) * 0.5) 0;
-  //     height: var(--app-button-height);
-  //     --border-radius: var(--app-border-radius);
-  //     --background: var(--app-primary);
-  //     --color: var(--app-light);
-  //     font-size: var(--app-font-size-base);
-  //     font-weight: 500;
-  //     text-transform: uppercase;
-  //     transition: var(--app-transition);
+    .kiosk-button {
+      margin: 8px 0;
+      height: 48px;
+      --border-radius: 12px;
+      --background: var(--app-primary);
+      --color: white;
+      font-size: 16px;
+      font-weight: 500;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
 
-  //     &:hover {
-  //       --background: var(--app-secondary);
-  //       transform: translateY(-2px);
-  //     }
+      &:hover {
+        --background: var(--app-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+      }
 
-  //     ion-icon {
-  //       font-size: 1.5em;
-  //       margin-right: var(--app-padding);
-  //     }
-  //   }
+      ion-icon {
+        font-size: 24px;
+        margin-right: 12px;
+      }
+    }
 
-  //   .alternative-methods {
-  //     margin-top: calc(var(--app-margin) * 2);
-  //     padding-top: calc(var(--app-margin) * 2);
-  //     border-top: 2px solid rgba(var(--app-medium-rgb), 0.1);
+    .alternative-methods {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 2px solid rgba(var(--app-medium-rgb), 0.1);
 
-  //     .kiosk-button {
-  //       --background: var(--app-secondary);
-  //       &:hover {
-  //         --background: var(--app-accent);
-  //       }
-  //     }
-  //   }
+      .kiosk-button {
+        --background: var(--app-secondary);
+        &:hover {
+          --background: var(--app-accent);
+          box-shadow: 0 4px 8px rgba(var(--app-secondary-rgb), 0.3);
+        }
+      }
+    }
 
-  //   ion-modal {
-  //     --height: auto;
-  //     --width: 90%;
-  //     --max-width: 500px;
-  //     --border-radius: var(--app-modal-border-radius);
-  //     --box-shadow: var(--app-box-shadow);
+    ion-modal {
+      --height: auto;
+      --width: 90%;
+      --max-width: 500px;
+      --border-radius: 16px;
+      --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 
-  //     ion-header ion-toolbar {
-  //       --background: var(--app-primary);
-  //       --color: var(--app-light);
-  //     }
+      ion-header ion-toolbar {
+        --background: var(--app-primary);
+        --color: white;
+      }
 
-  //     ion-content {
-  //       --background: var(--app-light);
-  //     }
-  //   }
-  // `]
+      ion-content {
+        --background: white;
+      }
+    }
+
+    ion-toolbar {
+      --background: var(--app-primary);
+      --color: var(--app-primary-contrast);
+    }
+  `]
 })
 export class AttendanceKioskPage implements OnInit {
   isAuthenticated = false;
