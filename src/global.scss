@@ -430,7 +430,7 @@ ion-toolbar {
 .clock {
   font-size: 22px;
   font-weight: 700;
-  color: var(--app-primary-contrast);
+  color: #e4dbc9;
 }
 
 .seconds {
@@ -713,7 +713,7 @@ ion-toolbar {
 
 /* FAB Button */
 .fab-button {
-  --background: var(--app-accent);
+  --background: #50af4d;
   --background-activated: var(--app-accent-shade);
   --background-hover: var(--app-accent-tint);
   --box-shadow: 0 4px 16px rgba(var(--app-accent-rgb), 0.4);

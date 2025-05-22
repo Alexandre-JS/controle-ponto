@@ -32,6 +32,12 @@ export class SupabaseService {
           persistSession: true,
           autoRefreshToken: true,
           storageKey: 'app-hoje.auth.token'
+        },
+        global: {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         }
       }
     );
