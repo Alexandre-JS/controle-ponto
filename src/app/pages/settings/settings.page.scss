@@ -1,3 +1,67 @@
-:host {
-  display: block;
+.custom-background {
+  --background: var(--ion-color-light);
+}
+
+.settings-card {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  color: var(--ion-color-dark);
+  font-size: 1.5rem;
+  font-weight: 600;
+
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+.custom-list {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.custom-item {
+  --background: var(--ion-color-light);
+  --border-color: var(--ion-color-medium);
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  ion-label {
+    color: var(--ion-color-dark);
+    font-weight: 500;
+  }
+}
+
+.custom-datetime,
+.custom-select {
+  --padding-start: 0;
+  margin-top: 8px;
+}
+
+.save-button {
+  margin-top: 32px;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.2);
+  font-weight: 600;
+  height: 48px;
+  
+  &:hover {
+    --box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
 }

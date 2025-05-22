@@ -1,60 +1,167 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
     <ion-title>Cadastro de Funcionários</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
-    <ion-list>
-      <ion-item>
-        <ion-label position="floating">Nome Completo</ion-label>
-        <ion-input formControlName="name" type="text"></ion-input>
-        <ion-note slot="error" *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched">
-          {{ getErrorMessage('name') }}
-        </ion-note>
+<ion-content class="ion-padding custom-background">
+  <div class="form-card">
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+      <h2 class="form-title">
+        <ion-icon name="person-add-outline" color="primary"></ion-icon>
+        Novo Funcionário
+      </h2>
+      
+      <ion-list class="custom-list">
+        <ion-item class="custom-item">
+          <ion-label position="floating">Nome Completo</ion-label>
+          <ion-input formControlName="name" type="text" class="custom-input"></ion-input>
+          <ion-note slot="error" *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched">
+            {{ getErrorMessage('name') }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item class="custom-item">
+          <ion-label position="floating">Cargo</ion-label>
+          <ion-input type="text" formControlName="position" class="custom-input"></ion-input>
+        </ion-item>
+
+        <ion-item class="custom-item">
+          <ion-label position="floating">Departamento</ion-label>
+          <ion-select formControlName="department" class="custom-select">
+            <ion-select-option *ngFor="let dept of departments" [value]="dept">
+              {{ dept }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <ion-button expand="block" type="submit" [disabled]="!employeeForm.valid || isLoading" class="submit-button">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Cadastrar
+      </ion-button>
+    </form>
+  </div>
+
+  <div class="employees-card">
+    <h2 class="section-title">
+      <ion-icon name="people-outline" color="primary"></ion-icon>
+      Funcionários Cadastrados
+    </h2>
+
+    <ion-list class="employee-list">
+      <ion-item *ngFor="let employee of employees" button detail="false" (click)="openDetails(employee)" class="employee-item">
+        <ion-avatar slot="start">
+          <ion-icon name="person-circle-outline" class="avatar-icon"></ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ employee.name }}</h2>
+          <p>{{ employee.position }} - {{ employee.department }}</p>
+        </ion-label>
+        <ion-chip slot="end" color="primary" outline>
+          <ion-label>{{ employee.internal_code }}</ion-label>
+        </ion-chip>
       </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Cargo</ion-label>
-        <ion-input type="text" formControlName="position"></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Departamento</ion-label>
-        <ion-select formControlName="department">
-          <ion-select-option *ngFor="let dept of departments" [value]="dept">
-            {{ dept }}
-          </ion-select-option>
-        </ion-select>
+      <ion-item *ngIf="employees.length === 0" class="empty-state">
+        <ion-label color="medium" class="ion-text-center">
+          <ion-icon name="alert-circle-outline" class="empty-icon"></ion-icon>
+          <p>Nenhum funcionário cadastrado</p>
+        </ion-label>
       </ion-item>
     </ion-list>
+  </div>
 
-    <ion-button expand="block" type="submit" [disabled]="!employeeForm.valid || isLoading">
-      <ion-icon name="save-outline" slot="start"></ion-icon>
-      Cadastrar
-    </ion-button>
-  </form>
-
-  <ion-list class="ion-margin-top">
-    <ion-list-header>
-      <ion-label>Funcionários Cadastrados</ion-label>
-    </ion-list-header>
-
-    <ion-item *ngFor="let employee of employees" button detail (click)="openDetails(employee)">
-      <ion-label>
-        <h2>{{ employee.name }}</h2>
-        <p>{{ employee.position }} - {{ employee.department }}</p>
-      </ion-label>
-      <ion-note slot="end">{{ employee.internal_code }}</ion-note>
-    </ion-item>
-
-    <ion-item *ngIf="employees.length === 0">
-      <ion-label color="medium" class="ion-text-center">
-        Nenhum funcionário cadastrado
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
-  <!-- <ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading> -->
+  <ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading>
 </ion-content>
+
+<style>
+.custom-background {
+  --background: var(--ion-color-light);
+}
+
+.form-card, .employees-card {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-title, .section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: var(--ion-color-dark);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.custom-list {
+  background: transparent;
+}
+
+.custom-item {
+  --background: var(--ion-color-light);
+  --border-color: var(--ion-color-medium);
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin-bottom: 12px;
+}
+
+.custom-input, .custom-select {
+  --padding-start: 0;
+  font-size: 1rem;
+}
+
+.submit-button {
+  margin-top: 24px;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+}
+
+.employee-list {
+  background: transparent;
+}
+
+.employee-item {
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  margin-bottom: 8px;
+  --border-color: transparent;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.avatar-icon {
+  font-size: 2rem;
+  color: var(--ion-color-primary);
+}
+
+.empty-state {
+  --background: transparent;
+  --border-color: transparent;
+  padding: 32px 16px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-card, .employees-card {
+    background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+
+  .custom-item, .employee-item {
+    --background: rgba(var(--ion-color-light-rgb), 0.1);
+  }
+
+  .form-title, .section-title {
+    color: var(--ion-color-light);
+  }
+}
+</style>
