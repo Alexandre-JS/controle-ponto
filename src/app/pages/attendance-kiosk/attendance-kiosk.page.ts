@@ -111,73 +111,119 @@ import { AuthMethod } from '../../services/employee.service';
   `,
   styles: [`
     .attendance-kiosk {
-      --background: var(--ion-color-light);
+      --background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--app-padding);
     }
+
     .kiosk-container {
+      width: 100%;
       max-width: 500px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin: 0 auto;
+      padding: calc(var(--app-padding) * 2);
+      background: var(--app-light);
+      border-radius: var(--app-border-radius);
+      box-shadow: var(--app-box-shadow);
     }
+
     h1, h2 {
       font-weight: bold;
-      margin: 1rem 0;
-    }
-    .kiosk-buttons {
-      margin-top: 3rem;
-    }
-    .code-input {
-      margin-bottom: 2rem;
-      --background: var(--ion-color-light);
-      border-radius: 8px;
-    }
-    .kiosk-button {
-      margin: 1rem 0;
-      height: 60px;
-      --border-radius: 8px;
-      font-size: 1.2rem;
-    }
-    .alternative-methods {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--ion-color-light);
-    }
-    .login-required {
-      max-width: 400px;
-      margin: 4rem auto;
+      color: var(--app-primary);
       text-align: center;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin: 0;
+    }
+
+    h1 {
+      font-size: var(--app-font-size-xlarge);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: var(--app-font-size-large);
+      color: var(--app-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .kiosk-buttons {
+      margin-top: calc(var(--app-margin) * 2);
+    }
+
+    .code-input {
+      margin-bottom: calc(var(--app-margin) * 1.5);
+      --background: rgba(var(--app-medium-rgb), 0.1);
+      border-radius: var(--app-border-radius);
+      --highlight-color: var(--app-primary);
+
+      ion-input {
+        --padding-start: var(--app-padding);
+        --padding-end: var(--app-padding);
+        font-size: var(--app-font-size-large);
+      }
+
+      ion-note {
+        padding: 0 var(--app-padding);
+        &[color="medium"] {
+          color: var(--app-medium);
+        }
+        &[slot="error"] {
+          color: var(--app-danger);
+        }
+      }
+    }
+
+    .kiosk-button {
+      margin: calc(var(--app-margin) * 0.5) 0;
+      height: var(--app-button-height);
+      --border-radius: var(--app-border-radius);
+      --background: var(--app-primary);
+      --color: var(--app-light);
+      font-size: var(--app-font-size-base);
+      font-weight: 500;
+      text-transform: uppercase;
+      transition: var(--app-transition);
+
+      &:hover {
+        --background: var(--app-secondary);
+        transform: translateY(-2px);
+      }
 
       ion-icon {
-        font-size: 64px;
-        color: var(--ion-color-medium);
-        margin-bottom: 1rem;
-      }
-
-      h2 {
-        color: var(--ion-color-dark);
-        margin-bottom: 1rem;
-      }
-
-      p {
-        color: var(--ion-color-medium);
-        margin-bottom: 2rem;
-      }
-
-      ion-button {
-        margin-top: 1rem;
+        font-size: 1.5em;
+        margin-right: var(--app-padding);
       }
     }
-    .admin-button {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 100;
+
+    .alternative-methods {
+      margin-top: calc(var(--app-margin) * 2);
+      padding-top: calc(var(--app-margin) * 2);
+      border-top: 2px solid rgba(var(--app-medium-rgb), 0.1);
+
+      .kiosk-button {
+        --background: var(--app-secondary);
+        &:hover {
+          --background: var(--app-accent);
+        }
+      }
+    }
+
+    ion-modal {
+      --height: auto;
+      --width: 90%;
+      --max-width: 500px;
+      --border-radius: var(--app-modal-border-radius);
+      --box-shadow: var(--app-box-shadow);
+
+      ion-header ion-toolbar {
+        --background: var(--app-primary);
+        --color: var(--app-light);
+      }
+
+      ion-content {
+        --background: var(--app-light);
+      }
     }
   `]
 })
