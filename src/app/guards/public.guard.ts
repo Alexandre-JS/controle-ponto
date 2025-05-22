@@ -17,7 +17,7 @@ export class PublicGuard implements CanActivate {
       take(1),
       map(isAuth => {
         if (isAuth) {
-          this.router.navigate(['/admin/employee']);
+          this.router.navigate(['/admin/daily-attendance']);
           return false;
         }
         return true;

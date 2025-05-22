@@ -34,7 +34,7 @@ export class LoginPage implements OnInit {
   async ngOnInit() {
     const isAuth = await this.authService.isAuthenticated().pipe(take(1)).toPromise();
     if (isAuth) {
-      await this.router.navigate(['/admin/employee']);
+      await this.router.navigate(['/admin/daily-attendance']);
     }
   }
 
