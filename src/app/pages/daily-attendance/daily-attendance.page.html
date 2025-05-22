@@ -1,106 +1,653 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Dashboard</ion-title>
+    <ion-title>
+      <ion-icon name="speedometer-outline" class="title-icon"></ion-icon>
+      Dashboard
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding custom-background">
   <!-- Welcome Section -->
-  <ion-card class="welcome-card">
-    <ion-card-header>
-      <ion-card-title class="ion-text-center">
-        <h1>{{ getGreeting() }}</h1>
-      </ion-card-title>
-      <ion-card-subtitle class="ion-text-center clock-display">
-        {{ currentTime | date:'HH:mm:ss' }}
-      </ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-chip [color]="workStatus.includes('andamento') ? 'success' : 'medium'">
-        <ion-icon [name]="workStatus.includes('andamento') ? 'time' : 'alert-circle'"></ion-icon>
-        <ion-label>{{ workStatus }}</ion-label>
-      </ion-chip>
-    </ion-card-content>
-  </ion-card>
+  <div class="page-container">
+    <ion-card class="welcome-card">
+      <div class="card-bg-pattern"></div>
+      <ion-card-header>
+        <div class="welcome-header">
+          <div>
+            <ion-card-title>
+              <h1 class="greeting-text">{{ getGreeting() }}</h1>
+            </ion-card-title>
+            <ion-card-subtitle class="date-text">
+              <!-- {{ currentDate | date:'EEEE, d MMMM yyyy' }} -->
+            </ion-card-subtitle>
+          </div>
+          <div class="time-display">
+            <div class="clock">{{ currentTime | date:'HH:mm' }}</div>
+            <div class="seconds">{{ currentTime | date:'ss' }}</div>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="status-container">
+          <ion-chip [color]="workStatus.includes('andamento') ? 'success' : 'medium'" class="status-chip">
+            <ion-icon [name]="workStatus.includes('andamento') ? 'time' : 'alert-circle'"></ion-icon>
+            <ion-label>{{ workStatus }}</ion-label>
+          </ion-chip>
+          <div class="quick-actions">
+            <ion-button size="small" fill="clear" color="primary">
+              <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
+            </ion-button>
+            <ion-button size="small" fill="clear" color="secondary">
+              <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-  <!-- Statistics Cards -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12" size-md="6">
-        <ion-card class="stat-card">
-          <ion-card-content>
-            <div class="stat-value">{{ totalPresent }}</div>
-            <div class="stat-label">Presentes</div>
-            <ion-icon name="checkmark-circle" color="success"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="12" size-md="6">
-        <ion-card class="stat-card">
-          <ion-card-content>
-            <div class="stat-value">{{ totalAbsent }}</div>
-            <div class="stat-label">Ausentes</div>
-            <ion-icon name="close-circle" color="danger"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <!-- Statistics Cards -->
+    <ion-grid class="stats-grid">
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card class="stat-card present-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="checkmark-circle" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalPresent }}</div>
+                <div class="stat-label">Funcionários Presentes</div>
+                <div class="stat-progress">
+                  <div class="progress-bar" [style.width.%]="(totalPresent / (totalPresent + totalAbsent)) * 100"></div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <ion-card class="stat-card absent-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="close-circle" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalAbsent }}</div>
+                <div class="stat-label">Funcionários Ausentes</div>
+                <div class="stat-progress">
+                  <div class="progress-bar" [style.width.%]="(totalAbsent / (totalPresent + totalAbsent)) * 100"></div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-  <!-- Attendance Table -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Registros de Hoje</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list *ngIf="todayAttendance.length > 0; else noRecords">
-        <ion-item lines="full" class="header-row">
-          <ion-label>
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">Funcionário</ion-col>
-                <ion-col size="3">Entrada</ion-col>
-                <ion-col size="3">Saída</ion-col>
-                <ion-col size="2">Status</ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-label>
-        </ion-item>
+    <!-- Attendance Table -->
+    <ion-card class="attendance-card">
+      <ion-card-header>
+        <div class="attendance-header">
+          <ion-card-title>
+            <ion-icon name="calendar-outline"></ion-icon>
+            Registros de Hoje
+          </ion-card-title>
+          <ion-button fill="clear" size="small" color="primary">
+            Ver todos <ion-icon name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list *ngIf="todayAttendance.length > 0; else noRecords" class="attendance-list">
+          <div class="table-container">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th class="employee-col">Funcionário</th>
+                  <th class="time-col">Entrada</th>
+                  <th class="time-col">Saída</th>
+                  <th class="status-col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let record of todayAttendance" class="record-row">
+                  <td class="employee-col">
+                    <div class="employee-info">
+                      <div class="employee-avatar">
+                        <ion-icon name="person"></ion-icon>
+                      </div>
+                      <div class="employee-name">{{ record.employee?.name || 'Nome não encontrado' }}</div>
+                    </div>
+                  </td>
+                  <td class="time-col">
+                    <div class="time-info">
+                      <ion-icon name="enter-outline" class="time-icon"></ion-icon>
+                      {{ record.check_in }}
+                    </div>
+                  </td>
+                  <td class="time-col">
+                    <div class="time-info">
+                      <ion-icon name="exit-outline" class="time-icon"></ion-icon>
+                      {{ record.check_out || '-' }}
+                    </div>
+                  </td>
+                  <td class="status-col">
+                    <ion-badge [color]="getStatusColor(record.status)" class="status-badge">
+                      {{ getStatusLabel(record.status) }}
+                    </ion-badge>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
 
-        <ion-item *ngFor="let record of todayAttendance" lines="full" class="record-row">
-          <ion-label>
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">{{ record.employee?.name || 'Nome não encontrado' }}</ion-col>
-                <ion-col size="3">{{ record.check_in }}</ion-col>
-                <ion-col size="3">{{ record.check_out || '-' }}</ion-col>
-                <ion-col size="2">
-                  <ion-badge [color]="getStatusColor(record.status)">
-                    {{ getStatusLabel(record.status) }}
-                  </ion-badge>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
-
-  <ng-template #noRecords>
-    <div class="empty-state">
-      <ion-icon name="calendar-outline" color="medium"></ion-icon>
-      <h2>Nenhum registro hoje</h2>
-      <p>Clique no botão + para registrar presenças</p>
-    </div>
-  </ng-template>
+    <ng-template #noRecords>
+      <div class="empty-state">
+        <div class="empty-icon-container">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <h2>Nenhum registro hoje</h2>
+        <p>Clique no botão + para registrar presenças</p>
+        <ion-button color="primary" size="small">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Registrar Ponto
+        </ion-button>
+      </div>
+    </ng-template>
+  </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="goToKiosk()">
+    <ion-fab-button (click)="goToKiosk()" class="fab-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
+
+<style>
+:root {
+  --app-primary: #7d5500;
+  --app-primary-rgb: 125, 85, 0;
+  --app-primary-contrast: #ffffff;
+  --app-primary-shade: #6e4b00;
+  --app-primary-tint: #8a641a;
+  
+  --app-secondary: #50bac3;
+  --app-secondary-rgb: 80, 186, 195;
+  --app-secondary-contrast: #000000;
+  --app-secondary-shade: #46a3ac;
+  --app-secondary-tint: #62c1c9;
+  
+  --app-accent: #9238a4;
+  --app-accent-rgb: 146, 56, 164;
+  --app-accent-contrast: #ffffff;
+  --app-accent-shade: #803190;
+  --app-accent-tint: #9d4cad;
+  
+  /* Cores adicionais */
+  --app-success: #50c350;
+  --app-success-rgb: 80, 195, 80;
+  --app-warning: #e6a537;
+  --app-danger: #d33939;
+  --app-danger-rgb: 211, 57, 57;
+  
+  /* Neutras */
+  --app-neutral-light: #f5f0e5;
+  --app-neutral-medium: #d9c9a3;
+  --app-neutral-dark: #463211;
+}
+
+/* Estilos globais */
+.custom-background {
+  --background: var(--app-neutral-light);
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+ion-toolbar {
+  --background: var(--app-primary);
+  --color: var(--app-primary-contrast);
+}
+
+/* Welcome Card */
+.welcome-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background-color: white;
+}
+
+.card-bg-pattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at 100% 0%, rgba(var(--app-primary-rgb), 0.15) 0%, rgba(var(--app-primary-rgb), 0.05) 50%, transparent 70%);
+  z-index: 0;
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting-text {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--app-primary);
+}
+
+.date-text {
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.time-display {
+  display: flex;
+  align-items: baseline;
+  background: var(--app-primary);
+  padding: 8px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+}
+
+.clock {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--app-primary-contrast);
+}
+
+.seconds {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 4px;
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.status-chip {
+  --background: rgba(var(--app-primary-rgb), 0.1);
+  height: 32px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.status-chip ion-icon {
+  margin-right: 4px;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Stat Cards */
+.stats-grid {
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  background: white;
+  height: 100%;
+  overflow: hidden;
+}
+
+.present-card {
+  border-top: 3px solid var(--app-success);
+}
+
+.absent-card {
+  border-top: 3px solid var(--app-danger);
+}
+
+.stat-card ion-card-content {
+  display: flex;
+  padding: 16px;
+}
+
+.stat-icon-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.present-card .stat-icon-container {
+  background-color: rgba(80, 195, 80, 0.1);
+}
+
+.absent-card .stat-icon-container {
+  background-color: rgba(211, 57, 57, 0.1);
+}
+
+.stat-icon {
+  font-size: 32px;
+}
+
+.present-card .stat-icon {
+  color: var(--app-success);
+}
+
+.absent-card .stat-icon {
+  color: var(--app-danger);
+}
+
+.stat-content {
+  flex-grow: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--app-neutral-dark);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.stat-progress {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.present-card .progress-bar {
+  height: 100%;
+  background-color: var(--app-success);
+  border-radius: 3px;
+}
+
+.absent-card .progress-bar {
+  height: 100%;
+  background-color: var(--app-danger);
+  border-radius: 3px;
+}
+
+/* Attendance Card */
+.attendance-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: white;
+  overflow: hidden;
+}
+
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attendance-card ion-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--app-primary);
+}
+
+.attendance-card ion-card-title ion-icon {
+  margin-right: 8px;
+}
+
+.attendance-list {
+  background: transparent;
+  padding: 0;
+}
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th {
+  background-color: rgba(var(--app-primary-rgb), 0.05);
+  color: var(--app-primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.1);
+}
+
+.attendance-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.employee-col {
+  width: 40%;
+}
+
+.time-col {
+  width: 20%;
+}
+
+.status-col {
+  width: 20%;
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+}
+
+.employee-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(var(--app-secondary-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.employee-avatar ion-icon {
+  font-size: 20px;
+  color: var(--app-secondary);
+}
+
+.employee-name {
+  font-weight: 500;
+  color: var(--app-neutral-dark);
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+}
+
+.time-icon {
+  margin-right: 8px;
+  color: var(--app-secondary);
+  font-size: 16px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(var(--app-primary-rgb), 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.empty-state ion-icon {
+  font-size: 40px;
+  color: var(--app-primary);
+}
+
+.empty-state h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--app-neutral-dark);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  margin-bottom: 24px;
+}
+
+/* FAB Button */
+.fab-button {
+  --background: var(--app-accent);
+  --background-activated: var(--app-accent-shade);
+  --background-hover: var(--app-accent-tint);
+  --box-shadow: 0 4px 16px rgba(var(--app-accent-rgb), 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .employee-col {
+    width: auto;
+  }
+  
+  .time-col {
+    width: auto;
+  }
+  
+  .status-col {
+    width: auto;
+  }
+  
+  .time-display {
+    padding: 6px 12px;
+  }
+  
+  .clock {
+    font-size: 18px;
+  }
+  
+  .seconds {
+    font-size: 12px;
+  }
+  
+  .greeting-text {
+    font-size: 20px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .custom-background {
+    --background: var(--app-neutral-dark);
+  }
+  
+  .welcome-card, .stat-card, .attendance-card {
+    --background: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .greeting-text {
+    color: var(--app-primary-tint);
+  }
+  
+  .date-text, .stat-label, .employee-name {
+    color: var(--app-neutral-light);
+  }
+  
+  .stat-value {
+    color: white;
+  }
+  
+  .attendance-table th {
+    background-color: rgba(var(--app-primary-rgb), 0.2);
+    color: var(--app-primary-tint);
+    border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.2);
+  }
+  
+  .attendance-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .attendance-card ion-card-title {
+    color: var(--app-primary-tint);
+  }
+  
+  .empty-state h2 {
+    color: var(--app-neutral-light);
+  }
+  
+  .empty-state p {
+    color: var(--app-neutral-light);
+  }
+}
+</style>

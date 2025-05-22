@@ -1,63 +1,29 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
-    <ion-title>Configurações de Horário</ion-title>
+<ion-header<ion-title>ConHorio</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding custom-background">
-  <div class="settings-card">
-    <h2 class="settings-title">
-      <ion-icon name="time-outline" color="primary"></ion-icon>
-      Horário de Trabalho
-    </h2>
-    
-    <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
-      <ion-list class="custom-list">
-        <ion-item class="custom-item">
-          <ion-label position="floating">Horário de Início</ion-label>
-          <ion-datetime
-            formControlName="startTime"
-            display-format="HH:mm"
-            picker-format="HH:mm"
-            class="custom-datetime">
-          </ion-datetime>
-        </ion-item>
+<ion-content class="ion-padding">
+  <form [formGroup]="scheduleFoilabdi       display-format="HH:mm"
+          picker-format="HH:mm"           </ontem>
 
-        <ion-item class="custom-item">
-          <ion-label position="floating">Horário de Término</ion-label>
-          <ion-datetime
-            formControlName="endTime"
-            display-format="HH:mm"
-            picker-format="HH:mm"
-            class="custom-datetime">
-          </ion-datetime>
-        </ion-item>
+      <io-lel position="floating">Horário de Término</ion-label>
+        <ion-datime
+          formConolName="endTime"
+          display-fort="HH:mm"
+          picker-formatHH:mm">
+        </ion-datetime>
+      <ion-label positionfloating">Dias de Tabalho/ion-laboct         formControlName="workDays"
+          multiple="true"
+          [compaWith]="compareth">
+          <ion-select-option *ngFor="let y of workDays" [value]="day.id">
+          {{ day.nt>      </ion-select>
+      <on-item>
+    </ion-list>
+   <ion-" tpe="submt" [disabled]="!scheduleForm.valid || isLoading">
+      <ionicon nam="save-outlie" slot="sart"></ion-icon>
+      Salvr Configurções
+    </ion-btton>
+  </orm>
 
-        <ion-item class="custom-item">
-          <ion-label position="floating">Dias de Trabalho</ion-label>
-          <ion-select
-            formControlName="workDays"
-            multiple="true"
-            [compareWith]="compareWith"
-            class="custom-select">
-            <ion-select-option *ngFor="let day of workDays" [value]="day.id">
-              {{ day.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
-
-      <ion-button 
-        expand="block" 
-        type="submit" 
-        [disabled]="!scheduleForm.valid || isLoading"
-        class="save-button"
-        color="primary">
-        <ion-icon name="save-outline" slot="start"></ion-icon>
-        Salvar Configurações
-      </ion-button>
-    </form>
-  </div>
-
-  <ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading>
+  <ion-loading [isOpe..></ion-loading>
 </ion-content>
