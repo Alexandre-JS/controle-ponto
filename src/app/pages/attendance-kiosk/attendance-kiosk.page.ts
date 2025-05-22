@@ -66,20 +66,6 @@ import { AuthMethod } from '../../services/employee.service';
           <div class="alternative-methods">
             <ion-button expand="block" 
                       class="kiosk-button" 
-                      (click)="markAttendance('face')">
-              <ion-icon name="camera-outline" slot="start" size="large"></ion-icon>
-              FACE ID
-            </ion-button>
-
-            <ion-button expand="block" 
-                      class="kiosk-button" 
-                      (click)="markAttendance('fingerprint')">
-              <ion-icon name="finger-print-outline" slot="start" size="large"></ion-icon>
-              DIGITAL
-            </ion-button>
-
-            <ion-button expand="block" 
-                      class="kiosk-button" 
                       (click)="showQRScanner()">
               <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
               ESCANEAR QR CODE
@@ -111,73 +97,126 @@ import { AuthMethod } from '../../services/employee.service';
   `,
   styles: [`
     .attendance-kiosk {
-      --background: var(--ion-color-light);
+      --background: var(--app-neutral-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--app-padding);
     }
+
     .kiosk-container {
+      width: 100%;
       max-width: 500px;
-      margin: 2rem auto;
-      padding: 2rem;
+      margin: 0 auto;
+      padding: calc(var(--app-padding) * 2);
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
     }
+
     h1, h2 {
       font-weight: bold;
-      margin: 1rem 0;
-    }
-    .kiosk-buttons {
-      margin-top: 3rem;
-    }
-    .code-input {
-      margin-bottom: 2rem;
-      --background: var(--ion-color-light);
-      border-radius: 8px;
-    }
-    .kiosk-button {
-      margin: 1rem 0;
-      height: 60px;
-      --border-radius: 8px;
-      font-size: 1.2rem;
-    }
-    .alternative-methods {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--ion-color-light);
-    }
-    .login-required {
-      max-width: 400px;
-      margin: 4rem auto;
+      color: var(--app-primary);
       text-align: center;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 18px;
+      color: var(--app-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .kiosk-buttons {
+      margin-top: 24px;
+    }
+
+    .code-input {
+      margin-bottom: 16px;
+      --background: rgba(var(--app-medium-rgb), 0.1);
+      border-radius: 12px;
+      --highlight-color: var(--app-primary);
+
+      ion-input {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        font-size: 18px;
+      }
+
+      ion-note {
+        padding: 0 16px;
+        &[color="medium"] {
+          color: var(--app-medium);
+        }
+        &[slot="error"] {
+          color: var(--app-danger);
+        }
+      }
+    }
+
+    .kiosk-button {
+      margin: 8px 0;
+      height: 48px;
+      --border-radius: 12px;
+      --background: var(--app-primary);
+      --color: white;
+      font-size: 16px;
+      font-weight: 500;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+
+      &:hover {
+        --background: var(--app-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+      }
 
       ion-icon {
-        font-size: 64px;
-        color: var(--ion-color-medium);
-        margin-bottom: 1rem;
-      }
-
-      h2 {
-        color: var(--ion-color-dark);
-        margin-bottom: 1rem;
-      }
-
-      p {
-        color: var(--ion-color-medium);
-        margin-bottom: 2rem;
-      }
-
-      ion-button {
-        margin-top: 1rem;
+        font-size: 24px;
+        margin-right: 12px;
       }
     }
-    .admin-button {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 100;
+
+    .alternative-methods {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 2px solid rgba(var(--app-medium-rgb), 0.1);
+
+      .kiosk-button {
+        --background: var(--app-secondary);
+        &:hover {
+          --background: var(--app-accent);
+          box-shadow: 0 4px 8px rgba(var(--app-secondary-rgb), 0.3);
+        }
+      }
+    }
+
+    ion-modal {
+      --height: auto;
+      --width: 90%;
+      --max-width: 500px;
+      --border-radius: 16px;
+      --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+      ion-header ion-toolbar {
+        --background: var(--app-primary);
+        --color: white;
+      }
+
+      ion-content {
+        --background: white;
+      }
+    }
+
+    ion-toolbar {
+      --background: var(--app-primary);
+      --color: var(--app-primary-contrast);
     }
   `]
 })

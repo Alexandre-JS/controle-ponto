@@ -10,6 +10,8 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
+
+// @import "/src/theme/variables.scss";
 @import "@ionic/angular/css/core.css";
 
 /* Basic CSS for apps built with Ionic */
@@ -35,6 +37,99 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+
+:root{
+  /* Cores Primárias */
+  --ion-color-primary: #7d5500;
+  --ion-color-primary-rgb: 125, 85, 0;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #6e4b00;
+  --ion-color-primary-tint: #8a641a;
+  
+  /* Cores Secundárias */
+  --ion-color-secondary: #50bac3;
+  --ion-color-secondary-rgb: 80, 186, 195;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #46a3ac;
+  --ion-color-secondary-tint: #62c1c9;
+  
+  /* Cores Terciárias (Accent) */
+  --ion-color-tertiary: #9238a4;
+  --ion-color-tertiary-rgb: 146, 56, 164;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #803190;
+  --ion-color-tertiary-tint: #9d4cad;
+  
+  /* Cores de Status */
+  --ion-color-success: #50c350;
+  --ion-color-success-rgb: 80, 195, 80;
+  --ion-color-success-contrast: #000000;
+  --ion-color-success-contrast-rgb: 0, 0, 0;
+  --ion-color-success-shade: #46ac46;
+  --ion-color-success-tint: #62c962;
+  
+  --ion-color-warning: #e6a537;
+  --ion-color-warning-rgb: 230, 165, 55;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #ca9130;
+  --ion-color-warning-tint: #e9ae4b;
+  
+  --ion-color-danger: #d33939;
+  --ion-color-danger-rgb: 211, 57, 57;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #ba3232;
+  --ion-color-danger-tint: #d74d4d;
+  
+  /* Cores Neutras */
+  --ion-color-light: #f5f0e5;
+  --ion-color-light-rgb: 245, 240, 229;
+  --ion-color-light-contrast: #463211;
+  --ion-color-light-contrast-rgb: 70, 50, 17;
+  --ion-color-light-shade: #d8d4ca;
+  --ion-color-light-tint: #f6f2e8;
+  
+  --ion-color-medium: #d9c9a3;
+  --ion-color-medium-rgb: 217, 201, 163;
+  --ion-color-medium-contrast: #463211;
+  --ion-color-medium-contrast-rgb: 70, 50, 17;
+  --ion-color-medium-shade: #bfb18f;
+  --ion-color-medium-tint: #ddceac;
+  
+  --ion-color-dark: #463211;
+  --ion-color-dark-rgb: 70, 50, 17;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #3e2c0f;
+  --ion-color-dark-tint: #594729;
+}
+
+html.ios{--ion-default-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Roboto", sans-serif}html.md{--ion-default-font: "Roboto", "Helvetica Neue", sans-serif}html{--ion-dynamic-font: -apple-system-body;--ion-font-family: var(--ion-default-font)}body{background:var(--ion-background-color);color:var(--ion-text-color)}body.backdrop-no-scroll{overflow:hidden}html.ios ion-modal.modal-card ion-header ion-toolbar:first-of-type,html.ios ion-modal.modal-sheet ion-header ion-toolbar:first-of-type,html.ios ion-modal ion-footer ion-toolbar:first-of-type{padding-top:6px}html.ios ion-modal.modal-card ion-header ion-toolbar:last-of-type,html.ios ion-modal.modal-sheet ion-header ion-toolbar:last-of-type{padding-bottom:6px}html.ios ion-modal ion-toolbar{padding-right:calc(var(--ion-safe-area-right) + 8px);padding-left:calc(var(--ion-safe-area-left) + 8px)}@media screen and (min-width: 768px){html.ios ion-modal.modal-card:first-of-type{--backdrop-opacity: 0.18}}ion-modal.modal-default.show-modal~ion-modal.modal-default{--backdrop-opacity: 0;--box-shadow: none}html.ios ion-modal.modal-card .ion-page{border-top-left-radius:var(--border-radius)}
+
+.ion-color-primary{--ion-color-base: var(--ion-color-primary, #7d5500) !important;--ion-color-base-rgb: var(--ion-color-primary-rgb, 125, 85, 0) !important;--ion-color-contrast: var(--ion-color-primary-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-primary-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-primary-shade, #6e4b00) !important;--ion-color-tint: var(--ion-color-primary-tint, #8a641a) !important}
+
+.ion-color-secondary{--ion-color-base: var(--ion-color-secondary, #50bac3) !important;--ion-color-base-rgb: var(--ion-color-secondary-rgb, 80, 186, 195) !important;--ion-color-contrast: var(--ion-color-secondary-contrast, #000000) !important;--ion-color-contrast-rgb: var(--ion-color-secondary-contrast-rgb, 0, 0, 0) !important;--ion-color-shade: var(--ion-color-secondary-shade, #46a3ac) !important;--ion-color-tint: var(--ion-color-secondary-tint, #62c1c9) !important}
+
+.ion-color-tertiary{--ion-color-base: var(--ion-color-tertiary, #9238a4) !important;--ion-color-base-rgb: var(--ion-color-tertiary-rgb, 146, 56, 164) !important;--ion-color-contrast: var(--ion-color-tertiary-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-tertiary-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-tertiary-shade, #803190) !important;--ion-color-tint: var(--ion-color-tertiary-tint, #9d4cad) !important}
+
+.ion-color-success{--ion-color-base: var(--ion-color-success, #50c350) !important;--ion-color-base-rgb: var(--ion-color-success-rgb, 80, 195, 80) !important;--ion-color-contrast: var(--ion-color-success-contrast, #000000) !important;--ion-color-contrast-rgb: var(--ion-color-success-contrast-rgb, 0, 0, 0) !important;--ion-color-shade: var(--ion-color-success-shade, #46ac46) !important;--ion-color-tint: var(--ion-color-success-tint, #62c962) !important}
+
+.ion-color-warning{--ion-color-base: var(--ion-color-warning, #e6a537) !important;--ion-color-base-rgb: var(--ion-color-warning-rgb, 230, 165, 55) !important;--ion-color-contrast: var(--ion-color-warning-contrast, #000000) !important;--ion-color-contrast-rgb: var(--ion-color-warning-contrast-rgb, 0, 0, 0) !important;--ion-color-shade: var(--ion-color-warning-shade, #ca9130) !important;--ion-color-tint: var(--ion-color-warning-tint, #e9ae4b) !important}
+
+.ion-color-danger{--ion-color-base: var(--ion-color-danger, #d33939) !important;--ion-color-base-rgb: var(--ion-color-danger-rgb, 211, 57, 57) !important;--ion-color-contrast: var(--ion-color-danger-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-danger-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-danger-shade, #ba3232) !important;--ion-color-tint: var(--ion-color-danger-tint, #d74d4d) !important}
+
+.ion-color-light{--ion-color-base: var(--ion-color-light, #f5f0e5) !important;--ion-color-base-rgb: var(--ion-color-light-rgb, 245, 240, 229) !important;--ion-color-contrast: var(--ion-color-light-contrast, #463211) !important;--ion-color-contrast-rgb: var(--ion-color-light-contrast-rgb, 70, 50, 17) !important;--ion-color-shade: var(--ion-color-light-shade, #d8d4ca) !important;--ion-color-tint: var(--ion-color-light-tint, #f6f2e8) !important}
+
+.ion-color-medium{--ion-color-base: var(--ion-color-medium, #d9c9a3) !important;--ion-color-base-rgb: var(--ion-color-medium-rgb, 217, 201, 163) !important;--ion-color-contrast: var(--ion-color-medium-contrast, #463211) !important;--ion-color-contrast-rgb: var(--ion-color-medium-contrast-rgb, 70, 50, 17) !important;--ion-color-shade: var(--ion-color-medium-shade, #bfb18f) !important;--ion-color-tint: var(--ion-color-medium-tint, #ddceac) !important}
+
+.ion-color-dark{--ion-color-base: var(--ion-color-dark, #463211) !important;--ion-color-base-rgb: var(--ion-color-dark-rgb, 70, 50, 17) !important;--ion-color-contrast: var(--ion-color-dark-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-dark-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-dark-shade, #3e2c0f) !important;--ion-color-tint: var(--ion-color-dark-tint, #594729) !important}
+
+.ion-page{left:0;right:0;top:0;bottom:0;display:flex;position:absolute;flex-direction:column;justify-content:space-between;contain:layout size style;z-index:0}ion-modal>.ion-page{position:relative;contain:layout style;height:100%}.split-pane-visible>.ion-page.split-pane-main{position:relative}ion-route,ion-route-redirect,ion-router,ion-select-option,ion-nav-controller,ion-menu-controller,ion-action-sheet-controller,ion-alert-controller,ion-loading-controller,ion-modal-controller,ion-picker-controller,ion-popover-controller,ion-toast-controller,.ion-page-hidden{display:none !important}.ion-page-invisible{opacity:0}.can-go-back>ion-header ion-back-button{display:block}html.plt-ios.plt-hybrid,html.plt-ios.plt-pwa{--ion-statusbar-padding: 20px}@supports(padding-top: 20px){html{--ion-safe-area-top: var(--ion-statusbar-padding)}}@supports(padding-top: env(safe-area-inset-top)){html{--ion-safe-area-top: env(safe-area-inset-top);--ion-safe-area-bottom: env(safe-area-inset-bottom);--ion-safe-area-left: env(safe-area-inset-left);--ion-safe-area-right: env(safe-area-inset-right)}}ion-card.ion-color .ion-inherit-color,ion-card-header.ion-color .ion-inherit-color{color:inherit}.menu-content{transform:translate3d(0,  0,  0)}.menu-content-open{cursor:pointer;touch-action:manipulation;pointer-events:none;overflow-y:hidden}.menu-content-open ion-content{--overflow: hidden}.menu-content-open .ion-content-scroll-host{overflow:hidden}.ios .menu-content-reveal{box-shadow:-8px 0 42px rgba(125, 85, 0, 0.08)}[dir=rtl].ios .menu-content-reveal{box-shadow:8px 0 42px rgba(125, 85, 0, 0.08)}.md .menu-content-reveal{box-shadow:4px 0px 16px rgba(125, 85, 0, 0.18)}.md .menu-content-push{box-shadow:4px 0px 16px rgba(125, 85, 0, 0.18)}ion-accordion-group.accordion-group-expand-inset>ion-accordion:first-of-type{border-top-left-radius:8px;border-top-right-radius:8px}ion-accordion-group.accordion-group-expand-inset>ion-accordion:last-of-type{border-bottom-left-radius:8px;border-bottom-right-radius:8px}ion-accordion-group>ion-accordion:last-of-type ion-item[slot=header]{--border-width: 0px}ion-accordion.accordion-animated>[slot=header] .ion-accordion-toggle-icon{transition:300ms transform cubic-bezier(0.25, 0.8, 0.5, 1)}@media(prefers-reduced-motion: reduce){ion-accordion .ion-accordion-toggle-icon{transition:none !important}}ion-accordion.accordion-expanding>[slot=header] .ion-accordion-toggle-icon,ion-accordion.accordion-expanded>[slot=header] .ion-accordion-toggle-icon{transform:rotate(180deg)}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-previous ion-item[slot=header]{--border-width: 0px;--inner-border-width: 0px}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanding:first-of-type,ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanded:first-of-type{margin-top:0}ion-input input::-webkit-date-and-time-value{text-align:start}.ion-datetime-button-overlay{--width: fit-content;--height: fit-content}.ion-datetime-button-overlay ion-datetime.datetime-grid{width:320px;min-height:320px}[ion-last-focus],header[tabindex="-1"]:focus,[role=banner][tabindex="-1"]:focus,main[tabindex="-1"]:focus,[role=main][tabindex="-1"]:focus,h1[tabindex="-1"]:focus,[role=heading][aria-level="1"][tabindex="-1"]:focus{outline:none}.popover-viewport:has(>ion-content){overflow:hidden}@supports not selector(:has(> ion-content)){.popover-viewport{overflow:hidden}}/*# sourceMappingURL=core.css.map */
 
 .attendance-alert {
   .alert-wrapper {
@@ -152,13 +247,50 @@
 }
 
 // Modal styles
-// .success-modal, .confirm-modal {
-//   @extend .app-modal;
+.success-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 400px;
+  --border-radius: var(--app-border-radius);
   
-//   .modal-content {
-//     padding: var(--app-padding);
-//   }
-// }
+  &::part(content) {
+    border-radius: var(--app-border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .success-icon {
+    ion-icon {
+      font-size: 64px;
+      color: var(--app-success);
+      animation: scaleIn 0.5s ease-out;
+    }
+  }
+
+  .title {
+    margin: 16px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--app-dark);
+  }
+
+  .content {
+    margin: 16px 0;
+    font-size: 16px;
+    color: var(--app-medium);
+  }
+
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
 
 // Form styles
 ion-item.app-form-item {
@@ -183,5 +315,487 @@ ion-item.app-form-item {
 
   .app-card {
     background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+}
+
+.welcome-toast {
+  --background: var(--app-success);
+  --color: var(--app-light);
+  --border-radius: var(--app-border-radius);
+  --button-color: var(--app-light);
+  font-weight: 500;
+  text-align: center;
+  
+  &::part(message) {
+    padding: 10px;
+  }
+}
+
+.welcome-modal {
+  --width: 100%;
+  --height: 100%;
+  --background: transparent;
+  
+  &::part(content) {
+    --background: transparent;
+  }
+
+  ion-content {
+    --background: transparent;
+  }
+
+  .modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Estilos globais */
+.custom-background {
+  --background: var(--app-neutral-light);
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+ion-toolbar {
+  --background: var(--app-primary);
+  --color: var(--app-primary-contrast);
+}
+
+/* Welcome Card */
+.welcome-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background-color: white;
+}
+
+.card-bg-pattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at 100% 0%, rgba(var(--app-primary-rgb), 0.15) 0%, rgba(var(--app-primary-rgb), 0.05) 50%, transparent 70%);
+  z-index: 0;
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting-text {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--app-primary);
+}
+
+.date-text {
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.time-display {
+  display: flex;
+  align-items: baseline;
+  background: var(--app-primary);
+  padding: 8px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+}
+
+.clock {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e4dbc9;
+}
+
+.seconds {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 4px;
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.status-chip {
+  --background: rgba(var(--app-primary-rgb), 0.1);
+  height: 32px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.status-chip ion-icon {
+  margin-right: 4px;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Stat Cards */
+.stats-grid {
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  background: white;
+  height: 100%;
+  overflow: hidden;
+}
+
+.present-card {
+  border-top: 3px solid var(--app-success);
+}
+
+.absent-card {
+  border-top: 3px solid var(--app-danger);
+}
+
+.stat-card ion-card-content {
+  display: flex;
+  padding: 16px;
+}
+
+.stat-icon-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.present-card .stat-icon-container {
+  background-color: rgba(80, 195, 80, 0.1);
+}
+
+.absent-card .stat-icon-container {
+  background-color: rgba(211, 57, 57, 0.1);
+}
+
+.stat-icon {
+  font-size: 32px;
+}
+
+.present-card .stat-icon {
+  color: var(--app-success);
+}
+
+.absent-card .stat-icon {
+  color: var(--app-danger);
+}
+
+.stat-content {
+  flex-grow: 1;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--app-neutral-dark);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.stat-progress {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.present-card .progress-bar {
+  height: 100%;
+  background-color: var(--app-success);
+  border-radius: 3px;
+}
+
+.absent-card .progress-bar {
+  height: 100%;
+  background-color: var(--app-danger);
+  border-radius: 3px;
+}
+
+/* Attendance Card */
+.attendance-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: white;
+  overflow: hidden;
+}
+
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attendance-card ion-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--app-primary);
+}
+
+.attendance-card ion-card-title ion-icon {
+  margin-right: 8px;
+}
+
+.attendance-list {
+  background: transparent;
+  padding: 0;
+}
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th {
+  background-color: rgba(var(--app-primary-rgb), 0.05);
+  color: var(--app-primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.1);
+}
+
+.attendance-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.employee-col {
+  width: 40%;
+}
+
+.time-col {
+  width: 20%;
+}
+
+.status-col {
+  width: 20%;
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+}
+
+.employee-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(var(--app-secondary-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.employee-avatar ion-icon {
+  font-size: 20px;
+  color: var(--app-secondary);
+}
+
+.employee-name {
+  font-weight: 500;
+  color: var(--app-neutral-dark);
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+}
+
+.time-icon {
+  margin-right: 8px;
+  color: var(--app-secondary);
+  font-size: 16px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(var(--app-primary-rgb), 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.empty-state ion-icon {
+  font-size: 40px;
+  color: var(--app-primary);
+}
+
+.empty-state h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--app-neutral-dark);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: var(--app-neutral-dark);
+  opacity: 0.7;
+  margin-bottom: 24px;
+}
+
+/* FAB Button */
+.fab-button {
+  --background: #50af4d;
+  --background-activated: var(--app-accent-shade);
+  --background-hover: var(--app-accent-tint);
+  --box-shadow: 0 4px 16px rgba(var(--app-accent-rgb), 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .employee-col {
+    width: auto;
+  }
+  
+  .time-col {
+    width: auto;
+  }
+  
+  .status-col {
+    width: auto;
+  }
+  
+  .time-display {
+    padding: 6px 12px;
+  }
+  
+  .clock {
+    font-size: 18px;
+  }
+  
+  .seconds {
+    font-size: 12px;
+  }
+  
+  .greeting-text {
+    font-size: 20px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .custom-background {
+    --background: var(--app-neutral-dark);
+  }
+  
+  .welcome-card, .stat-card, .attendance-card {
+    --background: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .greeting-text {
+    color: var(--app-primary-tint);
+  }
+  
+  .date-text, .stat-label, .employee-name {
+    color: var(--app-neutral-light);
+  }
+  
+  .stat-value {
+    color: white;
+  }
+  
+  .attendance-table th {
+    background-color: rgba(var(--app-primary-rgb), 0.2);
+    color: var(--app-primary-tint);
+    border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.2);
+  }
+  
+  .attendance-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .attendance-card ion-card-title {
+    color: var(--app-primary-tint);
+  }
+  
+  .empty-state h2 {
+    color: var(--app-neutral-light);
+  }
+  
+  .empty-state p {
+    color: var(--app-neutral-light);
   }
 }

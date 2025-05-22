@@ -1,106 +1,180 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Dashboard</ion-title>
+    <ion-title>
+      <ion-icon name="speedometer-outline" class="title-icon"></ion-icon>
+      Dashboard
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding custom-background">
   <!-- Welcome Section -->
-  <ion-card class="welcome-card">
-    <ion-card-header>
-      <ion-card-title class="ion-text-center">
-        <h1>{{ getGreeting() }}</h1>
-      </ion-card-title>
-      <ion-card-subtitle class="ion-text-center clock-display">
-        {{ currentTime | date:'HH:mm:ss' }}
-      </ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-chip [color]="workStatus.includes('andamento') ? 'success' : 'medium'">
-        <ion-icon [name]="workStatus.includes('andamento') ? 'time' : 'alert-circle'"></ion-icon>
-        <ion-label>{{ workStatus }}</ion-label>
-      </ion-chip>
-    </ion-card-content>
-  </ion-card>
+  <div class="page-container">
+    <ion-card class="welcome-card">
+      <div class="card-bg-pattern"></div>
+      <ion-card-header>
+        <div class="welcome-header">
+          <div>
+            <ion-card-title>
+              <h1 class="greeting-text">{{ getGreeting() }}</h1>
+            </ion-card-title>
+            <ion-card-subtitle class="date-text">
+              <!-- {{ currentDate | date:'EEEE, d MMMM yyyy' }} -->
+            </ion-card-subtitle>
+          </div>
+          <div class="time-display">
+            <div class="clock">{{ currentTime | date:'HH:mm' }}</div>
+            <div class="seconds">{{ currentTime | date:'ss' }}</div>
+          </div>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="status-container">
+          <ion-chip [color]="workStatus.includes('andamento') ? 'success' : 'medium'" class="status-chip">
+            <ion-icon [name]="workStatus.includes('andamento') ? 'time' : 'alert-circle'"></ion-icon>
+            <ion-label>{{ workStatus }}</ion-label>
+          </ion-chip>
+          <div class="quick-actions">
+            <ion-button size="small" fill="clear" color="primary">
+              <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
+            </ion-button>
+            <ion-button size="small" fill="clear" color="secondary">
+              <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-  <!-- Statistics Cards -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12" size-md="6">
-        <ion-card class="stat-card">
-          <ion-card-content>
-            <div class="stat-value">{{ totalPresent }}</div>
-            <div class="stat-label">Presentes</div>
-            <ion-icon name="checkmark-circle" color="success"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="12" size-md="6">
-        <ion-card class="stat-card">
-          <ion-card-content>
-            <div class="stat-value">{{ totalAbsent }}</div>
-            <div class="stat-label">Ausentes</div>
-            <ion-icon name="close-circle" color="danger"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <!-- Statistics Cards -->
+    <ion-grid class="stats-grid">
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card class="stat-card present-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="checkmark-circle" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalPresent }}</div>
+                <div class="stat-label">Funcionários Presentes</div>
+                <div class="stat-progress">
+                  <div class="progress-bar" [style.width.%]="(totalPresent / (totalPresent + totalAbsent)) * 100"></div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <ion-card class="stat-card absent-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="close-circle" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalAbsent }}</div>
+                <div class="stat-label">Funcionários Ausentes</div>
+                <div class="stat-progress">
+                  <div class="progress-bar" [style.width.%]="(totalAbsent / (totalPresent + totalAbsent)) * 100"></div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-  <!-- Attendance Table -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Registros de Hoje</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list *ngIf="todayAttendance.length > 0; else noRecords">
-        <ion-item lines="full" class="header-row">
-          <ion-label>
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">Funcionário</ion-col>
-                <ion-col size="3">Entrada</ion-col>
-                <ion-col size="3">Saída</ion-col>
-                <ion-col size="2">Status</ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-label>
-        </ion-item>
+    <!-- Attendance Table -->
+    <ion-card class="attendance-card">
+      <ion-card-header>
+        <div class="attendance-header">
+          <ion-card-title>
+            <ion-icon name="calendar-outline"></ion-icon>
+            Registros de Hoje
+          </ion-card-title>
+          <ion-button fill="clear" size="small" color="primary">
+            Ver todos <ion-icon name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list *ngIf="todayAttendance.length > 0; else noRecords" class="attendance-list">
+          <div class="table-container">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th class="employee-col">Funcionário</th>
+                  <th class="time-col">Entrada</th>
+                  <th class="time-col">Saída</th>
+                  <th class="status-col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let record of todayAttendance" class="record-row">
+                  <td class="employee-col">
+                    <div class="employee-info">
+                      <div class="employee-avatar">
+                        <ion-icon name="person"></ion-icon>
+                      </div>
+                      <div class="employee-name">{{ record.employee?.name || 'Nome não encontrado' }}</div>
+                    </div>
+                  </td>
+                  <td class="time-col">
+                    <div class="time-info">
+                      <ion-icon name="enter-outline" class="time-icon"></ion-icon>
+                      {{ record.check_in }}
+                    </div>
+                  </td>
+                  <td class="time-col">
+                    <div class="time-info">
+                      <ion-icon name="exit-outline" class="time-icon"></ion-icon>
+                      {{ record.check_out || '-' }}
+                    </div>
+                  </td>
+                  <td class="status-col">
+                    <ion-badge [color]="getStatusColor(record.status)" class="status-badge">
+                      {{ getStatusLabel(record.status) }}
+                    </ion-badge>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
 
-        <ion-item *ngFor="let record of todayAttendance" lines="full" class="record-row">
-          <ion-label>
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">{{ record.employee?.name || 'Nome não encontrado' }}</ion-col>
-                <ion-col size="3">{{ record.check_in }}</ion-col>
-                <ion-col size="3">{{ record.check_out || '-' }}</ion-col>
-                <ion-col size="2">
-                  <ion-badge [color]="getStatusColor(record.status)">
-                    {{ getStatusLabel(record.status) }}
-                  </ion-badge>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
-
-  <ng-template #noRecords>
-    <div class="empty-state">
-      <ion-icon name="calendar-outline" color="medium"></ion-icon>
-      <h2>Nenhum registro hoje</h2>
-      <p>Clique no botão + para registrar presenças</p>
-    </div>
-  </ng-template>
+    <ng-template #noRecords>
+      <div class="empty-state">
+        <div class="empty-icon-container">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <h2>Nenhum registro hoje</h2>
+        <p>Clique no botão + para registrar presenças</p>
+        <ion-button color="primary" size="small">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Registrar Ponto
+        </ion-button>
+      </div>
+    </ng-template>
+  </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="goToKiosk()">
+    <ion-fab-button (click)="goToKiosk()" class="fab-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
+
+<!-- <style>
+
+
+</style> -->

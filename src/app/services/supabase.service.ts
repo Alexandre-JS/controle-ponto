@@ -32,6 +32,12 @@ export class SupabaseService {
           persistSession: true,
           autoRefreshToken: true,
           storageKey: 'app-hoje.auth.token'
+        },
+        global: {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         }
       }
     );
@@ -42,7 +48,7 @@ export class SupabaseService {
       
       if (event === 'SIGNED_IN') {
         console.log('Usuário logado');
-        this.router.navigate(['/admin/employee']);
+        this.router.navigate(['/admin/daily-attendance']);
       } else if (event === 'SIGNED_OUT') {
         window.localStorage.removeItem('app-hoje.auth.token');
         this.router.navigate(['/login']);
@@ -56,7 +62,7 @@ export class SupabaseService {
       if (session) {
         this._session.next(session);
         if (window.location.pathname === '/login') {
-          this.router.navigate(['/admin/employee']);
+          this.router.navigate(['/admin/daily-attendance']);
         }
       }
     } catch (error) {

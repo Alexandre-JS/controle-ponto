@@ -1,26 +1,54 @@
+// Manter todo o CSS original
 .user-profile {
   text-align: center;
-  padding: 20px;
-  background: var(--ion-color-light);
-  border-bottom: 1px solid var(--ion-color-medium);
-
-  ion-avatar {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 10px;
-    border: 2px solid var(--ion-color-primary);
+  padding: 32px 20px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    z-index: 0;
   }
-
+  
+  ion-avatar {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 15px;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  
   h2 {
     margin: 10px 0 5px;
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    position: relative;
+    z-index: 1;
   }
-
+  
   p {
     margin: 0;
     font-size: 14px;
-    color: var(--ion-color-medium);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -35,26 +63,138 @@
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-
+    
     ion-icon {
       font-size: 64px;
       color: var(--ion-color-medium);
       margin-bottom: 1rem;
     }
-
+    
     h2 {
       color: var(--ion-color-dark);
       font-size: 24px;
       margin-bottom: 1rem;
     }
-
+    
     p {
       color: var(--ion-color-medium);
       margin-bottom: 2rem;
     }
-
+    
     ion-button {
       margin-top: 1rem;
     }
+  }
+}
+
+ion-menu {
+  --background: var(--ion-color-light);
+  --border-color: rgba(0, 0, 0, 0.1);
+  
+  ion-content {
+    --background: var(--ion-color-light);
+  }
+  
+  ion-list {
+    background: transparent;
+    padding: 8px;
+    
+    ion-item {
+      --background: transparent;
+      --background-hover: rgba(var(--ion-color-primary-rgb), 0.1);
+      --background-activated: rgba(var(--ion-color-primary-rgb), 0.15);
+      --border-radius: 8px;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --min-height: 48px;
+      margin-bottom: 4px;
+      font-weight: 500;
+      
+      &.selected {
+        --background: rgba(var(--ion-color-primary-rgb), 0.15);
+        --color: var(--ion-color-primary);
+        font-weight: 600;
+        
+        ion-icon {
+          color: var(--ion-color-primary);
+        }
+      }
+      
+      ion-icon {
+        font-size: 20px;
+        margin-right: 12px;
+        color: var(--ion-color-medium);
+      }
+      
+      ion-label {
+        font-size: 15px;
+      }
+    }
+  }
+}
+
+ion-header ion-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+  
+  ion-title {
+    font-weight: 600;
+    font-size: 18px;
+  }
+  
+  ion-menu-button {
+    --padding-start: 0;
+    --padding-end: 4px;
+    font-size: 24px;
+  }
+}
+
+// Correção para o botão de menu no mobile
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: white;
+  }
+}
+
+// Garantir que o botão de menu seja visível
+.visible-menu-button {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  --color: white;
+}
+
+// Adicionar espaço para o conteúdo não ficar sob o header no mobile
+@media (max-width: 768px) {
+  ion-router-outlet {
+    // Aplicar padding somente quando não estiver na página de login
+    &:not(.login-page) {
+      padding-top: 56px; // Altura padrão da barra de navegação
+    }
+  }
+}
+
+// Estilo para o item "Sair" destacado
+.logout-item {
+  margin-top: 16px;
+  --color: var(--ion-color-danger);
+  
+  ion-icon {
+    color: var(--ion-color-danger) !important;
+  }
+}
+
+// Estilos específicos para a página de login
+.login-container {
+  ion-content {
+    --padding-top: 0;
+    --padding-bottom: 0;
   }
 }

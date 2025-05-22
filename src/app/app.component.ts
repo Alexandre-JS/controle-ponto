@@ -2,7 +2,8 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -16,14 +17,14 @@ export class AppComponent implements OnInit {
   userEmail: string = '';
   userAvatar: string | null = null;
   isDesktop = false;
+  isLoginPage = false; // Variável para verificar se estamos na página de login
 
   public appPages = [
     { title: 'Dashboard', url: '/admin/daily-attendance', icon: 'home' },
     { title: 'Control de ponto', url: '/kiosk', icon: 'checkmark-circle' },
     { title: 'Funcionários', url: '/admin/employee', icon: 'people' },
     { title: 'Relatórios', url: '/admin/report', icon: 'bar-chart' },
-    { title: 'Configurações', url: '/admin/settings', icon: 'settings' },
-    { title: 'Sair', url: '/login', icon: 'log-out' }
+    { title: 'Configurações', url: '/admin/settings', icon: 'settings' }
   ];
 
   constructor(
@@ -32,6 +33,7 @@ export class AppComponent implements OnInit {
   ) {
     // Initialize auth state on app start
     this.authService.isAuthenticated().subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
       if (!isAuth) {
         // Only redirect if not in login page
         if (!window.location.href.includes('/login')) {
@@ -41,6 +43,17 @@ export class AppComponent implements OnInit {
     });
 
     this.checkScreenSize();
+    
+    // Detectar mudanças de rota para identificar a página de login
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        // Verifica se a URL atual contém 'login'
+        this.isLoginPage = event.url.includes('/login');
+      });
+      
+    // Verificação inicial ao carregar a aplicação
+    this.isLoginPage = window.location.href.includes('/login');
   }
 
   ngOnInit() {
