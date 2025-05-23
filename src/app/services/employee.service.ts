@@ -258,7 +258,7 @@ export class EmployeeService {
       // Melhorar mensagens de feedback
       if (!lastRecord) {
         const result = await this.registerCheckIn(employee, today, currentTime, 'qr');
-        await this.updateEmployeeStatus(employee.id, 'Presente');
+        // await this.updateEmployeeStatus(employee.id, 'Presente');
         return {
           success: true,
           message: `Bom dia ${employee.name}! Entrada registrada com sucesso às ${currentTime}.`,
@@ -266,7 +266,7 @@ export class EmployeeService {
         };
       } else if (!lastRecord.check_out && now.getHours() >= 12) {
         const result = await this.registerCheckOut(lastRecord, currentTime, 'qr');
-        await this.updateEmployeeStatus(employee.id, 'Ausente');
+        // await this.updateEmployeeStatus(employee.id, 'Ausente');
         return {
           success: true,
           message: `Até amanhã ${employee.name}! Saída registrada com sucesso às ${currentTime}.`,
@@ -346,7 +346,7 @@ export class EmployeeService {
 
     if (error) throw error;
 
-    await this.updateEmployeeStatus(record.employee_id, 'Ausente');
+    // await this.updateEmployeeStatus(record.employee_id, 'Ausente');
 
     return data[0];
   }
