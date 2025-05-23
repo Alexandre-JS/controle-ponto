@@ -76,7 +76,12 @@ import { AuthMethod } from '../../services/employee.service';
         <ion-loading [isOpen]="isLoading" message="Processando..."></ion-loading>
       </div>
 
-      <ion-modal [isOpen]="isQRScannerVisible" (didDismiss)="hideQRScanner()">
+      <ion-modal 
+        [isOpen]="isQRScannerVisible" 
+        (didDismiss)="hideQRScanner()"
+        [breakpoints]="[0, 0.5, 0.75, 1]"
+        [initialBreakpoint]="1"
+        class="qr-scanner-modal">
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -88,8 +93,10 @@ import { AuthMethod } from '../../services/employee.service';
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
-          <ion-content>
-            <app-qr-scanner (scanComplete)="onQRCodeScanned($event)"></app-qr-scanner>
+          <ion-content class="scanner-content">
+            <div class="scanner-wrapper">
+              <app-qr-scanner (scanComplete)="onQRCodeScanned($event)"></app-qr-scanner>
+            </div>
           </ion-content>
         </ng-template>
       </ion-modal>
@@ -197,20 +204,34 @@ import { AuthMethod } from '../../services/employee.service';
       }
     }
 
-    ion-modal {
-      --height: auto;
-      --width: 90%;
-      --max-width: 500px;
-      --border-radius: 16px;
-      --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-
-      ion-header ion-toolbar {
-        --background: var(--app-primary);
-        --color: white;
+    .qr-scanner-modal {
+      --height: 100%;
+      --width: 100%;
+      
+      &::part(content) {
+        --height: 100%;
+        --width: 100%;
       }
+    }
 
-      ion-content {
-        --background: white;
+    .scanner-content {
+      --background: var(--app-neutral-light);
+    }
+
+    .scanner-wrapper {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+
+      app-qr-scanner {
+        width: 100%;
+        height: 100%;
+        max-width: 600px;
+        max-height: 600px;
+        display: block;
       }
     }
 
