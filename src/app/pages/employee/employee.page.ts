@@ -29,6 +29,8 @@ import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-mo
 export class EmployeePage implements OnInit {
   employeeForm: FormGroup;
   employees: Employee[] = [];
+  sortedEmployees: Employee[] = [];
+  isSortedAsc: boolean = true;
   isLoading = false;
   departments = [
     'Administracao',
@@ -79,12 +81,28 @@ export class EmployeePage implements OnInit {
       if (this.employees.length === 0) {
         this.showToast('Nenhum funcionário cadastrado', 'info');
       }
+      this.sortEmployees();
     } catch (error) {
       console.error('Error loading employees:', error);
       this.showToast('Erro ao carregar funcionários', 'danger');
     } finally {
       this.isLoading = false;
     }
+  }
+
+  toggleSort(): void {
+    this.isSortedAsc = !this.isSortedAsc;
+    this.sortEmployees();
+  }
+
+  private sortEmployees(): void {
+    this.sortedEmployees = [...this.employees].sort((a, b) => {
+      const nameA = a.name.toUpperCase();
+      const nameB = b.name.toUpperCase();
+      return this.isSortedAsc 
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
   }
 
   async onSubmit() {
@@ -106,7 +124,7 @@ export class EmployeePage implements OnInit {
         const employee = await this.employeeService.createEmployee(employeeData);
         await this.showSuccessModal(employee.name, employee.internal_code);
         this.employeeForm.reset();
-        await this.loadEmployees();
+        await this.loadEmployees(); // Reload and sort after adding
       } catch (error: any) {
         console.error('Erro ao criar funcionário:', error);
         await this.showErrorModal(error.message || 'Erro ao cadastrar funcionário');

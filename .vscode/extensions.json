@@ -1,6 +1,6 @@
 {
-    "recommendations": [
-      "ionic.ionic",
-      "lucono.karma-test-explorer"
-    ]
+  "recommendations": [
+    "lucono.karma-test-explorer",
+    "Webnative.webnative"
+  ]
 }

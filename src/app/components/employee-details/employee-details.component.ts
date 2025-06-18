@@ -32,13 +32,13 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
       </div>
 
       <ion-list lines="none" class="details-list">
-        <ion-item>
+        <!-- <ion-item>
           <ion-icon name="finger-print-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>ID</h3>
             <p>{{ employee.id }}</p>
           </ion-label>
-        </ion-item>
+        </ion-item> -->
 
         <ion-item>
           <ion-icon name="briefcase-outline" slot="start" color="primary"></ion-icon>
@@ -56,23 +56,23 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
           </ion-label>
         </ion-item>
 
-        <ion-item>
+        <!-- <ion-item>
           <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>Data de Cadastro</h3>
             <p>{{ employee.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
           </ion-label>
-        </ion-item>
+        </ion-item> -->
 
         <ion-item>
           <ion-icon name="qr-code-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>QR Code de Identificação</h3>
             <div class="qr-code-container">
-              <app-qr-code
+              <!-- <app-qr-code
                 [value]="getQRCodeValue()"
                 cssClass="qr-code-image">
-              </app-qr-code>
+              </app-qr-code> -->
               <ion-button size="small" (click)="downloadQRCode()">
                 <ion-icon name="download-outline" slot="start"></ion-icon>
                 Download QR Code
@@ -136,15 +136,15 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
     }
 
     .details-list {
-      margin: 20px 0;
+      margin: 0px 0;
       background: var(--ion-color-light);
       border-radius: 16px;
       padding: 8px;
 
       ion-item {
         --background: transparent;
-        --padding-start: 16px;
-        --padding-end: 16px;
+        --padding-start: 10px;
+        --padding-end: 10px;
         --padding-top: 12px;
         --padding-bottom: 12px;
         margin-bottom: 8px;
@@ -175,7 +175,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
     }
 
     .action-buttons {
-      padding: 16px 0;
+      padding: 0px 0;
 
       ion-button {
         margin-bottom: 12px;

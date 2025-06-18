@@ -21,7 +21,7 @@ import { IonicModule } from '@ionic/angular';
             <h2>{{ employeeName }}</h2>
             <div class="time-info">
               <ion-icon name="time-outline"></ion-icon>
-              <p>{{ currentTime }}</p>
+              <p>{{ formatTime(currentTime) }}</p>
             </div>
             <div class="type-info" [class.checkout]="isCheckOut">
               <ion-icon [name]="isCheckOut ? 'log-out-outline' : 'log-in-outline'"></ion-icon>
@@ -202,7 +202,7 @@ import { IonicModule } from '@ionic/angular';
 })
 export class AttendanceConfirmationComponent {
   @Input() employeeName: string = '';
-  @Input() currentTime: string = '';
+  @Input() currentTime: string = 'HH:mm';
   @Input() isCheckOut: boolean = false;
   @Input() successResponse: any; // Adicionar novo input para receber a resposta
   
@@ -222,5 +222,9 @@ export class AttendanceConfirmationComponent {
 
   async dismiss(result: boolean) {
     await this.modalCtrl.dismiss(result);
+  }
+
+  formatTime(time: string): string {
+    return time.split(':').slice(0, 2).join(':');
   }
 }

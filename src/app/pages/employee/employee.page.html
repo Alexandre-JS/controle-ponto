@@ -47,10 +47,14 @@
     <h2 class="section-title">
       <ion-icon name="people-outline" color="primary"></ion-icon>
       Funcionários Cadastrados
+      <ion-button fill="clear" size="small" (click)="toggleSort()">
+        <ion-icon [name]="isSortedAsc ? 'arrow-down-outline' : 'arrow-up-outline'"></ion-icon>
+        Ordenar
+      </ion-button>
     </h2>
 
     <ion-list class="employee-list">
-      <ion-item *ngFor="let employee of employees" button detail="false" (click)="openDetails(employee)" class="employee-item">
+      <ion-item *ngFor="let employee of sortedEmployees" button detail="false" (click)="openDetails(employee)" class="employee-item">
         <ion-avatar slot="start">
           <ion-icon name="person-circle-outline" class="avatar-icon"></ion-icon>
         </ion-avatar>
