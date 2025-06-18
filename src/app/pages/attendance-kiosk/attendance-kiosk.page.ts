@@ -55,6 +55,36 @@ import { AuthMethod } from '../../services/employee.service';
             <ion-note slot="error" *ngIf="showError">Código inválido</ion-note>
           </ion-item>
 
+          <!-- <ion-item class="name-search">
+            <ion-input 
+              [(ngModel)]="searchName"
+              (ionChange)="onNameSearch($event)"
+              placeholder="Ou busque pelo nome do funcionário"
+              type="text">
+            </ion-input>
+          </ion-item> -->
+
+          <ion-item class="name-search">
+  <ion-select
+    [(ngModel)]="searchName"
+    (ionChange)="onNameSearch($event)"
+    placeholder="Ou busque pelo nome do funcionário"
+    interface="popover"
+    cancelText="Cancelar"
+    okText="Selecionar">
+    <ion-select-option *ngFor="let employee of filteredEmployees" [value]="employee.internal_code">
+      {{ employee.name }}
+    </ion-select-option>
+  </ion-select>
+</ion-item>
+
+          <ion-list *ngIf="showEmployeeList && filteredEmployees.length > 0" class="employee-list">
+            <ion-item button *ngFor="let employee of filteredEmployees" (click)="selectEmployee(employee)">
+              <ion-label>{{employee.name}}</ion-label>
+              <ion-note slot="end" color="medium">{{employee.internal_code}}</ion-note>
+            </ion-item>
+          </ion-list>
+
           <ion-button expand="block" 
                       class="kiosk-button" 
                       (click)="markAttendance('code')"
@@ -137,7 +167,7 @@ import { AuthMethod } from '../../services/employee.service';
       margin-top: 24px;
     }
 
-    .code-input {
+    .code-input, .name-search {
       margin-bottom: 16px;
       --background: rgba(var(--app-medium-rgb), 0.1);
       border-radius: 12px;
@@ -159,6 +189,48 @@ import { AuthMethod } from '../../services/employee.service';
         }
       }
     }
+
+    .employee-list {
+      margin-top: -8px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.1);
+
+      ion-item {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --background: white;
+        --border-color: rgba(var(--app-medium-rgb), 0.1);
+
+        &:hover {
+          --background: rgba(var(--app-primary-rgb), 0.05);
+        }
+
+        ion-label {
+          font-size: 16px;
+          color: var(--app-primary);
+        }
+
+        ion-note {
+          font-size: 14px;
+          color: var(--app-medium);
+        }
+      }
+    }
+    .name-search {
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    font-size: 18px;
+  }
+
+  ion-select::part(text) {
+    color: var(--ion-color-medium);
+  }
+}
 
     .kiosk-button {
       margin: 8px 0;
@@ -227,6 +299,9 @@ export class AttendanceKioskPage implements OnInit {
   isLoading = false;
   showError = false;
   isQRScannerVisible = false;
+  searchName = '';
+  filteredEmployees: any[] = [];
+  showEmployeeList = false;
 
   constructor(
     private employeeService: EmployeeService,
@@ -237,14 +312,25 @@ export class AttendanceKioskPage implements OnInit {
     private modalController: ModalController
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.checkAuthentication();
+    await this.loadEmployees();
   }
 
   private checkAuthentication() {
     this.authService.isAuthenticated().subscribe(
       isAuth => this.isAuthenticated = isAuth
     );
+  }
+
+  private async loadEmployees() {
+    try {
+      const employees = await this.employeeService.getEmployees();
+      this.filteredEmployees = employees.sort((a, b) => a.name.localeCompare(b.name));
+    } catch (error) {
+      console.error('Erro ao carregar funcionários:', error);
+      this.showToast('Erro ao carregar lista de funcionários', 'danger');
+    }
   }
 
   onCodeChange(event: any) {
@@ -363,6 +449,26 @@ export class AttendanceKioskPage implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async onNameSearch(event: any) {
+    const selectedCode = event.detail.value;
+    if (selectedCode) {
+      this.employeeCode = selectedCode;
+      this.isValidCode = true;
+      const selectedEmployee = this.filteredEmployees.find(emp => emp.internal_code === selectedCode);
+      if (selectedEmployee) {
+        await this.markAttendance('code');
+        this.searchName = ''; // Clear the search field after registration
+      }
+    }
+  }
+  selectEmployee(employee: any) {
+    this.employeeCode = employee.internal_code;
+    this.searchName = '';
+    this.showEmployeeList = false;
+    this.filteredEmployees = [];
+    this.isValidCode = true;
   }
 
   private playSuccessSound() {
