@@ -64,7 +64,7 @@ import { AuthMethod } from '../../services/employee.service';
             </ion-input>
           </ion-item> -->
 
-          <ion-item class="name-search">
+          <!-- <ion-item class="name-search">
   <ion-select
     [(ngModel)]="searchName"
     (ionChange)="onNameSearch($event)"
@@ -76,7 +76,7 @@ import { AuthMethod } from '../../services/employee.service';
       {{ employee.name }}
     </ion-select-option>
   </ion-select>
-</ion-item>
+</ion-item> -->
 
           <ion-list *ngIf="showEmployeeList && filteredEmployees.length > 0" class="employee-list">
             <ion-item button *ngFor="let employee of filteredEmployees" (click)="selectEmployee(employee)">
