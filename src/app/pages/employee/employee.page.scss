@@ -1,3 +1,84 @@
 :host {
   display: block;
 }
+
+.custom-background {
+  --background: var(--ion-color-light);
+}
+
+.add-employee-card {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.add-employee-button {
+  --border-radius: 12px;
+  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+  height: 56px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.employees-card {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: var(--ion-color-dark);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.employee-list {
+  background: transparent;
+}
+
+.employee-item {
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  margin-bottom: 8px;
+  --border-color: transparent;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.avatar-icon {
+  font-size: 2rem;
+  color: var(--ion-color-primary);
+}
+
+.empty-state {
+  --background: transparent;
+  --border-color: transparent;
+  padding: 32px 16px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .add-employee-card, .employees-card {
+    background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+
+  .employee-item {
+    --background: rgba(var(--ion-color-light-rgb), 0.1);
+  }
+
+  .section-title {
+    color: var(--ion-color-light);
+  }
+}

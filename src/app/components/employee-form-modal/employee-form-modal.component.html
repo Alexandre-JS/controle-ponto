@@ -1,0 +1,58 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Novo Funcionário</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-card">
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+      <h2 class="form-title">
+        <ion-icon name="person-add-outline" color="primary"></ion-icon>
+        Cadastrar Funcionário
+      </h2>
+
+      <ion-list class="custom-list">
+        <ion-item class="custom-item">
+          <ion-label position="floating">Nome Completo</ion-label>
+          <ion-input formControlName="name" type="text" class="custom-input"></ion-input>
+          <ion-note slot="error" *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched">
+            {{ getErrorMessage('name') }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item class="custom-item">
+          <ion-label position="floating">Cargo</ion-label>
+          <ion-input type="text" formControlName="position" class="custom-input"></ion-input>
+        </ion-item>
+
+        <ion-item class="custom-item">
+          <ion-label position="floating">Departamento</ion-label>
+          <ion-select formControlName="department" class="custom-select">
+            <ion-select-option *ngFor="let dept of departments" [value]="dept">
+              {{ dept }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <div class="button-group">
+        <ion-button expand="block" fill="clear" (click)="cancel()" class="cancel-button">
+          <ion-icon name="close-outline" slot="start"></ion-icon>
+          Cancelar
+        </ion-button>
+
+        <ion-button expand="block" type="submit" [disabled]="!employeeForm.valid || isLoading" class="submit-button">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          <span *ngIf="!isLoading">Cadastrar</span>
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>

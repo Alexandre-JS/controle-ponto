@@ -1,0 +1,78 @@
+.form-card {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: var(--ion-color-dark);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.custom-list {
+  background: transparent;
+}
+
+.custom-item {
+  --background: var(--ion-color-light);
+  --border-color: var(--ion-color-medium);
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin-bottom: 12px;
+}
+
+.custom-input, .custom-select {
+  --padding-start: 0;
+  font-size: 1rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-button {
+  --border-radius: 8px;
+  --color: var(--ion-color-medium);
+  flex: 1;
+}
+
+.submit-button {
+  --border-radius: 8px;
+  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+  flex: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-card {
+    background: rgba(var(--ion-color-light-rgb), 0.05);
+  }
+
+  .custom-item {
+    --background: rgba(var(--ion-color-light-rgb), 0.1);
+  }
+
+  .form-title {
+    color: var(--ion-color-light);
+  }
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 576px) {
+  .button-group {
+    flex-direction: column;
+  }
+
+  .cancel-button,
+  .submit-button {
+    flex: 1;
+  }
+}
