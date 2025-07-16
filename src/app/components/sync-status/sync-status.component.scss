@@ -1,0 +1,149 @@
+.sync-status-container {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 60px;
+  --background: rgba(var(--ion-color-light-rgb), 0.5);
+  margin-bottom: 4px;
+  border-radius: 8px;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.offline-message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ion-color-medium);
+  font-size: 0.85em;
+  margin-top: 4px;
+}
+
+.sync-details {
+  --padding-start: 48px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  --background: rgba(var(--ion-color-light-rgb), 0.3);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.unsynced-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sync-error {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  margin: 8px 0;
+  border-radius: 8px;
+}
+
+.sync-error ion-label h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.sync-error ion-label p {
+  margin: 4px 0 0 0;
+  font-size: 0.9em;
+}
+
+.sync-stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  .details-button {
+    margin-left: 5px;
+    height: 20px;
+    --padding-start: 4px;
+    --padding-end: 4px;
+    font-size: 0.8em;
+    --color: var(--ion-color-medium);
+    
+    &:hover {
+      --color: var(--ion-color-primary);
+    }
+  }
+}
+
+/* Animação para o ícone de sincronização */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.syncing-icon {
+  animation: spin 1.5s linear infinite;
+}
+
+/* Estilo para o botão de sincronização */
+.sync-actions ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  height: 36px;
+}
+
+.sync-actions ion-button:hover {
+  --background: rgba(var(--ion-color-primary-rgb), 0.1);
+  --border-radius: 4px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 576px) {
+  .sync-status-container {
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+  
+  .sync-details {
+    --padding-start: 36px;
+  }
+  
+  .unsynced-items ion-chip {
+    font-size: 0.8em;
+  }
+}
+
+/* Tema escuro */
+@media (prefers-color-scheme: dark) {
+  .sync-status-container {
+    --background: rgba(var(--ion-color-dark-rgb), 0.3);
+  }
+  
+  .sync-details {
+    --background: rgba(var(--ion-color-dark-rgb), 0.2);
+  }
+  
+  .sync-error {
+    --background: rgba(var(--ion-color-danger-rgb), 0.1);
+  }
+}
+
+/* Estilos para controles de grande acúmulo */
+.sync-backlog-warning {
+  --background: rgba(var(--ion-color-danger-rgb), 0.1);
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.sync-backlog-actions {
+  --background: transparent;
+  margin-bottom: 16px;
+}
+
+.backlog-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  ion-button {
+    margin: 0;
+  }
+}

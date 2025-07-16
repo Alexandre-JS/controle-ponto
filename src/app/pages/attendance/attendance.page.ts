@@ -6,6 +6,7 @@ import { Employee, Attendance, AttendanceStatus, WorkStatus } from '../../models
 import { EmployeeService } from '../../services/employee.service';
 import { Router } from '@angular/router';
 import { StatusService } from '../../services/status.service';
+import { NetworkService } from '../../services/network.service';
 
 @Component({
   selector: 'app-attendance',
@@ -26,7 +27,8 @@ export class AttendancePage implements OnInit {
     private employeeService: EmployeeService,
     private toastController: ToastController,
     private router: Router,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private networkService: NetworkService
   ) {
     this.attendanceForm = this.formBuilder.group({
       employee_id: ['', Validators.required],
@@ -105,21 +107,40 @@ export class AttendancePage implements OnInit {
   async onSubmit() {
     if (this.attendanceForm.valid) {
       try {
+        this.isLoading = true;
         const formValue = this.attendanceForm.value;
+        
         await this.employeeService.registerAttendance(
           formValue.employee_id,
           formValue.auth_method
         );
-        this.showToast('Presença registrada com sucesso', 'success');
+        
+        // Verificar se está offline para mostrar mensagem específica
+        const isOffline = !this.networkService.isOnline();
+        if (isOffline) {
+          this.showToast('Presença registrada localmente. Será sincronizada quando houver conexão.', 'success');
+        } else {
+          this.showToast('Presença registrada com sucesso', 'success');
+        }
+        
         this.attendanceForm.reset({
           date: new Date().toISOString(),
           status: 'Presente',
           auth_method: 'code'
         });
-        this.loadTodayAttendance();
-      } catch (error) {
-        this.showToast('Erro ao registrar presença', 'danger');
+        
+        // Recarregar os dados
+        await this.loadTodayAttendance();
+      } catch (error: any) {
+        console.error('Erro ao registrar presença:', error);
+        // Mostrar mensagem de erro específica se disponível
+        const errorMessage = error.message || 'Erro ao registrar presença';
+        this.showToast(errorMessage, 'danger');
+      } finally {
+        this.isLoading = false;
       }
+    } else {
+      this.showToast('Por favor, preencha todos os campos obrigatórios', 'warning');
     }
   }
 
