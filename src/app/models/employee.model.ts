@@ -11,6 +11,8 @@ export interface Employee {
   department: string;
   created_at: string;
   qr_code: string;
+  synced?: boolean;            // Para controle de sincronização
+  cached_at?: Date;            // Para controle de cache
 }
 
 // For creating new employees
@@ -36,6 +38,8 @@ export interface Attendance {
   observations?: string;
   auth_method: AuthMethod;
   created_at?: Date;
+  synced?: boolean;            // Para controle de sincronização
+  cached_at?: Date;            // Para controle de cache
   // updated_at?: Date;
 }
 
@@ -44,5 +48,11 @@ export interface WorkSchedule {
   start_time: string;  // Changed from startTime
   end_time: string;    // Changed from endTime
   work_days: number[];
+  late_tolerance?: number;      // Tolerância de atraso em minutos
+  daily_hours?: number;         // Carga horária diária
+  auto_checkout?: boolean;      // Checkout automático
+  require_location?: boolean;   // Verificação de localização obrigatória
   created_at?: string;
+  synced?: boolean;            // Para controle de sincronização
+  cached_at?: Date;            // Para controle de cache
 }

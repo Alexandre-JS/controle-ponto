@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
+import { NetworkService } from '../../services/network.service';
 import { AttendanceConfirmationComponent } from '../../components/attendance-confirmation/attendance-confirmation.component';
 import { QRScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
 import { QRScannerModule } from '../../components/qr-scanner/qr-scanner.module';
@@ -306,6 +307,7 @@ export class AttendanceKioskPage implements OnInit {
   searchName = '';
   filteredEmployees: any[] = [];
   showEmployeeList = false;
+  isProcessing = false; // Flag para controlar o processamento de registro de ponto
 
   constructor(
     private employeeService: EmployeeService,
@@ -313,7 +315,8 @@ export class AttendanceKioskPage implements OnInit {
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private networkService: NetworkService
   ) {}
 
   async ngOnInit() {
@@ -351,9 +354,18 @@ export class AttendanceKioskPage implements OnInit {
         return;
       }
 
+      // Exibir indicador de carregamento
+      this.isProcessing = true;
+
       const employee = await this.employeeService.findEmployeeByCode(this.employeeCode);
       if (!employee) {
-        this.showToast('Funcionário não encontrado', 'danger');
+        // Mensagem mais específica para modo offline
+        if (!this.networkService.isOnline()) {
+          this.showToast('Funcionário não encontrado no cache local. Verifique o código ou conecte-se à internet.', 'danger');
+        } else {
+          this.showToast('Funcionário não encontrado. Verifique o código inserido.', 'danger');
+        }
+        this.isProcessing = false;
         return;
       }
 
@@ -361,10 +373,25 @@ export class AttendanceKioskPage implements OnInit {
       const isCheckOut = await this.checkIfCheckOut(employee.id);
 
       const confirmed = await this.showConfirmationModal(employee.name, currentTime, isCheckOut);
-      if (!confirmed) return;
+      if (!confirmed) {
+        this.isProcessing = false;
+        return;
+      }
 
       this.isLoading = true;
       await this.employeeService.registerAttendance(this.employeeCode, method);
+
+      // Verificar status da rede para mostrar mensagem apropriada
+      const isOffline = !this.networkService.isOnline();
+      if (isOffline) {
+        this.showToast(
+          'Registro realizado localmente com sucesso! Será sincronizado quando houver conexão.',
+          'success',
+          5000
+        );
+      } else {
+        this.showToast('Registro realizado com sucesso!', 'success');
+      }
 
       this.employeeCode = '';
       this.isValidCode = false;
@@ -408,10 +435,10 @@ export class AttendanceKioskPage implements OnInit {
     return data;
   }
 
-  private async showToast(message: string, color: string) {
+  private async showToast(message: string, color: string, duration: number = 2000) {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: duration,
       color,
       position: 'middle'
     });

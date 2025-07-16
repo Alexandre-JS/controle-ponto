@@ -1,0 +1,125 @@
+<ion-item lines="none" class="sync-status-container">
+  <ion-icon 
+    [name]="getStatusIcon()" 
+    [color]="getStatusColor()" 
+    [class.syncing-icon]="isSyncing"
+    slot="start">
+  </ion-icon>
+  
+  <ion-label>
+    <h3>{{ getStatusText() }}</h3>
+    <p *ngIf="lastSync">{{ getLastSyncText() }}</p>
+    <p *ngIf="getSyncStats()" class="sync-stats">
+      <ion-icon name="analytics-outline" size="small"></ion-icon>
+      {{ getSyncStats() }}
+      <!-- Botão de detalhes quando houver falhas -->
+      <ion-button *ngIf="syncStats.errorCount > 0" 
+                 fill="clear" 
+                 size="small"
+                 (click)="showSyncFailureDetails()"
+                 class="details-button">
+        <ion-icon name="help-circle-outline" size="small"></ion-icon>
+        Detalhes
+      </ion-button>
+    </p>
+    <p *ngIf="!isOnline" class="offline-message">
+      <ion-icon name="cloud-offline-outline" size="small"></ion-icon>
+      Modo offline - os dados serão sincronizados quando a conexão for restaurada
+    </p>
+  </ion-label>
+
+  <!-- Botões de ação -->
+  <div slot="end" class="sync-actions">
+    <ion-button 
+      *ngIf="isOnline && !isSyncing && (pendingSyncCount > 0 || syncError)"
+      fill="clear" 
+      size="small" 
+      (click)="forcSync()"
+      title="Sincronizar tudo">
+      <ion-icon name="sync-outline"></ion-icon>
+    </ion-button>
+    
+    <ion-button 
+      *ngIf="isOnline && !isSyncing && pendingSyncCount > 0"
+      fill="clear" 
+      size="small" 
+      (click)="syncOnlyUploads()"
+      title="Apenas enviar alterações">
+      <ion-icon name="cloud-upload-outline"></ion-icon>
+    </ion-button>
+    
+    <!-- Botão de opções avançadas quando houver falhas -->
+    <ion-button
+      *ngIf="isOnline && !isSyncing && syncStats.errorCount > 0"
+      fill="clear"
+      size="small"
+      (click)="showAdvancedSyncOptions()"
+      title="Opções avançadas de sincronização">
+      <ion-icon name="options-outline"></ion-icon>
+    </ion-button>
+  </div>
+</ion-item>
+
+<!-- Detalhes dos itens não sincronizados -->
+<ion-item *ngIf="pendingSyncCount > 0" lines="none" class="sync-details">
+  <ion-label>
+    <div class="unsynced-items">
+      <ion-chip 
+        *ngFor="let item of getUnsyncedItemsList()" 
+        color="warning" 
+        size="small">
+        <ion-label>{{ item.label }}: {{ item.count }}</ion-label>
+      </ion-chip>
+    </div>
+  </ion-label>
+</ion-item>
+
+<!-- Erro de sincronização -->
+<ion-item *ngIf="syncError" lines="none" color="danger" class="sync-error">
+  <ion-icon name="alert-circle-outline" slot="start"></ion-icon>
+  <ion-label>
+    <h3>Erro na Sincronização</h3>
+    <p>{{ syncError }}</p>
+  </ion-label>
+  <ion-button 
+    fill="clear" 
+    slot="end" 
+    (click)="dismissError()">
+    <ion-icon name="close-outline"></ion-icon>
+  </ion-button>
+</ion-item>
+
+<!-- Indicador de sincronização em progresso -->
+<ion-progress-bar 
+  *ngIf="isSyncing" 
+  type="indeterminate" 
+  color="primary">
+</ion-progress-bar>
+
+<!-- Controles de grande acúmulo -->
+<ion-item *ngIf="hasLargeSyncBacklog()" lines="none" class="sync-backlog-warning">
+  <ion-icon name="warning-outline" color="danger" slot="start"></ion-icon>
+  <ion-label color="danger">
+    <h3>Grande volume de dados pendentes</h3>
+    <p>Há muitos itens na fila de sincronização, o que pode causar lentidão. Tente as opções abaixo:</p>
+  </ion-label>
+</ion-item>
+
+<ion-item *ngIf="hasLargeSyncBacklog()" lines="none" class="sync-backlog-actions">
+  <div class="backlog-actions">
+    <ion-button expand="block" fill="outline" color="warning" (click)="resolveBacklog()">
+      <ion-icon name="sync-outline" slot="start"></ion-icon>
+      Resolver acúmulo (em lotes)
+    </ion-button>
+    
+    <ion-button expand="block" fill="outline" color="medium" (click)="clearOldSyncItems()">
+      <ion-icon name="trash-outline" slot="start"></ion-icon>
+      Limpar itens antigos
+    </ion-button>
+    
+    <ion-button expand="block" fill="outline" color="tertiary" (click)="showSyncQueueDiagnostic()">
+      <ion-icon name="analytics-outline" slot="start"></ion-icon>
+      Diagnóstico da fila
+    </ion-button>
+  </div>
+</ion-item>

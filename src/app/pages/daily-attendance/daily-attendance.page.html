@@ -1,12 +1,40 @@
-<app-header
-  title="Dashboard"
-  icon="speedometer-outline"
-  [showMenu]="true"
-  [showThemeToggle]="true"
-  [showNotifications]="true">
-</app-header>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="speedometer-outline" class="title-icon"></ion-icon>
+      Dashboard
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="syncData(true)" [disabled]="!isOnline || pendingSyncCount === 0">
+        <ion-icon slot="icon-only" name="sync-outline"></ion-icon>
+        <ion-badge *ngIf="pendingSyncCount > 0" color="warning" class="sync-badge">{{ pendingSyncCount }}</ion-badge>
+      </ion-button>
+      <ion-button>
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 
-<ion-content class="ion-padding">
+  <!-- Status offline -->
+  <div class="offline-banner" *ngIf="!isOnline">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <span>Você está offline. Os dados serão sincronizados quando a conexão for restaurada.</span>
+  </div>
+</ion-header>
+
+<ion-content class="ion-padding custom-background">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshData($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Puxe para atualizar"
+      refreshingSpinner="circles"
+      refreshingText="Atualizando dados...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <!-- Welcome Section -->
   <div class="page-container">
     <ion-card class="welcome-card app-card">
@@ -17,8 +45,8 @@
             <ion-card-title>
               <h1 class="greeting-text text-heading">{{ getGreeting() }}</h1>
             </ion-card-title>
-            <ion-card-subtitle class="date-text text-body">
-              <!-- {{ currentDate | date:'EEEE, d MMMM yyyy' }} -->
+            <ion-card-subtitle class="date-text">
+              {{ currentTime | date:'EEEE, d MMMM yyyy' }}
             </ion-card-subtitle>
           </div>
           <div class="time-display">
@@ -34,11 +62,11 @@
             <ion-label>{{ workStatus }}</ion-label>
           </ion-chip>
           <div class="quick-actions">
-            <ion-button size="small" fill="clear" color="primary" class="app-button-secondary">
+            <ion-button size="small" fill="clear" color="primary" (click)="goToAttendanceControl()">
               <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
             </ion-button>
-            <ion-button size="small" fill="clear" color="secondary" class="app-button-secondary">
-              <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+            <ion-button size="small" fill="clear" color="secondary" (click)="goToKiosk()">
+              <ion-icon slot="icon-only" name="qr-code-outline"></ion-icon>
             </ion-button>
           </div>
         </div>
@@ -48,34 +76,54 @@
     <!-- Statistics Cards -->
     <ion-grid class="stats-grid">
       <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-card class="stat-card present-card app-card">
+        <ion-col size="6" size-md="3">
+          <ion-card class="stat-card present-card">
             <ion-card-content>
               <div class="stat-icon-container">
                 <ion-icon name="checkmark-circle" class="stat-icon"></ion-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-value text-display">{{ totalPresent }}</div>
-                <div class="stat-label text-body">Funcionários Presentes</div>
-                <div class="stat-progress">
-                  <div class="progress-bar" [style.width.%]="(totalPresent / (totalPresent + totalAbsent)) * 100"></div>
-                </div>
+                <div class="stat-value">{{ totalPresent }}</div>
+                <div class="stat-label">Presentes</div>
               </div>
             </ion-card-content>
           </ion-card>
         </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-card class="stat-card absent-card app-card">
+        <ion-col size="6" size-md="3">
+          <ion-card class="stat-card late-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="time" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalLate }}</div>
+                <div class="stat-label">Atrasados</div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6" size-md="3">
+          <ion-card class="stat-card absent-card">
             <ion-card-content>
               <div class="stat-icon-container">
                 <ion-icon name="close-circle" class="stat-icon"></ion-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-value text-display">{{ totalAbsent }}</div>
-                <div class="stat-label text-body">Funcionários Ausentes</div>
-                <div class="stat-progress">
-                  <div class="progress-bar" [style.width.%]="(totalAbsent / (totalPresent + totalAbsent)) * 100"></div>
-                </div>
+                <div class="stat-value">{{ totalAbsent }}</div>
+                <div class="stat-label">Ausentes</div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6" size-md="3">
+          <ion-card class="stat-card justified-card">
+            <ion-card-content>
+              <div class="stat-icon-container">
+                <ion-icon name="document-text" class="stat-icon"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ totalJustified }}</div>
+                <div class="stat-label">Justificados</div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -89,80 +137,64 @@
         <div class="attendance-header">
           <ion-card-title class="text-heading">
             <ion-icon name="calendar-outline"></ion-icon>
-            Registros de Hoje
+            <span>Presença de Hoje</span>
           </ion-card-title>
-          <ion-button fill="clear" size="small" color="primary" class="app-button-secondary">
-            Ver todos <ion-icon name="chevron-forward-outline"></ion-icon>
-          </ion-button>
+          <div class="last-update">
+            <ion-note>Atualizado {{ getLastUpdateTime() }}</ion-note>
+          </div>
         </div>
       </ion-card-header>
-      <ion-card-content>
-        <ion-list *ngIf="todayAttendance.length > 0; else noRecords" class="attendance-list">
-          <div class="table-container">
-            <table class="attendance-table">
-              <thead>
-                <tr>
-                  <th class="employee-col">Funcionário</th>
-                  <th class="time-col">Entrada</th>
-                  <th class="time-col">Saída</th>
-                  <th class="status-col">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let record of todayAttendance" class="record-row">
-                  <td class="employee-col">
-                    <div class="employee-info">
-                      <div class="employee-avatar">
-                        <ion-icon name="person"></ion-icon>
-                      </div>
-                      <div class="employee-name">{{ record.employee?.name || 'Nome não encontrado' }}</div>
-                    </div>
-                  </td>
-                  <td class="time-col">
-                    <div class="time-info">
-                      <ion-icon name="enter-outline" class="time-icon"></ion-icon>
-                      {{ record.check_in }}
-                    </div>
-                  </td>
-                  <td class="time-col">
-                    <div class="time-info">
-                      <ion-icon name="exit-outline" class="time-icon"></ion-icon>
-                      {{ record.check_out || '-' }}
-                    </div>
-                  </td>
-                  <td class="status-col">
-                    <ion-badge [color]="getStatusColor(record.status)" class="status-badge">
-                      {{ getStatusLabel(record.status) }}
-                    </ion-badge>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <ion-card-content class="ion-no-padding">
+        <ion-list lines="full" class="attendance-list">
+          <!-- Loading state -->
+          <div *ngIf="isLoading" class="loading-state">
+            <ion-spinner name="circles"></ion-spinner>
+            <ion-label>Carregando dados...</ion-label>
           </div>
+
+          <!-- Empty state -->
+          <div *ngIf="!isLoading && todayAttendance.length === 0" class="empty-state">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <ion-text>Nenhum registro de presença para hoje</ion-text>
+          </div>
+
+          <!-- Attendance data -->
+          <ion-item *ngFor="let record of todayAttendance">
+            <ion-avatar slot="start">
+              <img src="assets/avatar-placeholder.png" alt="avatar">
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ record.employee?.name || 'Funcionário' }}</h2>
+              <p>{{ record.employee?.position || 'Cargo não definido' }}</p>
+            </ion-label>
+            <div slot="end" class="attendance-time">
+              <div>
+                <ion-icon name="arrow-forward-outline" color="success"></ion-icon>
+                {{ record.check_in || '--:--' }}
+              </div>
+              <div>
+                <ion-icon name="arrow-back-outline" color="danger"></ion-icon>
+                {{ record.check_out || '--:--' }}
+              </div>
+              <ion-chip [color]="getStatusColor(record.status)" size="small" class="status-small-chip">
+                {{ getStatusLabel(record.status) }}
+              </ion-chip>
+            </div>
+          </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
 
-    <ng-template #noRecords>
-      <div class="empty-state">
-        <div class="empty-icon-container">
-          <ion-icon name="calendar-outline"></ion-icon>
-        </div>
-        <h2>Nenhum registro hoje</h2>
-        <p>Clique no botão + para registrar presenças</p>
-        <ion-button color="primary" size="small">
-          <ion-icon name="add-outline" slot="start"></ion-icon>
-          Registrar Ponto
-        </ion-button>
-      </div>
-    </ng-template>
+    <!-- Sync status at the bottom -->
+    <div class="sync-status">
+      <ion-chip [color]="isOnline ? 'success' : 'medium'" class="sync-chip" (click)="syncData(true)">
+        <ion-icon [name]="isOnline ? 'cloud-done' : 'cloud-offline'"></ion-icon>
+        <ion-label>
+          {{ isOnline ? (pendingSyncCount > 0 ? pendingSyncCount + ' itens pendentes' : 'Sincronizado') : 'Offline' }}
+        </ion-label>
+      </ion-chip>
+    </div>
   </div>
-
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="goToKiosk()" class="fab-button">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>
 
 <!-- <style>
