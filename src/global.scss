@@ -41,12 +41,12 @@
 
 :root{
   /* Cores Primárias - Modern Blue */
-  --ion-color-primary: #3B82F6;
-  --ion-color-primary-rgb: 59, 130, 246;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #3472d8;
-  --ion-color-primary-tint: #4f8ff7;
+	--ion-color-primary: #1e1f2b;
+	--ion-color-primary-rgb: 30,31,43;
+	--ion-color-primary-contrast: #ffffff;
+	--ion-color-primary-contrast-rgb: 255,255,255;
+	--ion-color-primary-shade: #1a1b26;
+	--ion-color-primary-tint: #353540;
 
   /* Cores Secundárias */
   --ion-color-secondary: #50bac3;
@@ -112,7 +112,7 @@
   --app-background: #ffffff;
   --app-surface: #f6f8fa; /* Melhorado o contraste em relação ao background */
   --app-card: #f6f8fa; /* Melhorado o contraste em relação ao background */
-  --app-primary: #3B82F6;
+  --app-primary: #1e1f2b;
   --app-accent: #FF5C93;
   --app-highlight: #8B5CF6;
   --app-text-primary: #1E1E2F;
@@ -1012,11 +1012,11 @@ ion-item ion-label p {
 
 /* Modal Styles */
 ion-modal {
-  --background: transparent;
+  --background: var(--app-background);
 }
 
 ion-modal ion-content {
-  --background: transparent;
+  --background: var(--app-background);
 }
 
 /* Tab Styles */
@@ -1243,7 +1243,7 @@ body.theme-dark {
   font-weight: 600 !important;
 
   &:hover {
-    --background: var(--app-accent) !important;
+    --background: #000 !important;
     transform: translateY(-1px);
     transition: all 0.2s ease;
   }
