@@ -9,40 +9,44 @@ import { AttendanceConfirmationComponent } from '../../components/attendance-con
 import { QRScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
 import { QRScannerModule } from '../../components/qr-scanner/qr-scanner.module';
 import { AuthMethod } from '../../services/employee.service';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-attendance-kiosk',
   standalone: true,
   imports: [
-    CommonModule, 
-    IonicModule, 
-    FormsModule, 
+    CommonModule,
+    IonicModule,
+    FormsModule,
     RouterModule,
     AttendanceConfirmationComponent,
     QRScannerComponent,
-    QRScannerModule
+    QRScannerModule,
+    AppHeaderComponent
   ],
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Registro de Ponto</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="goToAdmin()">
-            <ion-icon slot="start" name="settings-outline"></ion-icon>
-            Gerenciar Sistema
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <app-header
+      title="Registro de Ponto"
+      icon="stopwatch-outline"
+      [showMenu]="false"
+      [showNotifications]="false"
+      [showThemeToggle]="true">
+      <ion-buttons slot="end">
+        <ion-button (click)="goToAdmin()">
+          <ion-icon slot="start" name="settings-outline"></ion-icon>
+          Gerenciar Sistema
+        </ion-button>
+      </ion-buttons>
+    </app-header>
 
     <ion-content class="ion-padding attendance-kiosk">
-      <div class="kiosk-container">
-        <h1 class="ion-text-center">IDENTIFIQUE-SE PARA</h1>
-        <h2 class="ion-text-center">MARCAR PRESENÇA</h2>
-        
+      <div class="kiosk-container app-card">
+        <h1 class="ion-text-center text-heading">IDENTIFIQUE-SE PARA</h1>
+        <h2 class="ion-text-center text-heading">MARCAR PRESENÇA</h2>
+
         <div class="kiosk-buttons">
-          <ion-item class="code-input">
-            <ion-input 
+          <ion-item class="code-input form-item">
+            <ion-input
               [(ngModel)]="employeeCode"
               (ionChange)="onCodeChange($event)"
               placeholder="Digite código (AEM123)"
@@ -56,7 +60,7 @@ import { AuthMethod } from '../../services/employee.service';
           </ion-item>
 
           <!-- <ion-item class="name-search">
-            <ion-input 
+            <ion-input
               [(ngModel)]="searchName"
               (ionChange)="onNameSearch($event)"
               placeholder="Ou busque pelo nome do funcionário"
@@ -85,8 +89,8 @@ import { AuthMethod } from '../../services/employee.service';
             </ion-item>
           </ion-list>
 
-          <ion-button expand="block" 
-                      class="kiosk-button" 
+          <ion-button expand="block"
+                      class="kiosk-button app-button"
                       (click)="markAttendance('code')"
                       [disabled]="!isValidCode">
             <ion-icon name="log-in-outline" slot="start" size="large"></ion-icon>
@@ -94,8 +98,8 @@ import { AuthMethod } from '../../services/employee.service';
           </ion-button>
 
           <div class="alternative-methods">
-            <ion-button expand="block" 
-                      class="kiosk-button" 
+            <ion-button expand="block"
+                      class="kiosk-button app-button-secondary"
                       (click)="showQRScanner()">
               <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
               ESCANEAR QR CODE
@@ -355,13 +359,13 @@ export class AttendanceKioskPage implements OnInit {
 
       const currentTime = new Date().toLocaleTimeString().substring(0, 5);
       const isCheckOut = await this.checkIfCheckOut(employee.id);
-      
+
       const confirmed = await this.showConfirmationModal(employee.name, currentTime, isCheckOut);
       if (!confirmed) return;
 
       this.isLoading = true;
       await this.employeeService.registerAttendance(this.employeeCode, method);
-      
+
       this.employeeCode = '';
       this.isValidCode = false;
 
@@ -385,8 +389,8 @@ export class AttendanceKioskPage implements OnInit {
   }
 
   private async showConfirmationModal(
-    employeeName: string, 
-    currentTime: string, 
+    employeeName: string,
+    currentTime: string,
     isCheckOut: boolean
   ): Promise<boolean> {
     const modal = await this.modalController.create({
@@ -435,10 +439,10 @@ export class AttendanceKioskPage implements OnInit {
     try {
       this.isLoading = true;
       const result = await this.employeeService.registerAttendanceByQRCode(qrData);
-      
+
       // Usar a mensagem personalizada retornada do serviço
       this.showToast(result.message, result.success ? 'success' : 'warning');
-      
+
       if (result.success) {
         // Tocar um som de sucesso ou realizar outras ações necessárias
         this.playSuccessSound();

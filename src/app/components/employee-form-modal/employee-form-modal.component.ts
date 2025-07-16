@@ -4,8 +4,6 @@ import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule, A
 import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { Employee, CreateEmployeeDto } from '../../models/employee.model';
 import { EmployeeService } from '../../services/employee.service';
-import { SuccessModalComponent } from '../success-modal/success-modal.component';
-import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-employee-form-modal',
@@ -68,52 +66,16 @@ export class EmployeeFormModalComponent implements OnInit {
         }
 
         const employee = await this.employeeService.createEmployee(employeeData);
-        await this.showSuccessModal(employee.name, employee.internal_code);
+        this.showToast('Funcionário cadastrado com sucesso!', 'success');
         this.employeeForm.reset();
         this.dismiss(true); // Retorna true para indicar que um funcionário foi criado
       } catch (error: any) {
         console.error('Erro ao criar funcionário:', error);
-        await this.showErrorModal(error.message || 'Erro ao cadastrar funcionário');
+        this.showToast(error.message || 'Erro ao cadastrar funcionário', 'danger');
       } finally {
         this.isLoading = false;
       }
     }
-  }
-
-  private async showSuccessModal(name: string, code: string) {
-    const modal = await this.modalController.create({
-      component: SuccessModalComponent,
-      componentProps: {
-        employeeName: name,
-        employeeCode: code
-      },
-      cssClass: 'success-modal',
-      breakpoints: [0, 0.8],
-      initialBreakpoint: 0.8,
-      backdropDismiss: false,
-      showBackdrop: true
-    });
-
-    await modal.present();
-    const { data: createNew } = await modal.onWillDismiss();
-
-    if (createNew) {
-      this.employeeForm.reset();
-    }
-  }
-
-  private async showErrorModal(message: string) {
-    const modal = await this.modalController.create({
-      component: ConfirmModalComponent,
-      componentProps: {
-        title: 'Erro',
-        message: message,
-        showCancelButton: false,
-        confirmText: 'OK'
-      },
-      cssClass: 'error-modal'
-    });
-    await modal.present();
   }
 
   private async showToast(message: string, color: string) {

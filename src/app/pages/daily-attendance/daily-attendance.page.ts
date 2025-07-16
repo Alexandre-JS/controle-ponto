@@ -7,12 +7,14 @@ import { AuthService } from '../../services/auth.service';
 import { StatusService, WorkStatus } from '../../services/status.service';
 import { interval, Subscription } from 'rxjs';
 import { AttendanceStatus } from '../../models/employee.model';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-daily-attendance',
   templateUrl: './daily-attendance.page.html',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule, ThemeToggleComponent, AppHeaderComponent]
 })
 export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   currentTime = new Date();
@@ -77,7 +79,7 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   getStatusColor(status: AttendanceStatus | WorkStatus): string {
     return this.statusService.getStatusColor(status);
   }
-  
+
   private async calculateStatistics() {
     try {
       // Atualizar status de cada registro
@@ -121,8 +123,8 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
 
   getGreeting(): string {
     const hour = this.currentTime.getHours();
-    const greeting = hour < 12 ? 'Bom dia' : 
-                    hour < 18 ? 'Boa tarde' : 
+    const greeting = hour < 12 ? 'Bom dia' :
+                    hour < 18 ? 'Boa tarde' :
                     'Boa noite';
     return `${greeting} ${this.userEmail}`;
   }

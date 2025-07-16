@@ -3,20 +3,23 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-settings',
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Configurações</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <app-header
+      title="Configurações"
+      icon="settings-outline"
+      [showMenu]="true"
+      [showNotifications]="false"
+      [showThemeToggle]="true">
+    </app-header>
 
     <ion-content class="ion-padding">
       <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
-        <ion-list>
-          <ion-item>
+        <ion-list class="form-list">
+          <ion-item class="form-item">
             <ion-label position="stacked">Horário de Início</ion-label>
             <ion-input
               type="time"
@@ -25,7 +28,7 @@ import { EmployeeService } from '../../services/employee.service';
             </ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item class="form-item">
             <ion-label position="stacked">Horário de Término</ion-label>
             <ion-input
               type="time"
@@ -34,7 +37,7 @@ import { EmployeeService } from '../../services/employee.service';
             </ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item class="form-item">
             <ion-label>Dias de Trabalho</ion-label>
             <ion-select multiple="true" formControlName="work_days">
               <ion-select-option value="1">Segunda</ion-select-option>
@@ -48,7 +51,7 @@ import { EmployeeService } from '../../services/employee.service';
           </ion-item>
         </ion-list>
 
-        <ion-button expand="block" type="submit" [disabled]="!scheduleForm.valid || isLoading">
+        <ion-button expand="block" type="submit" [disabled]="!scheduleForm.valid || isLoading" class="app-button">
           <ion-icon name="save-outline" slot="start"></ion-icon>
           Salvar Configurações
         </ion-button>
@@ -58,7 +61,7 @@ import { EmployeeService } from '../../services/employee.service';
     </ion-content>
   `,
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, AppHeaderComponent]
 })
 export class SettingsPage implements OnInit {
   scheduleForm: FormGroup;

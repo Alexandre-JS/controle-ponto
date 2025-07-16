@@ -4,13 +4,15 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { ThemeService } from './services/theme.service';
+import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule]
+  imports: [CommonModule, RouterModule, IonicModule, ThemeToggleComponent]
 })
 export class AppComponent implements OnInit {
   isAuthenticated = false;
@@ -29,7 +31,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {
     // Initialize auth state on app start
     this.authService.isAuthenticated().subscribe(isAuth => {
@@ -43,7 +46,7 @@ export class AppComponent implements OnInit {
     });
 
     this.checkScreenSize();
-    
+
     // Detectar mudanças de rota para identificar a página de login
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -51,7 +54,7 @@ export class AppComponent implements OnInit {
         // Verifica se a URL atual contém 'login'
         this.isLoginPage = event.url.includes('/login');
       });
-      
+
     // Verificação inicial ao carregar a aplicação
     this.isLoginPage = window.location.href.includes('/login');
   }

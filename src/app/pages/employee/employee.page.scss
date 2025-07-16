@@ -2,42 +2,50 @@
   display: block;
 }
 
-.custom-background {
-  --background: var(--ion-color-light);
+ion-content {
+  --background: var(--app-background);
 }
 
 .add-employee-card {
-  background: var(--ion-color-light);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  padding: 24px;
 }
 
 .add-employee-button {
   --border-radius: 12px;
-  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.2);
+  --box-shadow: var(--app-elevation-level1);
   height: 56px;
   font-size: 1.1rem;
   font-weight: 600;
+  font-family: var(--app-font-family);
+}
+
+.add-employee-button:hover {
+  --box-shadow: var(--app-elevation-level2);
+  transform: translateY(-2px);
 }
 
 .employees-card {
-  background: var(--ion-color-light);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 20px;
-  color: var(--ion-color-dark);
-  font-size: 1.2rem;
+  gap: 12px;
+  margin: 0 0 24px;
+  font-size: 1.3rem;
   font-weight: 600;
+  font-family: var(--app-font-family);
+}
+
+.section-title ion-button {
+  margin-left: auto;
+  --color: var(--app-primary);
+  --border: 1px solid var(--app-primary);
+  --border-radius: 8px;
+  font-size: 0.9rem;
 }
 
 .employee-list {
@@ -45,40 +53,67 @@
 }
 
 .employee-item {
-  --background: var(--ion-color-light);
+  --background: var(--app-surface);
   --border-radius: 12px;
-  margin-bottom: 8px;
-  --border-color: transparent;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --border-color: var(--app-divider);
+  margin-bottom: 12px;
+  box-shadow: var(--app-elevation-level1);
+  transition: all 0.3s ease;
+}
+
+.employee-item:hover {
+  box-shadow: var(--app-elevation-level2);
+  transform: translateY(-1px);
+}
+
+.employee-item ion-label h2 {
+  color: var(--app-heading-color);
+  font-weight: 600;
+  font-family: var(--app-font-family);
+  margin-bottom: 4px;
+}
+
+.employee-item ion-label p {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-family);
+  font-size: 0.9rem;
 }
 
 .avatar-icon {
-  font-size: 2rem;
-  color: var(--ion-color-primary);
+  font-size: 2.2rem;
+  color: var(--app-primary);
 }
 
 .empty-state {
   --background: transparent;
   --border-color: transparent;
-  padding: 32px 16px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.empty-state ion-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .empty-icon {
-  font-size: 3rem;
-  color: var(--ion-color-medium);
-  margin-bottom: 8px;
+  font-size: 4rem;
+  color: var(--app-text-secondary);
+  margin-bottom: 16px;
+  opacity: 0.6;
 }
 
-@media (prefers-color-scheme: dark) {
-  .add-employee-card, .employees-card {
-    background: rgba(var(--ion-color-light-rgb), 0.05);
-  }
+.empty-state p {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-family);
+  font-size: 1rem;
+  margin: 0;
+}
 
-  .employee-item {
-    --background: rgba(var(--ion-color-light-rgb), 0.1);
-  }
-
-  .section-title {
-    color: var(--ion-color-light);
-  }
+ion-chip {
+  --background: var(--app-primary);
+  --color: white;
+  font-family: var(--app-font-family);
+  font-weight: 500;
 }

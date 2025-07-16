@@ -1,22 +1,24 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
-    <ion-title>Cadastro de Funcionários</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  title="Cadastro de Funcionários"
+  icon="people-outline"
+  [showMenu]="true"
+  [showThemeToggle]="true"
+  [showNotifications]="false">
+</app-header>
 
-<ion-content class="ion-padding custom-background">
-  <div class="add-employee-card">
-    <ion-button expand="block" (click)="openEmployeeFormModal()" class="add-employee-button">
+<ion-content class="ion-padding">
+  <div class="add-employee-card app-card">
+    <ion-button expand="block" (click)="openEmployeeFormModal()" class="add-employee-button app-button">
       <ion-icon name="person-add-outline" slot="start"></ion-icon>
       Novo Funcionário
     </ion-button>
   </div>
 
-  <div class="employees-card">
-    <h2 class="section-title">
+  <div class="employees-card app-card">
+    <h2 class="section-title text-heading">
       <ion-icon name="people-outline" color="primary"></ion-icon>
       Funcionários Cadastrados
-      <ion-button fill="clear" size="small" (click)="toggleSort()">
+      <ion-button fill="clear" size="small" (click)="toggleSort()" class="app-button-secondary">
         <ion-icon [name]="isSortedAsc ? 'arrow-down-outline' : 'arrow-up-outline'"></ion-icon>
         Ordenar
       </ion-button>

@@ -1,78 +1,82 @@
 .form-card {
-  background: var(--ion-color-light);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 16px;
 }
 
 .form-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 20px;
-  color: var(--ion-color-dark);
-  font-size: 1.2rem;
+  gap: 12px;
+  margin: 0 0 24px;
+  font-size: 1.3rem;
   font-weight: 600;
+  font-family: var(--app-font-family);
 }
 
 .custom-list {
   background: transparent;
+  margin-bottom: 24px;
 }
 
 .custom-item {
-  --background: var(--ion-color-light);
-  --border-color: var(--ion-color-medium);
   --border-radius: 8px;
   --padding-start: 16px;
   --padding-end: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  --border-color: var(--app-divider);
+}
+
+.custom-item ion-label {
+  font-family: var(--app-font-family);
+  font-weight: 500;
 }
 
 .custom-input, .custom-select {
   --padding-start: 0;
   font-size: 1rem;
+  font-family: var(--app-font-family);
 }
 
 .button-group {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 16px;
+  margin-top: 32px;
 }
 
 .cancel-button {
-  --border-radius: 8px;
-  --color: var(--ion-color-medium);
   flex: 1;
+  --border-radius: 8px;
+  font-family: var(--app-font-family);
+  font-weight: 500;
 }
 
 .submit-button {
-  --border-radius: 8px;
-  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.2);
   flex: 2;
+  --border-radius: 8px;
+  font-family: var(--app-font-family);
+  font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-  .form-card {
-    background: rgba(var(--ion-color-light-rgb), 0.05);
-  }
-
-  .custom-item {
-    --background: rgba(var(--ion-color-light-rgb), 0.1);
-  }
-
-  .form-title {
-    color: var(--ion-color-light);
-  }
+ion-note {
+  color: var(--ion-color-danger);
+  font-family: var(--app-font-family);
+  font-size: 0.8rem;
+  margin-top: 4px;
 }
 
 /* Responsividade para telas menores */
 @media (max-width: 576px) {
   .button-group {
     flex-direction: column;
+    gap: 12px;
   }
 
   .cancel-button,
   .submit-button {
     flex: 1;
+  }
+
+  .form-card {
+    padding: 16px;
   }
 }

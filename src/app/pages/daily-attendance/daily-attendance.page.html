@@ -1,32 +1,23 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>
-      <ion-icon name="speedometer-outline" class="title-icon"></ion-icon>
-      Dashboard
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  title="Dashboard"
+  icon="speedometer-outline"
+  [showMenu]="true"
+  [showThemeToggle]="true"
+  [showNotifications]="true">
+</app-header>
 
-<ion-content class="ion-padding custom-background">
+<ion-content class="ion-padding">
   <!-- Welcome Section -->
   <div class="page-container">
-    <ion-card class="welcome-card">
+    <ion-card class="welcome-card app-card">
       <div class="card-bg-pattern"></div>
       <ion-card-header>
         <div class="welcome-header">
           <div>
             <ion-card-title>
-              <h1 class="greeting-text">{{ getGreeting() }}</h1>
+              <h1 class="greeting-text text-heading">{{ getGreeting() }}</h1>
             </ion-card-title>
-            <ion-card-subtitle class="date-text">
+            <ion-card-subtitle class="date-text text-body">
               <!-- {{ currentDate | date:'EEEE, d MMMM yyyy' }} -->
             </ion-card-subtitle>
           </div>
@@ -43,10 +34,10 @@
             <ion-label>{{ workStatus }}</ion-label>
           </ion-chip>
           <div class="quick-actions">
-            <ion-button size="small" fill="clear" color="primary">
+            <ion-button size="small" fill="clear" color="primary" class="app-button-secondary">
               <ion-icon slot="icon-only" name="calendar-outline"></ion-icon>
             </ion-button>
-            <ion-button size="small" fill="clear" color="secondary">
+            <ion-button size="small" fill="clear" color="secondary" class="app-button-secondary">
               <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
             </ion-button>
           </div>
@@ -58,14 +49,14 @@
     <ion-grid class="stats-grid">
       <ion-row>
         <ion-col size="12" size-md="6">
-          <ion-card class="stat-card present-card">
+          <ion-card class="stat-card present-card app-card">
             <ion-card-content>
               <div class="stat-icon-container">
                 <ion-icon name="checkmark-circle" class="stat-icon"></ion-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ totalPresent }}</div>
-                <div class="stat-label">Funcionários Presentes</div>
+                <div class="stat-value text-display">{{ totalPresent }}</div>
+                <div class="stat-label text-body">Funcionários Presentes</div>
                 <div class="stat-progress">
                   <div class="progress-bar" [style.width.%]="(totalPresent / (totalPresent + totalAbsent)) * 100"></div>
                 </div>
@@ -74,14 +65,14 @@
           </ion-card>
         </ion-col>
         <ion-col size="12" size-md="6">
-          <ion-card class="stat-card absent-card">
+          <ion-card class="stat-card absent-card app-card">
             <ion-card-content>
               <div class="stat-icon-container">
                 <ion-icon name="close-circle" class="stat-icon"></ion-icon>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ totalAbsent }}</div>
-                <div class="stat-label">Funcionários Ausentes</div>
+                <div class="stat-value text-display">{{ totalAbsent }}</div>
+                <div class="stat-label text-body">Funcionários Ausentes</div>
                 <div class="stat-progress">
                   <div class="progress-bar" [style.width.%]="(totalAbsent / (totalPresent + totalAbsent)) * 100"></div>
                 </div>
@@ -93,14 +84,14 @@
     </ion-grid>
 
     <!-- Attendance Table -->
-    <ion-card class="attendance-card">
+    <ion-card class="attendance-card app-card">
       <ion-card-header>
         <div class="attendance-header">
-          <ion-card-title>
+          <ion-card-title class="text-heading">
             <ion-icon name="calendar-outline"></ion-icon>
             Registros de Hoje
           </ion-card-title>
-          <ion-button fill="clear" size="small" color="primary">
+          <ion-button fill="clear" size="small" color="primary" class="app-button-secondary">
             Ver todos <ion-icon name="chevron-forward-outline"></ion-icon>
           </ion-button>
         </div>

@@ -6,8 +6,10 @@ import { EmployeeService } from '../../services/employee.service';
 import { SuccessModalComponent } from '../../components/success-modal/success-modal.component';
 import { EmployeeDetailsComponent } from '../../components/employee-details/employee-details.component';
 import { EmployeeFormModalComponent } from '../../components/employee-form-modal/employee-form-modal.component';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { HttpClientModule } from '@angular/common/http';
 import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-modal.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-employee',
@@ -21,7 +23,9 @@ import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-mo
     SuccessModalComponent,
     EmployeeDetailsComponent,
     EmployeeFormModalComponent,
-    ConfirmModalComponent
+    ThemeToggleComponent,
+    ConfirmModalComponent,
+    AppHeaderComponent
   ],
   providers: [EmployeeService] // Add EmployeeService to providers
 })

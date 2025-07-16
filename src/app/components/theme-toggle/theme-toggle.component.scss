@@ -1,0 +1,22 @@
+.theme-toggle-button {
+  --color: var(--app-text-primary);
+  --border-radius: 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-button:hover {
+  --background: var(--app-surface);
+  transform: scale(1.05);
+}
+
+.theme-toggle-button ion-icon {
+  font-size: 20px;
+  color: var(--app-text-primary);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-button:hover ion-icon {
+  color: var(--app-primary);
+}

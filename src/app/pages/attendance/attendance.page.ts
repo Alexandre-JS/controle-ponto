@@ -6,13 +6,15 @@ import { Employee, Attendance, AttendanceStatus, WorkStatus } from '../../models
 import { EmployeeService } from '../../services/employee.service';
 import { Router } from '@angular/router';
 import { StatusService } from '../../services/status.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 @Component({
   selector: 'app-attendance',
   templateUrl: './attendance.page.html',
   styleUrls: ['./attendance.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, ThemeToggleComponent, AppHeaderComponent]
 })
 export class AttendancePage implements OnInit {
   attendanceForm: FormGroup;
@@ -46,7 +48,7 @@ export class AttendancePage implements OnInit {
   async loadInitialData() {
     this.isLoading = true;
     this.loadError = false;
-    
+
     try {
       await Promise.all([
         this.loadEmployees(),
@@ -69,7 +71,7 @@ export class AttendancePage implements OnInit {
     try {
       this.isLoading = true;
       this.employees = await this.employeeService.getEmployees();
-      
+
       if (this.employees.length === 0) {
         this.showToast('Nenhum funcionário cadastrado. Cadastre funcionários primeiro.', 'warning');
         await this.router.navigate(['/employee']); // Redireciona para página de cadastro
@@ -93,7 +95,7 @@ export class AttendancePage implements OnInit {
         today.getMonth() + 1
       );
 
-      this.todayAttendance = attendanceData.filter(record => 
+      this.todayAttendance = attendanceData.filter(record =>
         new Date(record.date).toDateString() === today.toDateString()
       );
     } catch (error) {

@@ -1,0 +1,10 @@
+<ion-button
+  fill="clear"
+  (click)="toggleTheme()"
+  class="theme-toggle-button"
+  [title]="isDarkMode ? 'Mudar para modo claro' : 'Mudar para modo escuro'">
+  <ion-icon
+    [name]="isDarkMode ? 'sunny-outline' : 'moon-outline'"
+    slot="icon-only">
+  </ion-icon>
+</ion-button>

@@ -6,13 +6,14 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { take } from 'rxjs/operators';
 import { WelcomeModalComponent } from '../../components/welcome-modal/welcome-modal.component';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule, WelcomeModalComponent]
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, WelcomeModalComponent, ThemeToggleComponent]
 })
 export class LoginPage implements OnInit {
   loginForm: FormGroup;
@@ -42,7 +43,7 @@ export class LoginPage implements OnInit {
     if (this.loginForm.valid) {
       try {
         this.isLoading = true;
-        
+
         await this.authService.login(
           this.loginForm.value.email,
           this.loginForm.value.password
@@ -50,11 +51,11 @@ export class LoginPage implements OnInit {
 
         // Mostra o modal de boas-vindas
         await this.showWelcomeModal();
-        
+
         await this.router.navigate(['/admin/daily-attendance'], { replaceUrl: true });
       } catch (error: any) {
         console.error('Login error:', error);
-        
+
         if (error.message?.includes('Invalid login credentials')) {
           this.showToast('Email ou senha incorretos', 'danger');
         } else if (error.message?.includes('Email not confirmed')) {

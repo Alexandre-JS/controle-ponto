@@ -40,14 +40,14 @@
 
 
 :root{
-  /* Cores Primárias */
-  --ion-color-primary: #7d5500;
-  --ion-color-primary-rgb: 125, 85, 0;
+  /* Cores Primárias - Modern Blue */
+  --ion-color-primary: #3B82F6;
+  --ion-color-primary-rgb: 59, 130, 246;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #6e4b00;
-  --ion-color-primary-tint: #8a641a;
-  
+  --ion-color-primary-shade: #3472d8;
+  --ion-color-primary-tint: #4f8ff7;
+
   /* Cores Secundárias */
   --ion-color-secondary: #50bac3;
   --ion-color-secondary-rgb: 80, 186, 195;
@@ -55,7 +55,7 @@
   --ion-color-secondary-contrast-rgb: 0, 0, 0;
   --ion-color-secondary-shade: #46a3ac;
   --ion-color-secondary-tint: #62c1c9;
-  
+
   /* Cores Terciárias (Accent) */
   --ion-color-tertiary: #9238a4;
   --ion-color-tertiary-rgb: 146, 56, 164;
@@ -63,7 +63,7 @@
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
   --ion-color-tertiary-shade: #803190;
   --ion-color-tertiary-tint: #9d4cad;
-  
+
   /* Cores de Status */
   --ion-color-success: #50c350;
   --ion-color-success-rgb: 80, 195, 80;
@@ -71,21 +71,21 @@
   --ion-color-success-contrast-rgb: 0, 0, 0;
   --ion-color-success-shade: #46ac46;
   --ion-color-success-tint: #62c962;
-  
+
   --ion-color-warning: #e6a537;
   --ion-color-warning-rgb: 230, 165, 55;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
   --ion-color-warning-shade: #ca9130;
   --ion-color-warning-tint: #e9ae4b;
-  
+
   --ion-color-danger: #d33939;
   --ion-color-danger-rgb: 211, 57, 57;
   --ion-color-danger-contrast: #ffffff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
   --ion-color-danger-shade: #ba3232;
   --ion-color-danger-tint: #d74d4d;
-  
+
   /* Cores Neutras */
   --ion-color-light: #f5f0e5;
   --ion-color-light-rgb: 245, 240, 229;
@@ -93,25 +93,57 @@
   --ion-color-light-contrast-rgb: 70, 50, 17;
   --ion-color-light-shade: #d8d4ca;
   --ion-color-light-tint: #f6f2e8;
-  
+
   --ion-color-medium: #d9c9a3;
   --ion-color-medium-rgb: 217, 201, 163;
   --ion-color-medium-contrast: #463211;
   --ion-color-medium-contrast-rgb: 70, 50, 17;
   --ion-color-medium-shade: #bfb18f;
   --ion-color-medium-tint: #ddceac;
-  
+
   --ion-color-dark: #463211;
   --ion-color-dark-rgb: 70, 50, 17;
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
   --ion-color-dark-shade: #3e2c0f;
   --ion-color-dark-tint: #594729;
+
+  /* Variáveis customizadas do Design System - Light Mode (default) */
+  --app-background: #ffffff;
+  --app-surface: #f6f8fa; /* Melhorado o contraste em relação ao background */
+  --app-card: #f6f8fa; /* Melhorado o contraste em relação ao background */
+  --app-primary: #3B82F6;
+  --app-accent: #FF5C93;
+  --app-highlight: #8B5CF6;
+  --app-text-primary: #1E1E2F;
+  --app-text-secondary: #6B7280;
+  --app-divider: #E5E7EB;
+  --app-elevation-level1: none;
+  --app-elevation-level2: none;
+
+  /* Layout Variables */
+  --app-sidebar-background: #FFFFFF;
+  --app-sidebar-text-color: #1E1E2F;
+  --app-sidebar-active-background: #EFF6FF;
+  --app-topbar-background: #FFFFFF;
+  --app-topbar-icon-color: #3B82F6;
+  --app-card-radius: 12px;
+
+  /* Menu Variables */
+  --app-menu-background: #f6f8fa;
+  --app-menu-text-color: #1E1E2F;
+  --app-menu-active-background: #EFF6FF;
+  --app-menu-avatar-background: #FFFFFF;
+
+  /* Typography Variables */
+  --app-font-family: 'Inter', sans-serif;
+  --app-heading-color: #111827;
+  --app-body-color: #6B7280;
 }
 
 html.ios{--ion-default-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Roboto", sans-serif}html.md{--ion-default-font: "Roboto", "Helvetica Neue", sans-serif}html{--ion-dynamic-font: -apple-system-body;--ion-font-family: var(--ion-default-font)}body{background:var(--ion-background-color);color:var(--ion-text-color)}body.backdrop-no-scroll{overflow:hidden}html.ios ion-modal.modal-card ion-header ion-toolbar:first-of-type,html.ios ion-modal.modal-sheet ion-header ion-toolbar:first-of-type,html.ios ion-modal ion-footer ion-toolbar:first-of-type{padding-top:6px}html.ios ion-modal.modal-card ion-header ion-toolbar:last-of-type,html.ios ion-modal.modal-sheet ion-header ion-toolbar:last-of-type{padding-bottom:6px}html.ios ion-modal ion-toolbar{padding-right:calc(var(--ion-safe-area-right) + 8px);padding-left:calc(var(--ion-safe-area-left) + 8px)}@media screen and (min-width: 768px){html.ios ion-modal.modal-card:first-of-type{--backdrop-opacity: 0.18}}ion-modal.modal-default.show-modal~ion-modal.modal-default{--backdrop-opacity: 0;--box-shadow: none}html.ios ion-modal.modal-card .ion-page{border-top-left-radius:var(--border-radius)}
 
-.ion-color-primary{--ion-color-base: var(--ion-color-primary, #7d5500) !important;--ion-color-base-rgb: var(--ion-color-primary-rgb, 125, 85, 0) !important;--ion-color-contrast: var(--ion-color-primary-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-primary-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-primary-shade, #6e4b00) !important;--ion-color-tint: var(--ion-color-primary-tint, #8a641a) !important}
+.ion-color-primary{--ion-color-base: var(--ion-color-primary, #3B82F6) !important;--ion-color-base-rgb: var(--ion-color-primary-rgb, 59, 130, 246) !important;--ion-color-contrast: var(--ion-color-primary-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-primary-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-primary-shade, #3472d8) !important;--ion-color-tint: var(--ion-color-primary-tint, #4f8ff7) !important}
 
 .ion-color-secondary{--ion-color-base: var(--ion-color-secondary, #50bac3) !important;--ion-color-base-rgb: var(--ion-color-secondary-rgb, 80, 186, 195) !important;--ion-color-contrast: var(--ion-color-secondary-contrast, #000000) !important;--ion-color-contrast-rgb: var(--ion-color-secondary-contrast-rgb, 0, 0, 0) !important;--ion-color-shade: var(--ion-color-secondary-shade, #46a3ac) !important;--ion-color-tint: var(--ion-color-secondary-tint, #62c1c9) !important}
 
@@ -129,7 +161,7 @@ html.ios{--ion-default-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue"
 
 .ion-color-dark{--ion-color-base: var(--ion-color-dark, #463211) !important;--ion-color-base-rgb: var(--ion-color-dark-rgb, 70, 50, 17) !important;--ion-color-contrast: var(--ion-color-dark-contrast, #ffffff) !important;--ion-color-contrast-rgb: var(--ion-color-dark-contrast-rgb, 255, 255, 255) !important;--ion-color-shade: var(--ion-color-dark-shade, #3e2c0f) !important;--ion-color-tint: var(--ion-color-dark-tint, #594729) !important}
 
-.ion-page{left:0;right:0;top:0;bottom:0;display:flex;position:absolute;flex-direction:column;justify-content:space-between;contain:layout size style;z-index:0}ion-modal>.ion-page{position:relative;contain:layout style;height:100%}.split-pane-visible>.ion-page.split-pane-main{position:relative}ion-route,ion-route-redirect,ion-router,ion-select-option,ion-nav-controller,ion-menu-controller,ion-action-sheet-controller,ion-alert-controller,ion-loading-controller,ion-modal-controller,ion-picker-controller,ion-popover-controller,ion-toast-controller,.ion-page-hidden{display:none !important}.ion-page-invisible{opacity:0}.can-go-back>ion-header ion-back-button{display:block}html.plt-ios.plt-hybrid,html.plt-ios.plt-pwa{--ion-statusbar-padding: 20px}@supports(padding-top: 20px){html{--ion-safe-area-top: var(--ion-statusbar-padding)}}@supports(padding-top: env(safe-area-inset-top)){html{--ion-safe-area-top: env(safe-area-inset-top);--ion-safe-area-bottom: env(safe-area-inset-bottom);--ion-safe-area-left: env(safe-area-inset-left);--ion-safe-area-right: env(safe-area-inset-right)}}ion-card.ion-color .ion-inherit-color,ion-card-header.ion-color .ion-inherit-color{color:inherit}.menu-content{transform:translate3d(0,  0,  0)}.menu-content-open{cursor:pointer;touch-action:manipulation;pointer-events:none;overflow-y:hidden}.menu-content-open ion-content{--overflow: hidden}.menu-content-open .ion-content-scroll-host{overflow:hidden}.ios .menu-content-reveal{box-shadow:-8px 0 42px rgba(125, 85, 0, 0.08)}[dir=rtl].ios .menu-content-reveal{box-shadow:8px 0 42px rgba(125, 85, 0, 0.08)}.md .menu-content-reveal{box-shadow:4px 0px 16px rgba(125, 85, 0, 0.18)}.md .menu-content-push{box-shadow:4px 0px 16px rgba(125, 85, 0, 0.18)}ion-accordion-group.accordion-group-expand-inset>ion-accordion:first-of-type{border-top-left-radius:8px;border-top-right-radius:8px}ion-accordion-group.accordion-group-expand-inset>ion-accordion:last-of-type{border-bottom-left-radius:8px;border-bottom-right-radius:8px}ion-accordion-group>ion-accordion:last-of-type ion-item[slot=header]{--border-width: 0px}ion-accordion.accordion-animated>[slot=header] .ion-accordion-toggle-icon{transition:300ms transform cubic-bezier(0.25, 0.8, 0.5, 1)}@media(prefers-reduced-motion: reduce){ion-accordion .ion-accordion-toggle-icon{transition:none !important}}ion-accordion.accordion-expanding>[slot=header] .ion-accordion-toggle-icon,ion-accordion.accordion-expanded>[slot=header] .ion-accordion-toggle-icon{transform:rotate(180deg)}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-previous ion-item[slot=header]{--border-width: 0px;--inner-border-width: 0px}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanding:first-of-type,ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanded:first-of-type{margin-top:0}ion-input input::-webkit-date-and-time-value{text-align:start}.ion-datetime-button-overlay{--width: fit-content;--height: fit-content}.ion-datetime-button-overlay ion-datetime.datetime-grid{width:320px;min-height:320px}[ion-last-focus],header[tabindex="-1"]:focus,[role=banner][tabindex="-1"]:focus,main[tabindex="-1"]:focus,[role=main][tabindex="-1"]:focus,h1[tabindex="-1"]:focus,[role=heading][aria-level="1"][tabindex="-1"]:focus{outline:none}.popover-viewport:has(>ion-content){overflow:hidden}@supports not selector(:has(> ion-content)){.popover-viewport{overflow:hidden}}/*# sourceMappingURL=core.css.map */
+.ion-page{left:0;right:0;top:0;bottom:0;display:flex;position:absolute;flex-direction:column;justify-content:space-between;contain:layout size style;z-index:0}ion-modal>.ion-page{position:relative;contain:layout style;height:100%}.split-pane-visible>.ion-page.split-pane-main{position:relative}ion-route,ion-route-redirect,ion-router,ion-select-option,ion-nav-controller,ion-menu-controller,ion-action-sheet-controller,ion-alert-controller,ion-loading-controller,ion-modal-controller,ion-picker-controller,ion-popover-controller,ion-toast-controller,.ion-page-hidden{display:none !important}.ion-page-invisible{opacity:0}.can-go-back>ion-header ion-back-button{display:block}html.plt-ios.plt-hybrid,html.plt-ios.plt-pwa{--ion-statusbar-padding: 20px}@supports(padding-top: 20px){html{--ion-safe-area-top: var(--ion-statusbar-padding)}}@supports(padding-top: env(safe-area-inset-top)){html{--ion-safe-area-top: env(safe-area-inset-top);--ion-safe-area-bottom: env(safe-area-inset-bottom);--ion-safe-area-left: env(safe-area-inset-left);--ion-safe-area-right: env(safe-area-inset-right)}}ion-card.ion-color .ion-inherit-color,ion-card-header.ion-color .ion-inherit-color{color:inherit}.menu-content{transform:translate3d(0,  0,  0)}.menu-content-open{cursor:pointer;touch-action:manipulation;pointer-events:none;overflow-y:hidden}.menu-content-open ion-content{--overflow: hidden}.menu-content-open .ion-content-scroll-host{overflow:hidden}.ios .menu-content-reveal{box-shadow:none}[dir=rtl].ios .menu-content-reveal{box-shadow:none}.md .menu-content-reveal{box-shadow:none}.md .menu-content-push{box-shadow:none}ion-accordion-group.accordion-group-expand-inset>ion-accordion:first-of-type{border-top-left-radius:8px;border-top-right-radius:8px}ion-accordion-group.accordion-group-expand-inset>ion-accordion:last-of-type{border-bottom-left-radius:8px;border-bottom-right-radius:8px}ion-accordion-group>ion-accordion:last-of-type ion-item[slot=header]{--border-width: 0px}ion-accordion.accordion-animated>[slot=header] .ion-accordion-toggle-icon{transition:300ms transform cubic-bezier(0.25, 0.8, 0.5, 1)}@media(prefers-reduced-motion: reduce){ion-accordion .ion-accordion-toggle-icon{transition:none !important}}ion-accordion.accordion-expanding>[slot=header] .ion-accordion-toggle-icon,ion-accordion.accordion-expanded>[slot=header] .ion-accordion-toggle-icon{transform:rotate(180deg)}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-previous ion-item[slot=header]{--border-width: 0px;--inner-border-width: 0px}ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanding:first-of-type,ion-accordion-group.accordion-group-expand-inset.md>ion-accordion.accordion-expanded:first-of-type{margin-top:0}ion-input input::-webkit-date-and-time-value{text-align:start}.ion-datetime-button-overlay{--width: fit-content;--height: fit-content}.ion-datetime-button-overlay ion-datetime.datetime-grid{width:320px;min-height:320px}[ion-last-focus],header[tabindex="-1"]:focus,[role=banner][tabindex="-1"]:focus,main[tabindex="-1"]:focus,[role=main][tabindex="-1"]:focus,h1[tabindex="-1"]:focus,[role=heading][aria-level="1"][tabindex="-1"]:focus{outline:none}.popover-viewport:has(>ion-content){overflow:hidden}@supports not selector(:has(> ion-content)){.popover-viewport{overflow:hidden}}/*# sourceMappingURL=core.css.map */
 
 .attendance-alert {
   .alert-wrapper {
@@ -252,10 +284,10 @@ html.ios{--ion-default-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue"
   --width: 90%;
   --max-width: 400px;
   --border-radius: var(--app-border-radius);
-  
+
   &::part(content) {
     border-radius: var(--app-border-radius);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: none;
   }
 
   .success-icon {
@@ -310,7 +342,7 @@ ion-item.app-form-item {
 // Dark mode adjustments
 @media (prefers-color-scheme: dark) {
   :root {
-    --app-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --app-box-shadow: none;
   }
 
   .app-card {
@@ -325,7 +357,7 @@ ion-item.app-form-item {
   --button-color: var(--app-light);
   font-weight: 500;
   text-align: center;
-  
+
   &::part(message) {
     padding: 10px;
   }
@@ -335,7 +367,7 @@ ion-item.app-form-item {
   --width: 100%;
   --height: 100%;
   --background: transparent;
-  
+
   &::part(content) {
     --background: transparent;
   }
@@ -379,7 +411,7 @@ ion-toolbar {
 /* Welcome Card */
 .welcome-card {
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
   margin-bottom: 24px;
@@ -424,7 +456,7 @@ ion-toolbar {
   background: var(--app-primary);
   padding: 8px 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+  box-shadow: none;
 }
 
 .clock {
@@ -470,19 +502,19 @@ ion-toolbar {
 
 .stat-card {
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
   margin: 0;
-  background: white;
+  background: transparent;
   height: 100%;
   overflow: hidden;
 }
 
 .present-card {
-  border-top: 3px solid var(--app-success);
+  border-top: none;
 }
 
 .absent-card {
-  border-top: 3px solid var(--app-danger);
+  border-top: none;
 }
 
 .stat-card ion-card-content {
@@ -561,8 +593,8 @@ ion-toolbar {
 /* Attendance Card */
 .attendance-card {
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background: white;
+  box-shadow: none;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -716,7 +748,7 @@ ion-toolbar {
   --background: #50af4d;
   --background-activated: var(--app-accent-shade);
   --background-hover: var(--app-accent-tint);
-  --box-shadow: 0 4px 16px rgba(var(--app-accent-rgb), 0.4);
+  --box-shadow: none;
 }
 
 /* Responsive adjustments */
@@ -724,31 +756,31 @@ ion-toolbar {
   .employee-col {
     width: auto;
   }
-  
+
   .time-col {
     width: auto;
   }
-  
+
   .status-col {
     width: auto;
   }
-  
+
   .time-display {
     padding: 6px 12px;
   }
-  
+
   .clock {
     font-size: 18px;
   }
-  
+
   .seconds {
     font-size: 12px;
   }
-  
+
   .greeting-text {
     font-size: 20px;
   }
-  
+
   .stat-value {
     font-size: 24px;
   }
@@ -759,43 +791,627 @@ ion-toolbar {
   .custom-background {
     --background: var(--app-neutral-dark);
   }
-  
+
   .welcome-card, .stat-card, .attendance-card {
     --background: rgba(255, 255, 255, 0.05);
     background-color: rgba(255, 255, 255, 0.05);
   }
-  
+
   .greeting-text {
     color: var(--app-primary-tint);
   }
-  
+
   .date-text, .stat-label, .employee-name {
     color: var(--app-neutral-light);
   }
-  
+
   .stat-value {
     color: white;
   }
-  
+
   .attendance-table th {
     background-color: rgba(var(--app-primary-rgb), 0.2);
     color: var(--app-primary-tint);
     border-bottom: 1px solid rgba(var(--app-primary-rgb), 0.2);
   }
-  
+
   .attendance-table td {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .attendance-card ion-card-title {
     color: var(--app-primary-tint);
   }
-  
+
   .empty-state h2 {
     color: var(--app-neutral-light);
   }
-  
+
   .empty-state p {
     color: var(--app-neutral-light);
   }
 }
+
+/* ========================================
+   DESIGN SYSTEM THEME STYLES
+======================================== */
+
+/* Dark Theme Override */
+body.theme-dark {
+  --app-background: #383b47;
+  --app-surface: transparent;
+  --app-card: transparent;
+  --app-primary: #5B68DF;
+  --app-accent: #FF5C93;
+  --app-highlight: #AC8EFF;
+  --app-text-primary: #FFFFFF;
+  --app-text-secondary: #B0B3C9;
+  --app-divider: #3A3B4E;
+  --app-elevation-level1: none;
+  --app-elevation-level2: none;
+
+  --app-sidebar-background: #2A2B3A;
+  --app-sidebar-text-color: #FFFFFF;
+  --app-sidebar-active-background: #3A3B4E;
+  --app-topbar-background: #1E1F2B;
+  --app-topbar-icon-color: #FFFFFF;
+
+  /* Menu Variables - Dark Mode */
+  --app-menu-background: #3d3f4c;
+  --app-menu-text-color: #FFFFFF;
+  --app-menu-active-background: #3A3B4E;
+  --app-menu-avatar-background: #2A2B3A;
+
+  --app-heading-color: #FFFFFF;
+  --app-body-color: #B0B3C9;
+}
+
+/* Global App Styles */
+body {
+  font-family: var(--app-font-family);
+  background-color: var(--app-background);
+  color: var(--app-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ion Content Override - Apenas para páginas principais */
+ion-router-outlet ion-content {
+  --background: var(--app-background);
+  --color: var(--app-text-primary);
+}
+
+/* Menu Content - Garantir que o conteúdo do menu use as cores corretas */
+ion-app ion-menu ion-content {
+  --background: var(--app-menu-background) !important;
+  --color: var(--app-menu-text-color) !important;
+}
+
+/* Garantir que nenhuma regra genérica sobrescreva o menu */
+ion-menu *:not(ion-item) {
+  --ion-background-color: var(--app-menu-background) !important;
+}
+
+/* Card Styles */
+.app-card {
+  background: transparent;
+  border-radius: var(--app-card-radius);
+  box-shadow: none;
+  color: var(--app-text-primary);
+  transition: all 0.3s ease;
+}
+
+.app-card:hover {
+  box-shadow: none;
+}
+
+/* Card Styles - Light Mode Only */
+body:not(.theme-dark) ion-card {
+  --ion-card-background: transparent;
+  background-color: transparent !important;
+  --border-width: 0 !important;
+  --border-color: transparent !important;
+  border: none !important;
+  border-top: none !important;
+}
+
+/* Specific Card Classes in Light Mode */
+body:not(.theme-dark) .card,
+body:not(.theme-dark) .app-card,
+body:not(.theme-dark) .stat-card,
+body:not(.theme-dark) .welcome-card,
+body:not(.theme-dark) .attendance-card {
+  background-color: var(--app-surface) !important;
+}
+
+/* Ensure ion-card-content has transparent background */
+body:not(.theme-dark) ion-card-content {
+  --background: transparent !important;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--app-heading-color);
+  font-family: var(--app-font-family);
+}
+
+p, span, div {
+  color: var(--app-body-color);
+  font-family: var(--app-font-family);
+}
+
+/* Button Styles */
+.app-button {
+  --background: var(--app-primary);
+  --color: white;
+  --border-radius: 8px;
+  --box-shadow: var(--app-elevation-level1);
+  font-family: var(--app-font-family);
+  transition: all 0.3s ease;
+}
+
+.app-button:hover {
+  --box-shadow: var(--app-elevation-level2);
+  transform: translateY(-1px);
+}
+
+.app-button-secondary {
+  --background: transparent;
+  --color: var(--app-primary);
+  --border: 1px solid var(--app-primary);
+}
+
+.app-button-accent {
+  --background: var(--app-accent);
+}
+
+/* Input Styles */
+.app-input {
+  --background: var(--app-surface);
+  --color: var(--app-text-primary);
+  --border-color: var(--app-divider);
+  --border-radius: 8px;
+}
+
+/* Toolbar Styles */
+ion-toolbar {
+  --background: var(--app-topbar-background);
+  --color: var(--app-text-primary);
+  --border-color: var(--app-divider);
+}
+
+ion-title {
+  color: var(--app-heading-color);
+  font-family: var(--app-font-family);
+  font-weight: 600;
+}
+
+/* Header Styles */
+ion-header {
+  box-shadow: var(--app-elevation-level1);
+}
+
+/* List Styles */
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  --color: var(--app-text-primary);
+  --border-color: var(--app-divider);
+  font-family: var(--app-font-family);
+}
+
+ion-item ion-label {
+  color: var(--app-text-primary);
+}
+
+ion-item ion-label p {
+  color: var(--app-text-secondary);
+}
+
+/* Modal Styles */
+ion-modal {
+  --background: transparent;
+}
+
+ion-modal ion-content {
+  --background: transparent;
+}
+
+/* Tab Styles */
+ion-tab-bar {
+  --background: transparent;
+  --border: 1px solid var(--app-divider);
+}
+
+ion-tab-button {
+  --color: var(--app-text-secondary);
+  --color-selected: var(--app-primary);
+}
+
+/* Chip Styles */
+ion-chip {
+  --background: var(--app-surface);
+  --color: var(--app-text-primary);
+  font-family: var(--app-font-family);
+}
+
+/* Loading Styles */
+ion-loading {
+  --background: var(--app-card);
+  --color: var(--app-text-primary);
+}
+
+/* Toast Styles */
+ion-toast {
+  --background: var(--app-card);
+  --color: var(--app-text-primary);
+  font-family: var(--app-font-family);
+}
+
+/* Alert Styles */
+ion-alert {
+  --background: var(--app-card);
+  --color: var(--app-text-primary);
+  font-family: var(--app-font-family);
+}
+
+/* Popover Styles */
+ion-popover {
+  --background: var(--app-card);
+  --color: var(--app-text-primary);
+}
+
+/* Searchbar Styles */
+ion-searchbar {
+  --background: var(--app-surface);
+  --color: var(--app-text-primary);
+  --placeholder-color: var(--app-text-secondary);
+  --icon-color: var(--app-text-secondary);
+}
+
+/* Segment Styles */
+ion-segment {
+  --background: var(--app-surface);
+}
+
+ion-segment-button {
+  --color: var(--app-text-secondary);
+  --color-checked: var(--app-primary);
+  --background-checked: var(--app-surface);
+  font-family: var(--app-font-family);
+}
+
+/* Progress Bar Styles */
+ion-progress-bar {
+  --background: var(--app-divider);
+  --progress-background: var(--app-primary);
+}
+
+/* Skeleton Text Styles */
+ion-skeleton-text {
+  --background: var(--app-divider);
+}
+
+/* Refresher Styles */
+ion-refresher-content {
+  --color: var(--app-text-secondary);
+}
+
+/* Infinite Scroll Styles */
+ion-infinite-scroll-content {
+  --color: var(--app-text-secondary);
+}
+
+/* Utility Classes */
+.text-primary {
+  color: var(--app-text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--app-text-secondary) !important;
+}
+
+.text-heading {
+  color: var(--app-heading-color) !important;
+}
+
+.bg-card {
+  background: var(--app-card) !important;
+}
+
+.bg-surface {
+  background: var(--app-surface) !important;
+}
+
+.border-divider {
+  border-color: var(--app-divider) !important;
+}
+
+/* Animation Classes */
+.theme-transition {
+  transition: all 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-card {
+    margin: 8px;
+  }
+
+  ion-toolbar ion-title {
+    font-size: 18px;
+  }
+}
+
+/* Dark mode specific adjustments */
+body.theme-dark {
+  /* Garantir que o menu mantenha sua cor específica no dark mode */
+  ion-app ion-menu ion-content {
+    --background: var(--app-menu-background) !important;
+  }
+
+  /* Garantir que nenhuma regra genérica sobrescreva o menu no dark mode */
+  ion-menu *:not(ion-item) {
+    --ion-background-color: var(--app-menu-background) !important;
+  }
+
+  /* Remover bordas dos cards no tema escuro */
+  ion-card {
+    --ion-card-background: transparent;
+    background-color: transparent !important;
+    --border-width: 0 !important;
+    --border-color: transparent !important;
+    border: none !important;
+    border-top: none !important;
+  }
+}
+
+/* Custom scrollbar for dark theme */
+body.theme-dark {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--app-surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--app-divider);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--app-divider);
+  }
+}
+
+// ======================
+// CSS Variables e Utilitários do Sistema de Tema
+// ======================
+
+// Utilitários de texto
+.text-heading {
+  color: var(--app-heading-color) !important;
+  font-family: var(--app-font-family) !important;
+  font-weight: 600 !important;
+}
+
+.text-body {
+  color: var(--app-body-color) !important;
+  font-family: var(--app-font-family) !important;
+}
+
+.text-display {
+  color: var(--app-text-primary) !important;
+  font-family: var(--app-font-family) !important;
+  font-weight: 600 !important;
+  font-size: 1.5rem !important;
+}
+
+// Utilitários de card
+.app-card {
+  border-radius: var(--app-card-radius) !important;
+  box-shadow: none !important;
+
+  /* Garantir background transparente */
+  body:not(.theme-dark) & {
+    background: transparent !important;
+    --background: var(--app-surface) !important;
+  }
+
+  /* Background no dark mode */
+  body.theme-dark & {
+    background: transparent !important;
+    --background: transparent !important;
+  }
+
+  &:hover {
+    box-shadow: none !important;
+    transition: none;
+  }
+}
+
+// Utilitários de botão
+.app-button {
+  --background: var(--app-primary) !important;
+  --color: white !important;
+  --border-radius: 12px !important;
+  font-family: var(--app-font-family) !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    --background: var(--app-accent) !important;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+}
+
+.app-button-secondary {
+  --background: transparent !important;
+  --color: var(--app-primary) !important;
+  --border-color: var(--app-primary) !important;
+  --border-width: 2px !important;
+  --border-radius: 12px !important;
+  font-family: var(--app-font-family) !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    --background: var(--app-primary) !important;
+    --color: white !important;
+    transition: all 0.2s ease;
+  }
+}
+
+// Utilitários de formulário
+.form-item {
+  --background: var(--app-surface) !important;
+  --border-radius: 8px !important;
+  --highlight-color: var(--app-primary) !important;
+  margin-bottom: 16px;
+  border: 1px solid var(--app-divider);
+  border-radius: 8px;
+
+  ion-label {
+    color: var(--app-body-color) !important;
+    font-family: var(--app-font-family) !important;
+  }
+
+  ion-input, ion-textarea, ion-select {
+    color: var(--app-text-primary) !important;
+    font-family: var(--app-font-family) !important;
+  }
+}
+
+.form-list {
+  background: transparent !important;
+
+  .form-item:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Utilitários de layout
+.page-container {
+  background: var(--app-background);
+  min-height: 100vh;
+}
+
+// Estados vazios
+.empty-state {
+  color: var(--app-text-secondary) !important;
+  text-align: center;
+  padding: 2rem;
+
+  ion-icon {
+    font-size: 3rem;
+    color: var(--app-text-secondary);
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.empty-state-container {
+  background: var(--app-surface);
+  border-radius: var(--app-card-radius);
+  margin: 2rem 0;
+}
+
+// Itens de detalhe
+.detail-item {
+  --background: transparent !important;
+  --border-color: var(--app-divider) !important;
+  margin-bottom: 8px;
+  border-radius: 8px;
+
+  h3 {
+    color: var(--app-text-secondary) !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0 0 4px 0;
+  }
+
+  p {
+    color: var(--app-text-primary) !important;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// Record items
+.record-item {
+  --background: var(--app-surface) !important;
+  --border-color: var(--app-divider) !important;
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  h2 {
+    color: var(--app-text-primary) !important;
+    font-family: var(--app-font-family) !important;
+  }
+
+  p {
+    color: var(--app-text-secondary) !important;
+    font-family: var(--app-font-family) !important;
+  }
+}
+
+.records-list {
+  background: transparent !important;
+
+  ion-list-header {
+    --background: transparent !important;
+
+    ion-label {
+      color: var(--app-heading-color) !important;
+      font-family: var(--app-font-family) !important;
+      font-weight: 600 !important;
+    }
+  }
+}
+
+/* ========================================
+   COMPONENT BACKGROUND STANDARDS - LIGHT MODE
+======================================== */
+
+/* Aplicar background padrão para componentes em light mode */
+:root {
+  /* Garantir que --app-surface e --app-card estejam definidos em #f6f8fa para melhor contraste */
+  --app-surface: #f6f8fa;
+  --app-card: #f6f8fa;
+}
+
+/* Garantir que os ion-cards tenham background transparente */
+body:not(.theme-dark) {
+  /* Aplicar apenas para ion-card */
+  ion-card {
+    --background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  /* Cards específicos de classe também devem usar o background transparente e não ter bordas */
+  .app-card, .welcome-card, .stat-card, .attendance-card,
+  .dashboard-card, .profile-card, .settings-card {
+    --background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-top: none !important;
+  }
+}
+
+/* Assegurar que o background do menu seja sempre respeitado */
+ion-menu ion-content {
+  --background: var(--app-menu-background) !important;
+}
+
+/* Assegurar que o background das páginas seja sempre respeitado */
+ion-router-outlet ion-content {
+  --background: var(--app-background) !important;
+}
+
+/* Remover estilos de background para outros componentes */
