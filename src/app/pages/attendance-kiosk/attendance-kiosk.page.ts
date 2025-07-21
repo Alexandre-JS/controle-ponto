@@ -11,6 +11,7 @@ import { QRScannerComponent } from '../../components/qr-scanner/qr-scanner.compo
 import { QRScannerModule } from '../../components/qr-scanner/qr-scanner.module';
 import { AuthMethod } from '../../services/employee.service';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 
 @Component({
   selector: 'app-attendance-kiosk',
@@ -26,7 +27,8 @@ import { AppHeaderComponent } from '../../components/app-header/app-header.compo
     AppHeaderComponent
   ],
   templateUrl: './attendance-kiosk.page.html',
-  styleUrls: ['./attendance-kiosk.page.scss']
+  styleUrls: ['./attendance-kiosk.page.scss'],
+  providers: [BarcodeScanner]
 })
 export class AttendanceKioskPage implements OnInit {
   isAuthenticated = false;
@@ -47,8 +49,28 @@ export class AttendanceKioskPage implements OnInit {
     private router: Router,
     private alertController: AlertController,
     private modalController: ModalController,
-    private networkService: NetworkService
+    private networkService: NetworkService,
+    private barcodeScanner: BarcodeScanner
   ) {}
+  async scanBarcode() {
+    try {
+      const barcodeData = await this.barcodeScanner.scan();
+      console.log('Barcode data', barcodeData);
+      if (barcodeData && barcodeData.text) {
+        this.employeeCode = barcodeData.text;
+        this.onCodeChange({ detail: { value: barcodeData.text } });
+        // Só marca presença se o código for válido
+        if (this.isValidCode) {
+            await this.markAttendance('qrCode' as AuthMethod);
+        } else {
+          this.showToast('Código escaneado inválido', 'warning');
+        }
+      }
+    } catch (err) {
+      console.log('Error', err);
+      this.showToast('Erro ao escanear código de barras', 'danger');
+    }
+  }
 
   async ngOnInit() {
     this.checkAuthentication();
