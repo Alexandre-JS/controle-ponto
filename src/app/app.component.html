@@ -34,7 +34,7 @@
           </ion-item>
         </ion-list>
 
-        <div class="sync-status-container ion-padding-top">
+        <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
           <app-sync-status></app-sync-status>
         </div>
       </ion-content>

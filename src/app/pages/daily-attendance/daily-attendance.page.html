@@ -12,6 +12,9 @@
         <ion-icon slot="icon-only" name="sync-outline"></ion-icon>
         <ion-badge *ngIf="pendingSyncCount > 0" color="warning" class="sync-badge">{{ pendingSyncCount }}</ion-badge>
       </ion-button>
+      <ion-button *ngIf="pendingSyncCount > 0" color="danger" (click)="clearAllPendingSync()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
       <ion-button>
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
       </ion-button>
@@ -34,6 +37,24 @@
       refreshingText="Atualizando dados...">
     </ion-refresher-content>
   </ion-refresher>
+
+  <!-- Opções do Usuário / Ações Manuais -->
+  <div class="user-options" style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+    <ion-button color="primary" (click)="onManualUpdate()" [disabled]="isLoading" *ngIf="isOfflineMode">
+      <ion-icon slot="start" name="refresh"></ion-icon>
+      Atualizar dados
+    </ion-button>
+    <ion-button color="secondary" (click)="syncData(true)" [disabled]="!isOnline || pendingSyncCount === 0" *ngIf="isOfflineMode">
+      <ion-icon slot="start" name="sync-outline"></ion-icon>
+      Sincronizar pendentes
+      <ion-badge *ngIf="pendingSyncCount > 0" color="warning" class="sync-badge">{{ pendingSyncCount }}</ion-badge>
+    </ion-button>
+    <ion-button color="danger" *ngIf="pendingSyncCount > 0 && isOfflineMode" (click)="clearAllPendingSync()">
+      <ion-icon slot="start" name="trash-outline"></ion-icon>
+      Limpar fila
+    </ion-button>
+    <ion-note *ngIf="!isOnline" color="warning">Você está offline</ion-note>
+  </div>
 
   <!-- Welcome Section -->
   <div class="page-container">
@@ -186,13 +207,8 @@
     </ion-card>
 
     <!-- Sync status at the bottom -->
-    <div class="sync-status">
-      <ion-chip [color]="isOnline ? 'success' : 'medium'" class="sync-chip" (click)="syncData(true)">
-        <ion-icon [name]="isOnline ? 'cloud-done' : 'cloud-offline'"></ion-icon>
-        <ion-label>
-          {{ isOnline ? (pendingSyncCount > 0 ? pendingSyncCount + ' itens pendentes' : 'Sincronizado') : 'Offline' }}
-        </ion-label>
-      </ion-chip>
+    <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
+      <app-sync-status></app-sync-status>
     </div>
   </div>
 </ion-content>

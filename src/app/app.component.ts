@@ -27,6 +27,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isDesktop = false;
   isLoginPage = false; // Variável para verificar se estamos na página de login
   isOnline = navigator.onLine;
+  isOfflineMode = false;
   private subscriptions: Subscription[] = [];
   pendingSyncCount = 0;
 
@@ -71,6 +72,25 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Verificação inicial ao carregar a aplicação
     this.isLoginPage = window.location.href.includes('/login');
+
+    // Monitorar estado da conexão
+    this.subscriptions.push(
+      this.networkService.isOnline$.subscribe(isOnline => {
+        const wasOffline = !this.isOnline && isOnline;
+        this.isOnline = isOnline;
+        this.isOfflineMode = !isOnline; // Atualiza isOfflineMode conforme o estado da conexão
+
+        // Se voltou a ficar online, tentar sincronizar
+        if (wasOffline) {
+          this.showToast('Conexão restaurada', 'success');
+          this.syncService.syncAll().catch(err => {
+            console.error('Erro ao sincronizar após reconexão:', err);
+          });
+        } else if (!isOnline) {
+          this.showToast('Modo offline - Os dados serão sincronizados quando a conexão for restaurada', 'warning');
+        }
+      })
+    );
   }
 
   ngOnInit() {
@@ -147,6 +167,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.networkService.isOnline$.subscribe(isOnline => {
         const wasOffline = !this.isOnline && isOnline;
         this.isOnline = isOnline;
+        this.isOfflineMode = !isOnline; // Atualiza isOfflineMode conforme o estado da conexão
 
         // Se voltou a ficar online, tentar sincronizar
         if (wasOffline) {

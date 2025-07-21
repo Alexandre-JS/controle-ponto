@@ -14,12 +14,14 @@ export class LocalStorageService {
   private readonly ATTENDANCE_KEY = 'attendance_cache';
   private readonly WORK_SCHEDULE_KEY = 'work_schedule_cache';
   private readonly LAST_SYNC_KEY = 'last_sync_timestamp';
-  
+
   private recordsSubject = new BehaviorSubject<DailyRecord[]>([]);
   private scheduleSubject = new BehaviorSubject<ScheduleData | null>(null);
   private employeesSubject = new BehaviorSubject<Employee[]>([]);
   private attendanceSubject = new BehaviorSubject<Attendance[]>([]);
   private workScheduleSubject = new BehaviorSubject<WorkSchedule | null>(null);
+
+  private blockSyncQueue = false;
 
   constructor() {
     this.loadInitialData();
@@ -31,7 +33,7 @@ export class LocalStorageService {
     schedule.synced = false;
     localStorage.setItem(this.SCHEDULE_KEY, JSON.stringify(schedule));
     this.scheduleSubject.next(schedule);
-    this.addToSyncQueue('schedule', 'update', schedule);
+    // Removido: this.addToSyncQueue('schedule', 'update', schedule);
   }
 
   getSchedule(): Observable<ScheduleData | null> {
@@ -49,16 +51,16 @@ export class LocalStorageService {
     record.id = record.id || this.generateId();
     record.createdAt = new Date();
     record.synced = false;
-    
+
     const existingIndex = records.findIndex(r => r.id === record.id);
     if (existingIndex >= 0) {
       records[existingIndex] = record;
-      this.addToSyncQueue('record', 'update', record);
+      // Removido: this.addToSyncQueue('record', 'update', record);
     } else {
       records.push(record);
-      this.addToSyncQueue('record', 'create', record);
+      // Removido: this.addToSyncQueue('record', 'create', record);
     }
-    
+
     localStorage.setItem(this.RECORDS_KEY, JSON.stringify(records));
     this.recordsSubject.next(records);
   }
@@ -77,7 +79,7 @@ export class LocalStorageService {
     const filteredRecords = records.filter(r => r.id !== recordId);
     localStorage.setItem(this.RECORDS_KEY, JSON.stringify(filteredRecords));
     this.recordsSubject.next(filteredRecords);
-    this.addToSyncQueue('record', 'delete', { id: recordId });
+    // Removido: this.addToSyncQueue('record', 'delete', { id: recordId });
   }
 
   // Employee Methods
@@ -99,7 +101,7 @@ export class LocalStorageService {
     const data = localStorage.getItem(this.EMPLOYEES_KEY);
     return data ? JSON.parse(data) : [];
   }
-  
+
   getEmployeeById(id: string): Employee | null {
     const employees = this.getEmployeesSync();
     return employees.find(emp => emp.id === id) || null;
@@ -116,10 +118,10 @@ export class LocalStorageService {
     const existingIndex = employees.findIndex(e => e.id === employee.id);
     if (existingIndex >= 0) {
       employees[existingIndex] = employeeWithMeta;
-      this.addToSyncQueue('employee', 'update', employee);
+      // Removido: this.addToSyncQueue('employee', 'update', employee);
     } else {
       employees.push(employeeWithMeta);
-      this.addToSyncQueue('employee', 'create', employee);
+      // Removido: this.addToSyncQueue('employee', 'create', employee);
     }
 
     localStorage.setItem(this.EMPLOYEES_KEY, JSON.stringify(employees));
@@ -131,20 +133,17 @@ export class LocalStorageService {
     const attendances = this.getAttendanceSync();
     const attendanceWithMeta = {
       ...attendance,
-      id: attendance.id || this.generateId(),
       cached_at: new Date(),
       synced: false
     };
-
     const existingIndex = attendances.findIndex(a => a.id === attendance.id);
     if (existingIndex >= 0) {
       attendances[existingIndex] = attendanceWithMeta;
-      this.addToSyncQueue('attendance', 'update', attendance);
+      // Removido: this.addToSyncQueue('attendance', 'update', attendanceWithMeta);
     } else {
       attendances.push(attendanceWithMeta);
-      this.addToSyncQueue('attendance', 'create', attendance);
+      // Removido: this.addToSyncQueue('attendance', 'create', attendanceWithMeta);
     }
-
     localStorage.setItem(this.ATTENDANCE_KEY, JSON.stringify(attendances));
     this.attendanceSubject.next(attendances);
   }
@@ -170,8 +169,8 @@ export class LocalStorageService {
   getAttendanceByMonth(year: number, month: number): Attendance[] {
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0];
-    
-    return this.getAttendanceSync().filter(att => 
+
+    return this.getAttendanceSync().filter(att =>
       att.date >= startDate && att.date <= endDate
     );
   }
@@ -184,8 +183,8 @@ export class LocalStorageService {
       synced: false
     };
     localStorage.setItem(this.WORK_SCHEDULE_KEY, JSON.stringify(scheduleWithMeta));
-    this.workScheduleSubject.next(schedule);
-    this.addToSyncQueue('work_schedule', 'update', schedule);
+    this.workScheduleSubject.next(scheduleWithMeta);
+    // Removido: this.addToSyncQueue('work_schedule', 'update', schedule);
   }
 
   getWorkSchedule(): Observable<WorkSchedule | null> {
@@ -230,22 +229,50 @@ export class LocalStorageService {
       attendance: this.ATTENDANCE_KEY,
       work_schedule: this.WORK_SCHEDULE_KEY
     };
-    
+
     return this.shouldRefreshCache(keyMap[type], maxAgeMinutes);
   }
 
   // Enhanced sync queue methods
   private addToSyncQueue(type: 'schedule' | 'record' | 'employee' | 'attendance' | 'work_schedule', action: 'create' | 'update' | 'delete', data: any): void {
+    if (this.blockSyncQueue) {
+      // Bloqueia inserção de novos pendentes após limpeza manual
+      return;
+    }
     const queue = this.getSyncQueue();
-    const item: SyncQueueItem = {
-      id: this.generateId(),
-      type,
-      action,
-      data,
-      timestamp: new Date(),
-      retryCount: 0
-    };
-    queue.push(item);
+    let existingIndex = -1;
+    if (type === 'attendance') {
+      // Deduplicar por employee_id + date
+      existingIndex = queue.findIndex(
+        (item: any) => item.type === 'attendance' && item.action === action &&
+          item.data && item.data.employee_id === data.employee_id && item.data.date === data.date
+      );
+    } else {
+      // Deduplicação padrão por id ou identificador principal
+      const dataId = data.id || data.internal_code || data.employee_id || data.date;
+      existingIndex = queue.findIndex(
+        (item: any) => item.type === type && item.action === action && (
+          (item.data && (item.data.id === dataId || item.data.internal_code === dataId || item.data.employee_id === dataId || item.data.date === dataId))
+        )
+      );
+    }
+    if (existingIndex >= 0) {
+      // Atualiza o item existente
+      queue[existingIndex].data = data;
+      queue[existingIndex].timestamp = new Date();
+      queue[existingIndex].retryCount = 0;
+    } else {
+      // Adiciona novo item
+      const item: SyncQueueItem = {
+        id: this.generateId(),
+        type,
+        action,
+        data,
+        timestamp: new Date(),
+        retryCount: 0
+      };
+      queue.push(item);
+    }
     localStorage.setItem(this.SYNC_QUEUE_KEY, JSON.stringify(queue));
   }
 
@@ -259,12 +286,12 @@ export class LocalStorageService {
     const filteredQueue = queue.filter(item => item.id !== itemId);
     localStorage.setItem(this.SYNC_QUEUE_KEY, JSON.stringify(filteredQueue));
   }
-  
+
   // Método para atualizar um item existente na fila de sincronização
   updateSyncQueueItem(item: SyncQueueItem): void {
     const queue = this.getSyncQueue();
     const index = queue.findIndex(qItem => qItem.id === item.id);
-    
+
     if (index >= 0) {
       queue[index] = item;
       localStorage.setItem(this.SYNC_QUEUE_KEY, JSON.stringify(queue));
@@ -273,8 +300,9 @@ export class LocalStorageService {
 
   clearSyncQueue(): void {
     localStorage.removeItem(this.SYNC_QUEUE_KEY);
+    this.blockSyncQueue = true;
   }
-  
+
   // Contagem de itens pendentes para sincronização
   getPendingSyncCount(): number {
     return this.getSyncQueue().length;
@@ -287,7 +315,7 @@ export class LocalStorageService {
     const employees = this.getEmployeesSync();
     const attendance = this.getAttendanceSync();
     const workSchedule = this.getWorkScheduleSync();
-    
+
     this.scheduleSubject.next(schedule);
     this.recordsSubject.next(records);
     this.employeesSubject.next(employees);
@@ -307,7 +335,7 @@ export class LocalStorageService {
     localStorage.removeItem(this.ATTENDANCE_KEY);
     localStorage.removeItem(this.WORK_SCHEDULE_KEY);
     localStorage.removeItem(this.LAST_SYNC_KEY);
-    
+
     this.recordsSubject.next([]);
     this.scheduleSubject.next(null);
     this.employeesSubject.next([]);
@@ -373,36 +401,36 @@ export class LocalStorageService {
   importAllData(dataString: string): boolean {
     try {
       const data = JSON.parse(dataString);
-      
+
       if (data.employees) {
         localStorage.setItem(this.EMPLOYEES_KEY, JSON.stringify(data.employees));
         this.employeesSubject.next(data.employees);
       }
-      
+
       if (data.attendance) {
         localStorage.setItem(this.ATTENDANCE_KEY, JSON.stringify(data.attendance));
         this.attendanceSubject.next(data.attendance);
       }
-      
+
       if (data.schedule) {
         localStorage.setItem(this.SCHEDULE_KEY, JSON.stringify(data.schedule));
         this.scheduleSubject.next(data.schedule);
       }
-      
+
       if (data.records) {
         localStorage.setItem(this.RECORDS_KEY, JSON.stringify(data.records));
         this.recordsSubject.next(data.records);
       }
-      
+
       if (data.workSchedule) {
         localStorage.setItem(this.WORK_SCHEDULE_KEY, JSON.stringify(data.workSchedule));
         this.workScheduleSubject.next(data.workSchedule);
       }
-      
+
       if (data.syncQueue) {
         localStorage.setItem(this.SYNC_QUEUE_KEY, JSON.stringify(data.syncQueue));
       }
-      
+
       return true;
     } catch (error) {
       console.error('Erro ao importar dados:', error);

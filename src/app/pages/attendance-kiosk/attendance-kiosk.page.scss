@@ -1,0 +1,164 @@
+.attendance-kiosk {
+  --background: var(--app-neutral-light);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--app-padding);
+}
+
+.kiosk-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: calc(var(--app-padding) * 2);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
+}
+
+h1, h2 {
+  font-weight: bold;
+  color: var(--app-primary);
+  text-align: center;
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 18px;
+  color: var(--app-secondary);
+  margin-bottom: 2rem;
+}
+
+.kiosk-buttons {
+  margin-top: 24px;
+}
+
+.code-input, .name-search {
+  margin-bottom: 16px;
+  --background: rgba(var(--app-medium-rgb), 0.1);
+  border-radius: 12px;
+  --highlight-color: var(--app-primary);
+
+  ion-input {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    font-size: 18px;
+  }
+
+  ion-note {
+    padding: 0 16px;
+    &[color="medium"] {
+      color: var(--app-medium);
+    }
+    &[slot="error"] {
+      color: var(--app-danger);
+    }
+  }
+}
+
+.employee-list {
+  margin-top: -8px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.1);
+
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --background: white;
+    --border-color: rgba(var(--app-medium-rgb), 0.1);
+
+    &:hover {
+      --background: rgba(var(--app-primary-rgb), 0.05);
+    }
+
+    ion-label {
+      font-size: 16px;
+      color: var(--app-primary);
+    }
+
+    ion-note {
+      font-size: 14px;
+      color: var(--app-medium);
+    }
+  }
+}
+.name-search {
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    font-size: 18px;
+  }
+
+  ion-select::part(text) {
+    color: var(--ion-color-medium);
+  }
+}
+
+.kiosk-button {
+  margin: 8px 0;
+  height: 48px;
+  --border-radius: 12px;
+  --background: var(--app-primary);
+  --color: white;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+
+  &:hover {
+    --background: var(--app-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--app-primary-rgb), 0.3);
+  }
+
+  ion-icon {
+    font-size: 24px;
+    margin-right: 12px;
+  }
+}
+
+.alternative-methods {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 2px solid rgba(var(--app-medium-rgb), 0.1);
+
+  .kiosk-button {
+    --background: var(--app-secondary);
+    &:hover {
+      --background: var(--app-accent);
+      box-shadow: 0 4px 8px rgba(var(--app-secondary-rgb), 0.3);
+    }
+  }
+}
+
+ion-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 500px;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  ion-header ion-toolbar {
+    --background: var(--app-primary);
+    --color: white;
+  }
+
+  ion-content {
+    --background: white;
+  }
+}
+
+ion-toolbar {
+  --background: var(--app-primary);
+  --color: var(--app-primary-contrast);
+}

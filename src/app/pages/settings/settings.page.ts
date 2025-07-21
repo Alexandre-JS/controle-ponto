@@ -4,6 +4,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { IonicModule, ToastController } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import { NetworkService } from '../../services/network.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-settings',
@@ -17,6 +20,28 @@ import { AppHeaderComponent } from '../../components/app-header/app-header.compo
     </app-header>
 
     <ion-content class="ion-padding">
+      <div class="settings-card">
+        <div class="settings-title">
+          <ion-icon name="color-palette-outline"></ion-icon>
+          Tema
+        </div>
+        <app-theme-toggle></app-theme-toggle>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title">
+          <ion-icon name="cloud-outline"></ion-icon>
+          Modo de operação
+        </div>
+        <ion-item class="custom-item">
+          <ion-label>Modo Offline</ion-label>
+          <ion-toggle [(ngModel)]="isOfflineMode" (ionChange)="toggleOfflineMode()"></ion-toggle>
+        </ion-item>
+        <ion-note color="medium">
+          Quando ativado, o app funcionará apenas com dados locais. Desative para sincronizar com o servidor.
+        </ion-note>
+      </div>
+
       <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
         <ion-list class="form-list">
           <ion-item class="form-item">
@@ -61,16 +86,18 @@ import { AppHeaderComponent } from '../../components/app-header/app-header.compo
     </ion-content>
   `,
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, AppHeaderComponent]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, AppHeaderComponent, ThemeToggleComponent]
 })
 export class SettingsPage implements OnInit {
   scheduleForm: FormGroup;
   isLoading = false;
+  isOfflineMode = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private employeeService: EmployeeService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private networkService: NetworkService
   ) {
     this.scheduleForm = this.formBuilder.group({
       start_time: ['08:00', Validators.required],
@@ -81,6 +108,7 @@ export class SettingsPage implements OnInit {
 
   async ngOnInit() {
     await this.loadCurrentSchedule();
+    this.isOfflineMode = !this.networkService.isOnline();
   }
 
   async loadCurrentSchedule() {
@@ -116,6 +144,18 @@ export class SettingsPage implements OnInit {
       } finally {
         this.isLoading = false;
       }
+    }
+  }
+
+  toggleOfflineMode() {
+    if (this.isOfflineMode) {
+      // Forçar modo offline
+      (this.networkService as any).onlineSubject.next(false);
+      this.showToast('Modo offline ativado. Apenas dados locais serão usados.', 'warning');
+    } else {
+      // Forçar modo online
+      (this.networkService as any).onlineSubject.next(true);
+      this.showToast('Modo online ativado. Dados serão sincronizados com o servidor.', 'success');
     }
   }
 

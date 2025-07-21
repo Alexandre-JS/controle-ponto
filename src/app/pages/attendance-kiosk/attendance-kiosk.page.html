@@ -1,0 +1,80 @@
+<app-header
+  title="Registro de Ponto"
+  icon="stopwatch-outline"
+  [showMenu]="false"
+  [showNotifications]="false"
+  [showThemeToggle]="true">
+  <ion-buttons slot="end">
+    <ion-button (click)="goToAdmin()">
+      <ion-icon slot="start" name="settings-outline"></ion-icon>
+      Gerenciar Sistema
+    </ion-button>
+  </ion-buttons>
+</app-header>
+
+<ion-content class="ion-padding attendance-kiosk">
+  <div class="kiosk-container app-card">
+    <h1 class="ion-text-center text-heading">IDENTIFIQUE-SE PARA</h1>
+    <h2 class="ion-text-center text-heading">MARCAR PRESENÇA</h2>
+
+    <div class="kiosk-buttons">
+      <ion-item class="code-input form-item">
+        <ion-input
+          [(ngModel)]="employeeCode"
+          (ionChange)="onCodeChange($event)"
+          placeholder="Digite código (AEM123)"
+          class="ion-text-center"
+          maxlength="6"
+          type="text"
+          style="text-transform: uppercase;">
+        </ion-input>
+        <ion-note slot="helper" color="medium">Código: AEM + 3 números</ion-note>
+        <ion-note slot="error" *ngIf="showError">Código inválido</ion-note>
+      </ion-item>
+
+      <ion-list *ngIf="showEmployeeList && filteredEmployees.length > 0" class="employee-list">
+        <ion-item button *ngFor="let employee of filteredEmployees" (click)="selectEmployee(employee)">
+          <ion-label>{{employee.name}}</ion-label>
+          <ion-note slot="end" color="medium">{{employee.internal_code}}</ion-note>
+        </ion-item>
+      </ion-list>
+
+      <ion-button expand="block"
+                  class="kiosk-button app-button"
+                  (click)="markAttendance('code')"
+                  [disabled]="!isValidCode">
+        <ion-icon name="log-in-outline" slot="start" size="large"></ion-icon>
+        MARCAR PONTO
+      </ion-button>
+
+      <div class="alternative-methods">
+        <ion-button expand="block"
+                  class="kiosk-button app-button-secondary"
+                  (click)="showQRScanner()">
+          <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
+          ESCANEAR QR CODE
+        </ion-button>
+      </div>
+    </div>
+
+    <ion-loading [isOpen]="isLoading" message="Processando..."></ion-loading>
+  </div>
+
+  <ion-modal [isOpen]="isQRScannerVisible" (didDismiss)="hideQRScanner()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Escanear QR Code</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="hideQRScanner()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <app-qr-scanner (scanComplete)="onQRCodeScanned($event)"></app-qr-scanner>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

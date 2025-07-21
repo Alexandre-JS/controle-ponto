@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { StatusService, WorkStatus } from '../../services/status.service';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import { SyncStatusComponent } from '../../components/sync-status/sync-status.component';
 import { interval, forkJoin, of, Subscription } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { AttendanceStatus, Employee, Attendance, WorkSchedule } from '../../models/employee.model';
@@ -14,12 +15,13 @@ import { CacheService, CacheStrategy } from '../../services/cache.service';
 import { NetworkService } from '../../services/network.service';
 import { SyncService } from '../../services/sync.service';
 import { LocalStorageService } from '../../services/local-storage.service';
-
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 @Component({
   selector: 'app-daily-attendance',
   templateUrl: './daily-attendance.page.html',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ThemeToggleComponent, AppHeaderComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ThemeToggleComponent, AppHeaderComponent, SyncStatusComponent],
+  providers: [BarcodeScanner]
 })
 export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   currentTime = new Date();
@@ -38,6 +40,7 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   isOnline = true;
   pendingSyncCount = 0;
   workSchedule: WorkSchedule | null = null;
+  isOfflineMode = false;
 
   // Cache strategy para dados do dashboard
   private dashboardCacheStrategy: CacheStrategy = {
@@ -56,16 +59,58 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     private syncService: SyncService,
     private localStorageService: LocalStorageService,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private barcodeScanner: BarcodeScanner
   ) {
     this.updateWorkStatus();
+    // Debug: imprimir pendentes ao iniciar
+    this.debugPrintPendingSync();
+    // Checar dados offline e alertar se necessário
+    setTimeout(() => {
+      this.checkOfflineDataAndPrompt();
+    }, 0);
+  }
+
+  /**
+   * Ação do botão manual de atualização de dados
+   */
+  async onManualUpdate() {
+    if (this.isLoading) return;
+    this.isLoading = true;
+    try {
+      await this.loadAllData(true);
+      await this.loadUserProfile();
+      this.showToast('Dados atualizados com sucesso!', 'success');
+    } catch (error) {
+      this.showToast('Erro ao atualizar dados', 'danger');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+
+
+  // Elimina todos os itens pendentes de sincronização
+  clearAllPendingSync(): void {
+    this.localStorageService.clearSyncQueue();
+    // Força atualização do contador de pendentes
+    if (typeof (this.syncService as any).updateSyncStats === 'function') {
+      (this.syncService as any).updateSyncStats();
+    }
+    this.showToast('Todos os pendentes foram eliminados.', 'success');
+    // Log de limpeza
+    console.log('[DEBUG] Ação: Fila de sincronização limpa manualmente.');
+    // Mostrar estado da fila após limpeza
+    this.debugPrintPendingSync();
   }
 
   async ngOnInit() {
     this.startClock();
     this.setupSubscriptions();
-    await this.loadAllData();
-    await this.loadUserProfile();
+    // Removido carregamento automático de dados e perfil
+    // Usuário deve acionar manualmente
+    // Debug extra: garantir impressão após carregamento inicial
+    this.debugPrintPendingSync();
   }
 
   ngOnDestroy() {
@@ -80,14 +125,8 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     // Monitorar estado da rede
     this.dataSubscriptions.push(
       this.networkService.isOnline$.subscribe(isOnline => {
-        const wasOffline = !this.isOnline && isOnline;
         this.isOnline = isOnline;
-
-        // Se voltar a ficar online, recarregar dados
-        if (wasOffline) {
-          this.showToast('Conexão restaurada. Atualizando dados...', 'success');
-          this.loadAllData(true);
-        }
+        // Não recarregar dados automaticamente ao reconectar
       })
     );
 
@@ -97,6 +136,18 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
         this.pendingSyncCount = stats.pendingItems;
       })
     );
+  }
+
+  /**
+   * Checa se há dados offline disponíveis e alerta o usuário se necessário
+   */
+  private async checkOfflineDataAndPrompt() {
+    const employees = this.localStorageService.getEmployeesSync();
+    const attendance = this.localStorageService.getAttendanceSync();
+    const workSchedule = this.localStorageService.getWorkScheduleSync();
+    if ((!employees || employees.length === 0) || (!attendance || attendance.length === 0) || !workSchedule) {
+      this.showToast('Dados offline não encontrados. Clique em "Atualizar dados" para baixar as informações.', 'warning');
+    }
   }
 
   private startClock() {
@@ -349,11 +400,58 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
 
       // Recarregar dados após sincronização
       this.loadAllData(false);
+
+      // Debug: imprimir pendentes após sync
+      this.debugPrintPendingSync();
     } catch (error) {
       console.error('Erro na sincronização:', error);
       if (showFeedback) {
         this.showToast('Erro na sincronização. Tente novamente mais tarde.', 'danger');
       }
+    }
+  }
+  /**
+   * Imprime no console todos os pendentes da fila de sincronização para debug
+   */
+  debugPrintPendingSync() {
+    const queue = this.localStorageService.getSyncQueue ? this.localStorageService.getSyncQueue() : [];
+    if (!queue || queue.length === 0) {
+      console.log('[DEBUG] Fila de sincronização está vazia.');
+      return;
+    }
+    console.log(`[DEBUG] Fila de sincronização (${queue.length} itens):`);
+    let uuidCount = 0;
+    let nonUuidCount = 0;
+    const stats: Record<string, number> = {};
+    queue.forEach((item: any, idx: number) => {
+      const id = item.data?.id || item.id || '(sem id)';
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      if (isUUID) uuidCount++; else nonUuidCount++;
+      const tipo = item.type || item.entity || '(tipo?)';
+      const operacao = item.operation || item.op || '(op?)';
+      const key = `${tipo}:${operacao}`;
+      stats[key] = (stats[key] || 0) + 1;
+      const resumo = {
+        idx,
+        tipo,
+        operacao,
+        id,
+        isUUID,
+        principais: {
+          employee_id: item.data?.employee_id,
+          date: item.data?.date,
+          status: item.data?.status,
+          check_in: item.data?.check_in,
+          check_out: item.data?.check_out
+        }
+      };
+      console.log(`[${idx}]`, resumo);
+    });
+    // Resumo por tipo/operação
+    console.log('[DEBUG] Resumo por tipo/operação:', stats);
+    console.log(`[DEBUG] Pendentes com UUID: ${uuidCount}, pendentes com id local: ${nonUuidCount}`);
+    if (nonUuidCount === 0) {
+      console.warn('[DEBUG] Todos os pendentes possuem id UUID. Não há pendentes de insert (id local). Se você esperava ver pendentes de insert, tente registrar um novo offline e verifique se aparece aqui.');
     }
   }
 
@@ -437,4 +535,6 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
 
     return this.lastUpdate.toLocaleTimeString();
   }
+
+  // Remover método de alternância de modo online/offline do dashboard
 }
