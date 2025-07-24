@@ -433,7 +433,8 @@ export class EmployeeService {
           message: `Bom dia ${employee.name}! Entrada registrada com sucesso às ${currentTime}.`,
           data: result
         };
-      } else if (!lastRecord.check_out && now.getHours() >= 12) {
+      } else if (!lastRecord.check_out) {
+        // Permitir saída a qualquer hora, removendo a restrição de horário
         const result = await this.registerCheckOut(lastRecord, currentTime, 'qr');
         await this.updateEmployeeStatus(employee.id, 'Ausente');
         return {
@@ -444,7 +445,7 @@ export class EmployeeService {
       } else if (lastRecord.check_out) {
         throw new Error(`${employee.name}, você já finalizou seu expediente hoje.`);
       } else {
-        throw new Error(`${employee.name}, ainda é muito cedo para registrar saída.`);
+        throw new Error(`${employee.name}, erro inesperado ao registrar saída.`);
       }
     } catch (error: any) {
       console.error('Erro no registro por QR code:', error);
