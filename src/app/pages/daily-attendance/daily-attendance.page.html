@@ -181,8 +181,13 @@
 
           <!-- Attendance data -->
           <ion-item *ngFor="let record of todayAttendance">
-            <ion-avatar slot="start">
-              <img src="assets/avatar-placeholder.png" alt="avatar">
+            <ion-avatar slot="start" class="avatar-initials">
+              <div class="avatar-circle">
+                {{
+                  (record.employee?.name?.split(' ')[0]?.charAt(0) || '') +
+                  (record.employee?.name?.split(' ')[1]?.charAt(0) || record.employee?.name?.split(' ')[0]?.charAt(1) || '')
+                }}
+              </div>
             </ion-avatar>
             <ion-label>
               <h2>{{ record.employee?.name || 'Funcionário' }}</h2>
@@ -213,7 +218,18 @@
   </div>
 </ion-content>
 
-<!-- <style>
-
-
-</style> -->
+<style>
+.avatar-initials .avatar-circle {
+  width: 40px;
+  height: 40px;
+  background: #e0e0e0;
+  color: #444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1em;
+  text-transform: uppercase;
+}
+</style>

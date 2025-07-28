@@ -34,7 +34,15 @@
 
       <ion-list *ngIf="showEmployeeList && filteredEmployees.length > 0" class="employee-list">
         <ion-item button *ngFor="let employee of filteredEmployees" (click)="selectEmployee(employee)">
-          <ion-label>{{employee.name}}</ion-label>
+          <ion-label>
+            <div>{{employee.name}}</div>
+            <div class="employee-role" *ngIf="employee.role">
+              {{ employee.role }}
+            </div>
+            <div class="employee-role" *ngIf="!employee.role">
+              Cargo não definido
+            </div>
+          </ion-label>
           <ion-note slot="end" color="medium">{{employee.internal_code}}</ion-note>
         </ion-item>
       </ion-list>
@@ -48,18 +56,18 @@
       </ion-button>
 
       <div class="alternative-methods">
-        <ion-button expand="block"
+        <!-- <ion-button expand="block"
                   class="kiosk-button app-button-secondary"
                   (click)="showQRScanner()">
           <ion-icon name="qr-code-outline" slot="start" size="large"></ion-icon>
           ESCANEAR QR CODE
-        </ion-button>
+        </ion-button> -->
         <ion-button expand="block"
                   class="kiosk-button app-button-secondary"
                   color="primary"
                   (click)="scanBarcode()">
           <ion-icon name="barcode-outline" slot="start" size="large"></ion-icon>
-          ESCANEAR CÓDIGO DE BARRAS
+          ESCANEAR CÓDIGO
         </ion-button>
       </div>
     </div>
