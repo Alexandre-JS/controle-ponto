@@ -122,8 +122,12 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
         today.getMonth() + 1
       );
 
+      // Filtrar apenas funcionários que marcaram presença (têm check_in no dia atual)
       this.todayAttendance = attendanceData
-        .filter(record => new Date(record.date).toDateString() === today.toDateString())
+        .filter(record =>
+          new Date(record.date).toDateString() === today.toDateString() &&
+          !!record.check_in // Apenas quem marcou presença
+        )
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
         .map(record => ({
           ...record,
