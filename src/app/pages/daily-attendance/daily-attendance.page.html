@@ -124,7 +124,9 @@
                       <div class="employee-avatar">
                         <ion-icon name="person"></ion-icon>
                       </div>
-                      <div class="employee-name">{{ record.employee?.name || 'Nome não encontrado' }}</div>
+                      <div class="employee-name">
+                        {{ record.employee?.name || record.name || record.employee?.internal_code || record.internal_code || 'Funcionário não encontrado' }}
+                      </div>
                     </div>
                   </td>
                   <td class="time-col">

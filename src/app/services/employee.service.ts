@@ -353,8 +353,11 @@ export class EmployeeService {
 
   async getAttendanceByMonth(year: number, month: number) {
     try {
-      const startDate = new Date(year, month - 1, 1).toISOString();
-      const endDate = new Date(year, month, 0).toISOString();
+      // Ajuste para formato YYYY-MM-DD
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+      const endDate = `${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate().toString().padStart(2, '0')}`;
+
+      console.log('Buscando presenças de', startDate, 'até', endDate);
 
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
@@ -369,8 +372,16 @@ export class EmployeeService {
         .gte('date', startDate)
         .lte('date', endDate);
 
-      if (error) throw error;
-      return data || [];
+      if (error) {
+        console.error('Erro Supabase:', error);
+        return [];
+      }
+      if (!data) {
+        console.log('Nenhum dado retornado');
+        return [];
+      }
+      console.log('Presenças encontradas:', data.length);
+      return data;
     } catch (error) {
       console.error('Erro ao buscar presenças:', error);
       return [];
@@ -512,7 +523,11 @@ export class EmployeeService {
         .from(this.ATTENDANCE_TABLE)
         .select(`
           *,
-          employees (name)
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
         `)
         .eq('employee_id', id)
         .order('created_at', { ascending: false });
@@ -529,14 +544,7 @@ export class EmployeeService {
     try {
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
-        .select(`
-          *,
-          employee:employees (
-            id,
-            name,
-            internal_code
-          )
-        `)
+        .select('*') // Remova o relacionamento para testar
         .gte('date', startDate)
         .lte('date', endDate);
 
@@ -559,6 +567,28 @@ export class EmployeeService {
       return data || [];
     } catch (error) {
       console.error('Erro ao buscar departamentos:', error);
+      return [];
+    }
+  }
+
+  async getTodayAttendance(date: string): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select(`
+          *,
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
+        `)
+        .eq('date', date);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Erro ao buscar registros de hoje:', error);
       return [];
     }
   }
