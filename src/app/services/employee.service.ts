@@ -277,7 +277,7 @@ export class EmployeeService {
     }
 
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const today = this.formatDateToYYYYMMDD(now);
     const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
     
     // Obter o schedule do cache local
@@ -773,7 +773,14 @@ export class EmployeeService {
     try {
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
-        .select('*') // Remova o relacionamento para testar
+        .select(`
+          *,
+          employee:employees (
+            id,
+            name,
+            internal_code
+          )
+        `)  // Modificar para incluir relacionamento com employees
         .gte('date', startDate)
         .lte('date', endDate);
 
@@ -800,8 +807,23 @@ export class EmployeeService {
     }
   }
 
+  // Método utilitário para formatar data consistentemente
+  private formatDateToYYYYMMDD(date: Date): string {
+    return date.toISOString().split('T')[0]; // Retorna YYYY-MM-DD
+  }
+
   async getTodayAttendance(date: string): Promise<any[]> {
     try {
+      console.log(`Buscando presenças para a data: ${date}`);
+      
+      // Verificar cache local primeiro
+      const cachedAttendance = this.localStorageService.getTodayAttendance();
+      if (cachedAttendance.length > 0 && !this.networkService.isOnline()) {
+        console.log('Offline: usando cache local para presenças');
+        return cachedAttendance;
+      }
+      
+      // Se online, buscar do servidor
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .select(`
@@ -814,11 +836,71 @@ export class EmployeeService {
         `)
         .eq('date', date);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar presenças do servidor:', error);
+        // Fallback para cache
+        if (cachedAttendance.length > 0) {
+          console.log('Usando cache como fallback');
+          return cachedAttendance;
+        }
+        throw error;
+      }
+
+      console.log(`Encontradas ${data?.length || 0} presenças para hoje`);
       return data || [];
     } catch (error) {
       console.error('Erro ao buscar registros de hoje:', error);
       return [];
+    }
+  }
+
+  async verifyAttendanceRecord(employeeId: string, date: string): Promise<{exists: boolean, hasCheckIn: boolean, hasCheckOut: boolean}> {
+    try {
+      console.log(`Verificando registro para funcionário ${employeeId} na data ${date}`);
+      
+      // Primeiro verificar no cache local
+      const cachedAttendance = this.localStorageService.getTodayAttendance();
+      const cachedRecord = cachedAttendance.find(att => 
+        att.employee_id === employeeId && att.date === date
+      );
+      
+      if (cachedRecord) {
+        console.log('Registro encontrado no cache local:', cachedRecord);
+        return {
+          exists: true,
+          hasCheckIn: !!cachedRecord.check_in,
+          hasCheckOut: !!cachedRecord.check_out
+        };
+      }
+      
+      // Se não encontrado no cache e offline, retornar não encontrado
+      if (!this.networkService.isOnline()) {
+        console.log('Offline: registro não encontrado no cache local');
+        return { exists: false, hasCheckIn: false, hasCheckOut: false };
+      }
+      
+      // Buscar do servidor
+      const { data, error } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .select('*')
+        .eq('employee_id', employeeId)
+        .eq('date', date)
+        .single();
+      
+      if (error) {
+        console.log('Erro ao verificar registro no servidor:', error);
+        return { exists: false, hasCheckIn: false, hasCheckOut: false };
+      }
+      
+      console.log('Registro encontrado no servidor:', data);
+      return {
+        exists: !!data,
+        hasCheckIn: !!data?.check_in,
+        hasCheckOut: !!data?.check_out
+      };
+    } catch (error) {
+      console.error('Erro ao verificar registro:', error);
+      return { exists: false, hasCheckIn: false, hasCheckOut: false };
     }
   }
 }

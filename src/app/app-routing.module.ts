@@ -32,12 +32,14 @@ export const routes: Routes = [
       {
         path: 'daily-attendance',
         loadComponent: () => import('./pages/daily-attendance/daily-attendance.page')
-          .then(m => m.DailyAttendancePageComponent)
+          .then(m => m.DailyAttendancePageComponent),
+        canActivate: [AuthGuard] // Adicionar o guard aqui
       },
       {
         path: 'attendance',
         loadChildren: () => import('./pages/attendance/attendance.module')
-          .then(m => m.AttendancePageModule)
+          .then(m => m.AttendancePageModule),
+        canActivate: [AuthGuard]
       },
       {
         path: 'employee',

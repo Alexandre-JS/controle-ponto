@@ -33,6 +33,7 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   pendingSyncCount = 0;
   totalJustified = 0;
   lastUpdate: Date = new Date();
+  isAuthenticated = false;
 
   constructor(
     private employeeService: EmployeeService,
@@ -55,6 +56,15 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // Verificar autenticação primeiro
+    const isAuthenticated = await this.checkAuthentication();
+    if (!isAuthenticated) {
+      console.log('Usuário não autenticado, redirecionando para login');
+      this.router.navigate(['/login']);
+      return; // Interromper a inicialização do componente
+    }
+    
+    // Só continua se estiver autenticado
     this.startClock();
     await this.loadEmployees();
     await this.loadTodayAttendance();
@@ -117,22 +127,27 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   async loadTodayAttendance() {
     try {
       const today = new Date();
-      const attendanceData = await this.employeeService.getAttendanceByMonth(
-        today.getFullYear(),
-        today.getMonth() + 1
-      );
+      const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      console.log('Buscando presenças para a data:', formattedDate);
+      
+      // Usar método específico para hoje em vez de filtrar depois
+      const attendanceData = await this.employeeService.getTodayAttendance(formattedDate);
+      console.log('Dados recebidos:', attendanceData);
 
-      // Filtrar apenas funcionários que marcaram presença (têm check_in no dia atual)
-      this.todayAttendance = attendanceData
-        .filter(record =>
-          new Date(record.date).toDateString() === today.toDateString() &&
-          !!record.check_in // Apenas quem marcou presença
-        )
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        .map(record => ({
-          ...record,
-          employee: this.employees.find(emp => emp.id === record.employee_id)
-        }));
+      // Simplificar o tratamento dos dados e incluir logs detalhados
+      this.todayAttendance = attendanceData.map(record => {
+        console.log('Processando registro:', record);
+        console.log('Dados do funcionário disponíveis:', !!record.employee);
+        
+        // Tentar recuperar o nome do funcionário de várias maneiras
+        if (!record.employee && record.employee_id) {
+          // Tentar encontrar o funcionário na lista carregada
+          record.employee = this.employees.find(emp => emp.id === record.employee_id);
+          console.log('Funcionário encontrado na lista local:', !!record.employee);
+        }
+        
+        return record;
+      });
 
       await this.calculateStatistics();
     } catch (error) {
@@ -206,5 +221,20 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `${diffHours}h atrás`;
     return this.lastUpdate.toLocaleTimeString();
+  }
+
+  private async checkAuthentication(): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      this.authService.isAuthenticated().subscribe(
+        isAuth => {
+          this.isAuthenticated = isAuth;
+          resolve(isAuth);
+        },
+        error => {
+          console.error('Erro ao verificar autenticação:', error);
+          resolve(false);
+        }
+      );
+    });
   }
 }
