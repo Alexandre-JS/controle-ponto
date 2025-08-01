@@ -732,6 +732,17 @@ export class EmployeeService {
 
   async deleteEmployee(id: string): Promise<void> {
     try {
+      // Primeiro, deletar todas as presenças do funcionário no banco
+      const { error: attendanceError } = await this.supabase
+        .from(this.ATTENDANCE_TABLE)
+        .delete()
+        .eq('employee_id', id);
+
+      if (attendanceError) {
+        throw attendanceError;
+      }
+
+      // Agora, deletar o funcionário no banco
       const { error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .delete()
@@ -740,6 +751,12 @@ export class EmployeeService {
       if (error) {
         throw error;
       }
+
+      // Remover funcionário do cache local
+      this.localStorageService.removeEmployee(id);
+
+      // Remover presenças do funcionário do cache local
+      this.localStorageService.removeAttendanceByEmployeeId(id);
     } catch (error) {
       console.error('Erro ao excluir funcionário:', error);
       throw error;
@@ -903,4 +920,54 @@ export class EmployeeService {
       return { exists: false, hasCheckIn: false, hasCheckOut: false };
     }
   }
-}
+
+  /**
+ * Atualiza o registro de presença de um funcionário
+ * @param attendanceId ID do registro de presença
+ * @param data Dados a serem atualizados (check_in, check_out, etc)
+ */
+async updateAttendanceRecord(attendanceId: string, data: Partial<Attendance>): Promise<Attendance> {
+  try {
+    console.log(`Atualizando registro de presença ${attendanceId}:`, data);
+    
+    // Verificar se está online
+    if (!this.networkService.isOnline()) {
+      throw new Error('Não é possível editar registros no modo offline');
+    }
+    
+    // Atualizar no servidor
+    const { data: updatedRecord, error } = await this.supabase
+      .from(this.ATTENDANCE_TABLE)
+      .update(data)
+      .eq('id', attendanceId)
+      .select(`
+        *,
+        employee:employees (
+          id,
+          name,
+          internal_code
+        )
+      `)
+      .single();
+    
+    if (error) {
+      console.error('Erro ao atualizar registro:', error);
+      throw error;
+    }
+    
+    console.log('Registro atualizado com sucesso:', updatedRecord);
+    
+    // Atualizar no cache local
+    if (updatedRecord) {
+      this.localStorageService.saveAttendance({
+        ...updatedRecord,
+        synced: true
+      } as Attendance);
+    }
+    
+    return updatedRecord;
+  } catch (error) {
+    console.error('Erro ao atualizar registro de presença:', error);
+    throw error;
+  }
+}}

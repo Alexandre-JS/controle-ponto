@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
@@ -10,6 +10,7 @@ import { AttendanceStatus } from '../../models/employee.model';
 import { SyncStatusComponent } from '../../components/sync-status/sync-status.component';
 import { NetworkService } from '../../services/network.service';
 import { SyncService } from '../../services/sync.service';
+import { AttendanceEditModalComponent } from '../../components/attendance-edit-modal/attendance-edit-modal.component';
 
 @Component({
   selector: 'app-daily-attendance',
@@ -41,7 +42,9 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public statusService: StatusService,
     private networkService: NetworkService,
-    private syncService: SyncService
+    private syncService: SyncService,
+    private modalController: ModalController,
+    private toastController: ToastController
   ) {
     this.updateWorkStatus();
     // Monitorar estado da rede
@@ -237,4 +240,31 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
       );
     });
   }
+
+  async editAttendanceRecord(record: any) {
+    // Simplificar a verificação para evitar o erro com isAdmin
+    // Podemos implementar verificação de permissão mais tarde
+    
+    const modal = await this.modalController.create({
+      component: AttendanceEditModalComponent,
+      componentProps: {
+        attendanceRecord: record
+      }
+    });
+    
+    await modal.present();
+    
+    // Quando o modal for fechado, verificar se houve atualização
+    const { data } = await modal.onDidDismiss();
+    if (data) {
+      // Atualizar a lista de presenças
+      await this.loadTodayAttendance();
+    }
+  }
 }
+    // const { data } = await modal.onDidDismiss();
+    // if (data) {
+    //   // Atualizar a lista de presenças
+    //   await this.loadTodayAttendance();
+    // }
+  

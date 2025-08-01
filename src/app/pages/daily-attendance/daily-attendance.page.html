@@ -218,7 +218,7 @@
           </div>
 
           <!-- Attendance data -->
-          <ion-item *ngFor="let record of todayAttendance">
+          <ion-item *ngFor="let record of todayAttendance" class="record-row">
             <ion-avatar slot="start" class="avatar-initials">
               <div class="avatar-circle">
                 {{
@@ -244,6 +244,11 @@
                 {{ getStatusLabel(record.status) }}
               </ion-chip>
             </div>
+            <ion-buttons slot="end">
+              <ion-button fill="clear" (click)="editAttendanceRecord(record)">
+                <ion-icon name="create-outline" color="primary"></ion-icon>
+              </ion-button>
+            </ion-buttons>
           </ion-item>
         </ion-list>
         <ng-template #noRecords>

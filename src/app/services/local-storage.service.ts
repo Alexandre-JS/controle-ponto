@@ -7,6 +7,25 @@ import { Employee, Attendance, WorkSchedule } from '../models/employee.model';
   providedIn: 'root'
 })
 export class LocalStorageService {
+  /**
+   * Remove um funcionário do cache local pelo id
+   */
+  removeEmployee(id: string): void {
+    const employees = this.getEmployeesSync();
+    const filtered = employees.filter(emp => emp.id !== id);
+    localStorage.setItem(this.EMPLOYEES_KEY, JSON.stringify(filtered));
+    this.employeesSubject.next(filtered);
+  }
+
+  /**
+   * Remove todas as presenças de um funcionário do cache local pelo id do funcionário
+   */
+  removeAttendanceByEmployeeId(employeeId: string): void {
+    const attendances = this.getAttendanceSync();
+    const filtered = attendances.filter(att => att.employee_id !== employeeId);
+    localStorage.setItem(this.ATTENDANCE_KEY, JSON.stringify(filtered));
+    this.attendanceSubject.next(filtered);
+  }
   private readonly SCHEDULE_KEY = 'schedule_data';
   private readonly RECORDS_KEY = 'daily_records';
   private readonly SYNC_QUEUE_KEY = 'sync_queue';

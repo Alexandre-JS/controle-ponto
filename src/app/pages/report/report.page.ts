@@ -1,3 +1,11 @@
+interface DailyDetail {
+  date: string;
+  employeeName: string;
+  check_in?: string;
+  check_out?: string;
+  late_minutes: number;
+  isAbsence?: boolean;
+}
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -57,6 +65,8 @@ interface DetailedReport {
   imports: [CommonModule, FormsModule, IonicModule, ThemeToggleComponent, AppHeaderComponent]
 })
 export class ReportPage implements OnInit, OnDestroy {
+  // Detalhamento diário
+  dailyDetails: DailyDetail[] = [];
   @ViewChild('attendanceChart') attendanceChart!: ElementRef;
   currentYear = new Date().getFullYear();
   currentMonth = new Date().getMonth() + 1;
@@ -196,6 +206,15 @@ export class ReportPage implements OnInit, OnDestroy {
   }
 
   formatHours(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h${remainingMinutes}min`;
+  }
+
+  formatLateTime(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes}min`;
+    }
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return `${hours}h${remainingMinutes}min`;
@@ -427,6 +446,62 @@ export class ReportPage implements OnInit, OnDestroy {
             attendanceRate: attendanceRate
           };
         });
+
+      // Gerar lista de dias úteis no período
+      function getWorkdays(start: Date, end: Date): string[] {
+        const days: string[] = [];
+        const current = new Date(start);
+        while (current <= end) {
+          const day = current.getDay();
+          if (day !== 0 && day !== 6) { // 0 = domingo, 6 = sábado
+            days.push(current.toISOString().split('T')[0]);
+          }
+          current.setDate(current.getDate() + 1);
+        }
+        return days;
+      }
+
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      const workdays = getWorkdays(start, end);
+
+      // Se funcionário selecionado, mostrar só ele, senão todos
+      const employeesToShow = this.selectedEmployee
+        ? employees.filter(e => e.id === String(this.selectedEmployee))
+        : employees;
+
+      this.dailyDetails = [];
+      for (const emp of employeesToShow) {
+        for (const day of workdays) {
+          const record = attendanceRecords.find(r => r.employee_id === emp.id && r.date.startsWith(day));
+          if (record) {
+            this.dailyDetails.push({
+              date: day,
+              employeeName: emp.name,
+              check_in: record.check_in,
+              check_out: record.check_out,
+              late_minutes: Number(record.late_minutes || 0),
+              isAbsence: false
+            });
+          } else {
+            this.dailyDetails.push({
+              date: day,
+              employeeName: emp.name,
+              check_in: '-',
+              check_out: '-',
+              late_minutes: 0,
+              isAbsence: true
+            });
+          }
+        }
+      }
+      // Ordenar por data e nome
+      this.dailyDetails.sort((a, b) => {
+        if (a.date === b.date) {
+          return a.employeeName.localeCompare(b.employeeName);
+        }
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
 
       this.updatePagination();
 
