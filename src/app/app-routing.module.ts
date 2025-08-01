@@ -6,7 +6,7 @@ import { PublicGuard } from './guards/public.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'admin/daily-attendance',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -58,7 +58,7 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'admin/daily-attendance'
+    redirectTo: 'login'  // Redireciona para login em caso de rota inválida
   }
 ];
 

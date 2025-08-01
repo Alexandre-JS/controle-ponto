@@ -1,20 +1,24 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
     <ion-menu contentId="main-content" type="overlay" *ngIf="isAuthenticated">
-      <ion-header>
-        <ion-toolbar>
+      <!-- <ion-header  mode="ios">
+        <ion-toolbar mode="ios">
           <ion-title>Menu Admin</ion-title>
+          <ion-buttons slot="end">
+            <app-theme-toggle></app-theme-toggle>
+          </ion-buttons>
         </ion-toolbar>
-      </ion-header>
-      
+      </ion-header> -->
+
       <div class="user-profile ion-padding">
         <ion-avatar>
-          <img [src]="userAvatar || 'assets/4792944.png'" alt="avatar">
+          <img [src]="userAvatar || 'assets/avatar-placeholder.svg'" alt="avatar">
         </ion-avatar>
         <h2>{{ userEmail }}</h2>
         <p>Administrador</p>
+        <app-theme-toggle></app-theme-toggle>
       </div>
-      
+
       <ion-content>
         <ion-list>
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
@@ -23,15 +27,19 @@
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
-          
+
           <ion-item button (click)="logout()" lines="none" class="logout-item">
             <ion-icon slot="start" name="log-out-outline"></ion-icon>
             <ion-label>Sair</ion-label>
           </ion-item>
         </ion-list>
+
+        <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
+          <app-sync-status></app-sync-status>
+        </div>
       </ion-content>
     </ion-menu>
-    
+
     <div class="ion-page" id="main-content">
       <!-- Ocultando o header na página de login -->
       <ion-header *ngIf="!isDesktop && !isLoginPage" class="mobile-header">
@@ -41,11 +49,35 @@
               <ion-icon name="menu-outline"></ion-icon>
             </ion-menu-button>
           </ion-buttons>
-          <ion-title>CPonto</ion-title>
+            <ion-title>CPonto</ion-title>
         </ion-toolbar>
       </ion-header>
-      
+
       <ion-router-outlet id="main-content"></ion-router-outlet>
     </div>
+
   </ion-split-pane>
+
+  <!-- Banner de status offline -->
+  <div class="offline-banner" *ngIf="!isOnline && !isLoginPage" [class.hidden]="isLoginPage">
+    <div class="offline-content">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <span>Você está offline. Dados serão sincronizados quando a conexão for restaurada.</span>
+    </div>
+    <ion-button size="small" fill="outline" color="light" (click)="syncNow()" [disabled]="!isOnline">
+      Sincronizar
+    </ion-button>
+  </div>
+
+  <!-- Indicador de pendências de sincronização (sempre visível) -->
+  <div class="sync-indicator" *ngIf="pendingSyncCount > 0 && isOnline && !isLoginPage"
+       (click)="syncNow()">
+    <ion-badge color="warning">{{ pendingSyncCount }}</ion-badge>
+  </div>
+
+  <!-- Banner de modo offline -->
+  <div *ngIf="!isOnline" class="offline-banner">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    Modo offline - Os dados serão sincronizados quando a conexão for restaurada
+  </div>
 </ion-app>

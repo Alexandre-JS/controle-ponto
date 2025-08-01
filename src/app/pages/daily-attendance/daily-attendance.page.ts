@@ -7,12 +7,15 @@ import { AuthService } from '../../services/auth.service';
 import { StatusService, WorkStatus } from '../../services/status.service';
 import { interval, Subscription } from 'rxjs';
 import { AttendanceStatus } from '../../models/employee.model';
+import { SyncStatusComponent } from '../../components/sync-status/sync-status.component';
+import { NetworkService } from '../../services/network.service';
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-daily-attendance',
   templateUrl: './daily-attendance.page.html',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule, SyncStatusComponent]
 })
 export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   currentTime = new Date();
@@ -25,14 +28,30 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   totalLate = 0;
   totalAbsent = 0;
   employees: any[] = [];
+  isOnline = true;
+  isOfflineMode = false;
+  pendingSyncCount = 0;
+  totalJustified = 0;
+  lastUpdate: Date = new Date();
 
   constructor(
     private employeeService: EmployeeService,
     private router: Router,
     private authService: AuthService,
-    public statusService: StatusService // Change to public
+    public statusService: StatusService,
+    private networkService: NetworkService,
+    private syncService: SyncService
   ) {
     this.updateWorkStatus();
+    // Monitorar estado da rede
+    this.networkService.isOnline$.subscribe(isOnline => {
+      this.isOnline = isOnline;
+      this.isOfflineMode = !isOnline;
+    });
+    // Monitorar pendências de sincronização
+    this.syncService.syncStats$.subscribe(stats => {
+      this.pendingSyncCount = stats.pendingItems;
+    });
   }
 
   async ngOnInit() {
@@ -40,6 +59,7 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     await this.loadEmployees();
     await this.loadTodayAttendance();
     await this.loadUserProfile();
+    this.lastUpdate = new Date();
   }
 
   ngOnDestroy() {
@@ -102,9 +122,17 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
         today.getMonth() + 1
       );
 
+      // Filtrar apenas funcionários que marcaram presença (têm check_in no dia atual)
       this.todayAttendance = attendanceData
-        .filter(record => new Date(record.date).toDateString() === today.toDateString())
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        .filter(record =>
+          new Date(record.date).toDateString() === today.toDateString() &&
+          !!record.check_in // Apenas quem marcou presença
+        )
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map(record => ({
+          ...record,
+          employee: this.employees.find(emp => emp.id === record.employee_id)
+        }));
 
       await this.calculateStatistics();
     } catch (error) {
@@ -137,5 +165,46 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: AttendanceStatus): string {
     return status; // No need for switch since we only have two states
+  }
+
+  async syncData(showToast = true) {
+    try {
+      await this.syncService.forcSync();
+      if (showToast) {
+        // Opcional: mostrar toast de sucesso
+      }
+    } catch (error) {
+      console.error('Erro na sincronização:', error);
+    }
+  }
+
+  async refreshData(event: any) {
+    await this.loadEmployees();
+    await this.loadTodayAttendance();
+    if (event && event.target) event.target.complete();
+    this.lastUpdate = new Date();
+  }
+
+  async onManualUpdate() {
+    await this.loadEmployees();
+    await this.loadTodayAttendance();
+    this.lastUpdate = new Date();
+  }
+
+  clearAllPendingSync() {
+    this.syncService['localStorageService'].clearSyncQueue();
+    this.syncService['updateSyncStats']?.();
+    this.pendingSyncCount = 0;
+  }
+
+  getLastUpdateTime(): string {
+    const now = new Date();
+    const diffMs = now.getTime() - this.lastUpdate.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    if (diffMinutes < 1) return 'Agora mesmo';
+    if (diffMinutes < 60) return `${diffMinutes} min atrás`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    return this.lastUpdate.toLocaleTimeString();
   }
 }

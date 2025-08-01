@@ -1,0 +1,53 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title class="text-heading">Novo Funcionário</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-card app-card">
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+      <h2 class="form-title text-heading">
+        <ion-icon name="person-add-outline" [style.color]="'var(--app-primary)'"></ion-icon>
+        Cadastrar Funcionário
+      </h2>
+
+      <ion-list class="custom-list">
+        <ion-item class="custom-item app-input">
+          <ion-label position="floating" class="text-primary">Nome Completo</ion-label>
+          <ion-input formControlName="name" type="text" class="custom-input"></ion-input>
+          <ion-note slot="error" *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched">
+            {{ getErrorMessage('name') }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item class="custom-item app-input">
+          <ion-label position="floating" class="text-primary">Cargo</ion-label>
+          <ion-input type="text" formControlName="position" class="custom-input"></ion-input>
+        </ion-item>
+
+        <ion-item class="custom-item app-input">
+          <ion-label position="floating" class="text-primary">Departamento</ion-label>
+          <ion-select formControlName="department" class="custom-select">
+            <ion-select-option *ngFor="let dept of departments" [value]="dept">
+              {{ dept }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <div class="button-group">
+        <ion-button expand="block" fill="clear" (click)="cancel()" class="cancel-button app-button-secondary">
+          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+          Voltar
+        </ion-button>
+
+        <ion-button expand="block" type="submit" [disabled]="!employeeForm.valid || isLoading" class="submit-button app-button">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          <span *ngIf="!isLoading">Cadastrar</span>
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>

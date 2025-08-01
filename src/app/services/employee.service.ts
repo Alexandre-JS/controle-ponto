@@ -4,6 +4,8 @@ import { Employee, Attendance, WorkSchedule, CreateEmployeeDto, AttendanceStatus
 import { environment } from '../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { StatusService } from './status.service';
+import { LocalStorageService } from './local-storage.service';
+import { NetworkService } from './network.service';
 
 export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr';
 
@@ -36,7 +38,9 @@ export class EmployeeService {
 
   constructor(
     private supabaseService: SupabaseService,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private localStorageService: LocalStorageService,
+    private networkService: NetworkService
   ) {
     this.supabase = this.supabaseService.getClient();
   }
@@ -112,6 +116,23 @@ export class EmployeeService {
     try {
       console.log('Fetching employees...');
       
+      // Se offline, usar apenas cache
+      if (!this.networkService.isOnline()) {
+        console.log('Offline: usando cache local para funcionários');
+        return this.localStorageService.getEmployeesSync();
+      }
+
+      // Se cache não está expirado, usar cache
+      if (!this.localStorageService.isDataStale('employees', 30)) {
+        console.log('Cache válido: usando funcionários do cache');
+        const cachedEmployees = this.localStorageService.getEmployeesSync();
+        if (cachedEmployees.length > 0) {
+          return cachedEmployees;
+        }
+      }
+
+      // Buscar do servidor
+      console.log('Buscando funcionários do servidor...');
       const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .select('*')
@@ -119,6 +140,12 @@ export class EmployeeService {
 
       if (error) {
         console.error('Database error:', error);
+        // Em caso de erro, tentar usar cache
+        const cachedEmployees = this.localStorageService.getEmployeesSync();
+        if (cachedEmployees.length > 0) {
+          console.log('Erro no servidor: usando cache como fallback');
+          return cachedEmployees;
+        }
         throw error;
       }
 
@@ -127,30 +154,68 @@ export class EmployeeService {
         return [];
       }
 
-      console.log('Fetched employees:', data);
+      console.log('Fetched employees from server:', data);
+      
+      // Salvar no cache
+      this.localStorageService.saveEmployees(data as Employee[]);
+      
       return data;
     } catch (error) {
       console.error('Error in getEmployees:', error);
+      
+      // Último recurso: tentar cache local
+      const cachedEmployees = this.localStorageService.getEmployeesSync();
+      if (cachedEmployees.length > 0) {
+        console.log('Usando cache como último recurso');
+        return cachedEmployees;
+      }
+      
       throw error;
     }
   }
 
   async findEmployeeByCode(code: string): Promise<Employee | null> {
     try {
+      // Primeiro verificar no cache local
+      console.log('Procurando funcionário com código:', code);
+      const cachedEmployees = this.localStorageService.getEmployeesSync();
+      const normalizedCode = code.toUpperCase();
+      const cachedEmployee = cachedEmployees.find(e => e.internal_code === normalizedCode);
+      
+      // Se encontrado no cache, retornar imediatamente
+      if (cachedEmployee) {
+        console.log('Funcionário encontrado no cache local:', cachedEmployee.name);
+        return cachedEmployee;
+      }
+      
+      // Se não encontrou no cache e está offline, retornar null
+      if (!this.networkService.isOnline()) {
+        console.error('Offline: Funcionário não encontrado no cache local');
+        return null;
+      }
+      
+      // Se online, buscar do servidor
+      console.log('Buscando funcionário do servidor...');
       const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .select('*')
-        .eq('internal_code', code.toUpperCase())
+        .eq('internal_code', normalizedCode)
         .single();
 
       if (error) {
-        console.error('Erro na busca:', error);
+        console.error('Erro na busca do servidor:', error);
         return null;
       }
 
       if (!data) {
         console.log('Nenhum funcionário encontrado com o código:', code);
         return null;
+      }
+      
+      // Salvar no cache local para uso futuro
+      if (data) {
+        console.log('Salvando funcionário no cache local:', data.name);
+        this.localStorageService.saveEmployee(data as Employee);
       }
 
       return data as Employee;
@@ -160,72 +225,176 @@ export class EmployeeService {
     }
   }
 
+  async findEmployeeById(id: string): Promise<Employee | null> {
+    try {
+      // Primeiro verificar no cache local
+      const cachedEmployees = this.localStorageService.getEmployeesSync();
+      const cachedEmployee = cachedEmployees.find(e => e.id === id);
+      
+      if (cachedEmployee) {
+        return cachedEmployee;
+      }
+      
+      // Se não encontrou no cache e está online, buscar do servidor
+      if (!this.networkService.isOnline()) {
+        return null; // Offline e não está no cache
+      }
+      
+      const { data, error } = await this.supabase
+        .from(this.EMPLOYEES_TABLE)
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error('Erro ao buscar funcionário por ID:', error);
+        return null;
+      }
+      
+      if (data) {
+        // Salvar no cache
+        this.localStorageService.saveEmployee(data as Employee);
+        return data as Employee;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erro ao buscar funcionário por ID:', error);
+      return null;
+    }
+  }
+
  async registerAttendance(employeeCode: string, method: AuthMethod): Promise<void> {
   try {
+    // Buscar funcionário usando o método melhorado findEmployeeByCode (usa cache local quando offline)
     const employee = await this.findEmployeeByCode(employeeCode);
-    if (!employee) throw new Error('Funcionário não encontrado');
+    if (!employee) {
+      if (!this.networkService.isOnline()) {
+        throw new Error('Funcionário não encontrado no cache local. Verifique o código ou conecte-se à internet.');
+      } else {
+        throw new Error('Funcionário não encontrado. Verifique o código inserido.');
+      }
+    }
 
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
     
-    // Obter o schedule aqui
-    const schedule = await this.getWorkSchedule();
+    // Obter o schedule do cache local
+    let schedule: WorkSchedule;
+    const cachedSchedule = this.localStorageService.getWorkScheduleSync();
+    if (cachedSchedule) {
+      schedule = cachedSchedule;
+    } else {
+      // Se não há schedule no cache, usar padrão
+      schedule = {
+        start_time: '08:00',
+        end_time: '16:00',
+        work_days: [1, 2, 3, 4, 5]
+      };
+      // Salvar no cache para uso futuro
+      this.localStorageService.saveWorkSchedule(schedule);
+    }
 
-    // Check existing attendance
-    const { data: existingRecord } = await this.supabase
-      .from('attendance')
-      .select('*')
-      .eq('employee_id', employee.id)
-      .eq('date', today)
-      .single();
+    // Verificar registro existente no cache local primeiro
+    const todayAttendance = this.localStorageService.getTodayAttendance();
+    let existingRecord = todayAttendance.find(att => att.employee_id === employee.id);
+
+    // Se não encontrar no cache e estiver online, verificar no servidor
+    if (!existingRecord && this.networkService.isOnline()) {
+      try {
+        const { data: serverRecord } = await this.supabase
+          .from('attendance')
+          .select('*')
+          .eq('employee_id', employee.id)
+          .eq('date', today)
+          .single();
+        
+        if (serverRecord) {
+          existingRecord = serverRecord as Attendance;
+          // Salvar no cache local
+          this.localStorageService.saveAttendance(existingRecord);
+        }
+      } catch (error) {
+        console.warn('Erro ao verificar registro no servidor:', error);
+        // Ignorar erro, assumir que não existe registro
+      }
+    }
+
+    let attendanceData: Attendance;
 
     if (!existingRecord) {
-      // Create new record
-      const { error } = await this.supabase
-        .from('attendance')
-        .insert({
-          employee_id: employee.id,
-          date: today,
-          check_in: currentTime,
-          late_minutes: this.calculateLateMinutes(currentTime, schedule.start_time), // Aqui usa os dois argumentos
-          status: 'Presente',
-          auth_method: method,
-          created_at: now.toISOString(),
-        
-        });
+      // Criar novo registro
+      attendanceData = {
+        employee_id: employee.id,
+        date: today,
+        check_in: currentTime,
+        late_minutes: this.calculateLateMinutes(currentTime, schedule.start_time),
+        status: this.determineStatus(this.calculateLateMinutes(currentTime, schedule.start_time)),
+        auth_method: method,
+        created_at: now,
+      };
 
-      if (error) throw error;
+      console.log('Registrando entrada para', employee.name, ':', attendanceData);
+
     } else if (!existingRecord.check_out) {
-      // Update with check-out
-      const { error } = await this.supabase
-        .from('attendance')
-        .update({
-          check_out: currentTime,
-          // updated_at: now.toISOString()
-        })
-        .eq('id', existingRecord.id);
+      // Atualizar com saída
+      attendanceData = {
+        ...existingRecord,
+        check_out: currentTime,
+        status: 'Presente'
+      };
 
-      if (error) throw error;
+      console.log('Registrando saída para', employee.name, ':', attendanceData);
+      
     } else {
-      throw new Error('Registro de ponto já finalizado para hoje');
+      throw new Error(`${employee.name} já registrou entrada e saída hoje`);
     }
+
+    // SEMPRE salvar no cache local primeiro
+    this.localStorageService.saveAttendance(attendanceData);
+    console.log('Dados de presença salvos localmente com sucesso');
+
+    // Se online, tentar sincronizar com o servidor
+    if (this.networkService.isOnline()) {
+      try {
+        if (!existingRecord) {
+          // Inserir no servidor
+          const { error } = await this.supabase
+            .from('attendance')
+            .insert([attendanceData]);
+
+          if (error) throw error;
+          
+        } else {
+          // Atualizar no servidor
+          const { error } = await this.supabase
+            .from('attendance')
+            .update({ check_out: currentTime, status: 'Presente' })
+            .eq('id', existingRecord.id);
+
+          if (error) throw error;
+        }
+
+        console.log('Presença sincronizada com servidor com sucesso');
+        
+        // Marcar como sincronizado no cache
+        attendanceData.synced = true;
+        this.localStorageService.saveAttendance(attendanceData);
+        
+      } catch (error) {
+        console.warn('Erro ao sincronizar com servidor, dados salvos apenas localmente:', error);
+        // Dados já estão salvos localmente, sincronização será feita depois
+      }
+    } else {
+      console.log('Modo offline: presença salva localmente, será sincronizada quando conectar à internet');
+    }
+
   } catch (error) {
-    console.error('Erro no registro:', error);
+    console.error('Erro ao registrar presença:', error);
     throw error;
   }
 }
-
-  // private async calculateLateMinutes(checkInTime: string): Promise<number> {
-  //   const schedule = await this.getWorkSchedule();
-  //   const [checkInHour, checkInMin] = checkInTime.split(':').map(Number);
-  //   const [startHour, startMin] = schedule.start_time.split(':').map(Number);
-    
-  //   const checkInMinutes = checkInHour * 60 + checkInMin;
-  //   const startMinutes = startHour * 60 + startMin;
-    
-  //   return Math.max(0, checkInMinutes - startMinutes);
-  // }
 
   async registerAttendanceByQRCode(qrData: string) {
     try {
@@ -370,7 +539,28 @@ export class EmployeeService {
           )
         `)
         .gte('date', startDate)
-        .lte('date', endDate);
+        .lte('date', endDate)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Erro no servidor:', error);
+        // Fallback para cache em caso de erro
+        // if (cachedAttendance.length > 0) {
+        //   console.log('Usando cache como fallback');
+        //   return cachedAttendance;
+        // }
+        throw error;
+      }
+
+      // Salvar no cache
+      if (data) {
+        data.forEach((attendance: any) => {
+          this.localStorageService.saveAttendance({
+            ...attendance,
+            synced: true
+          } as Attendance);
+        });
+      }
 
       if (error) {
         console.error('Erro Supabase:', error);
@@ -384,6 +574,14 @@ export class EmployeeService {
       return data;
     } catch (error) {
       console.error('Erro ao buscar presenças:', error);
+      
+      // Último recurso: usar cache disponível
+      const cachedAttendance = this.localStorageService.getAttendanceByMonth(year, month);
+      if (cachedAttendance.length > 0) {
+        console.log('Usando cache como último recurso');
+        return cachedAttendance;
+      }
+      
       return [];
     }
   }
@@ -423,6 +621,28 @@ export class EmployeeService {
 
   async getWorkSchedule(): Promise<WorkSchedule> {
     try {
+      // Primeiro verificar no cache local
+      const cachedSchedule = this.localStorageService.getWorkScheduleSync();
+      if (cachedSchedule) {
+        console.log('Usando configuração de horário do cache local');
+        return cachedSchedule;
+      }
+      
+      // Se offline e não tem cache, usar padrão
+      if (!this.networkService.isOnline()) {
+        const defaultSchedule = {
+          start_time: '08:00',
+          end_time: '16:00',
+          work_days: [1, 2, 3, 4, 5]
+        };
+        console.log('Offline: usando configuração padrão de horário');
+        // Salvar no cache para uso futuro
+        this.localStorageService.saveWorkSchedule(defaultSchedule);
+        return defaultSchedule;
+      }
+      
+      // Se online, buscar do servidor
+      console.log('Buscando configuração de horário do servidor');
       const { data, error } = await this.supabase
         .from(this.SCHEDULE_TABLE)
         .select('*')
@@ -431,21 +651,30 @@ export class EmployeeService {
         .single();
 
       if (error || !data) {
-        console.log('Usando configuração padrão de horário');
-        return {
+        console.log('Servidor não retornou configuração, usando padrão');
+        const defaultSchedule = {
           start_time: '08:00',
           end_time: '16:00',
           work_days: [1, 2, 3, 4, 5]
         };
+        // Salvar no cache para uso futuro
+        this.localStorageService.saveWorkSchedule(defaultSchedule);
+        return defaultSchedule;
       }
+      
+      // Salvar no cache
+      this.localStorageService.saveWorkSchedule(data);
       return data;
     } catch (error) {
       console.error('Erro ao buscar horário:', error);
-      return {
+      const defaultSchedule = {
         start_time: '08:00',
         end_time: '16:00',
         work_days: [1, 2, 3, 4, 5]
       };
+      // Salvar no cache para uso futuro
+      this.localStorageService.saveWorkSchedule(defaultSchedule);
+      return defaultSchedule;
     }
   }
 

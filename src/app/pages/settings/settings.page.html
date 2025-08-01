@@ -26,4 +26,18 @@
   </orm>
 
   <ion-loading [isOpe..></ion-loading>
+
+  <div class="settings-card">
+    <div class="settings-title">
+      <ion-icon name="cloud-outline"></ion-icon>
+      Modo de operação
+    </div>
+    <ion-item class="custom-item">
+      <ion-label>Modo Offline</ion-label>
+      <ion-toggle [(ngModel)]="isOfflineMode" (ionChange)="toggleOfflineMode()"></ion-toggle>
+    </ion-item>
+    <ion-note color="medium">
+      Quando ativado, o app funcionará apenas com dados locais. Desative para sincronizar com o servidor.
+    </ion-note>
+  </div>
 </ion-content>

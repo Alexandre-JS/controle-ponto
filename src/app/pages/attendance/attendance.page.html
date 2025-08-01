@@ -1,14 +1,16 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Registro de Presença</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header
+  title="Registro de Presença"
+  icon="calendar-outline"
+  [showMenu]="true"
+  [showThemeToggle]="true"
+  [showNotifications]="false">
+</app-header>
 
 <ion-content class="ion-padding">
-  <ion-list *ngIf="employees.length > 0; else noEmployees">
+  <ion-list *ngIf="employees.length > 0; else noEmployees" class="form-list">
     <form [formGroup]="attendanceForm" (ngSubmit)="onSubmit()">
       <ion-list>
-        <ion-item>
+        <ion-item class="form-item">
           <ion-label position="floating">Funcionário</ion-label>
           <ion-select formControlName="employeeId">
             <ion-select-option *ngFor="let employee of employees" [value]="employee.id">
@@ -17,7 +19,7 @@
           </ion-select>
         </ion-item>
 
-        <ion-item>
+        <ion-item class="form-item">
           <ion-label position="floating">Data</ion-label>
           <ion-datetime
             formControlName="date"
@@ -27,7 +29,7 @@
           </ion-datetime>
         </ion-item>
 
-        <ion-item>
+        <ion-item class="form-item">
           <ion-label position="floating">Horário</ion-label>
           <ion-datetime
             formControlName="check_in"
@@ -36,7 +38,7 @@
           </ion-datetime>
         </ion-item>
 
-        <ion-item>
+        <ion-item class="form-item">
           <ion-label position="floating">Status</ion-label>
           <ion-select formControlName="status">
             <ion-select-option value="Presente">Presente</ion-select-option>
@@ -44,24 +46,24 @@
           </ion-select>
         </ion-item>
 
-        <ion-item>
+        <ion-item class="form-item">
           <ion-label position="floating">Observações</ion-label>
           <ion-textarea formControlName="observations" rows="3"></ion-textarea>
         </ion-item>
       </ion-list>
 
-      <ion-button expand="block" type="submit" [disabled]="!attendanceForm.valid || isLoading">
+      <ion-button expand="block" type="submit" [disabled]="!attendanceForm.valid || isLoading" class="app-button">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
         Registrar Presença
       </ion-button>
     </form>
 
-    <ion-list class="ion-margin-top">
+    <ion-list class="ion-margin-top records-list">
       <ion-list-header>
-        <ion-label>Registros de Hoje</ion-label>
+        <ion-label class="text-heading">Registros de Hoje</ion-label>
       </ion-list-header>
 
-      <ion-item *ngFor="let record of todayAttendance">
+      <ion-item *ngFor="let record of todayAttendance" class="record-item">
         <ion-label>
           <h2>{{ getEmployeeName(record.employee_id) }}</h2>
           <p>Entrada: {{ record.check_in }}</p>
@@ -71,8 +73,8 @@
           </p>
           <p *ngIf="record.observations">Obs: {{ record.observations }}</p>
         </ion-label>
-        <ion-badge [color]="record.status === 'Presente' ? 'success' : 
-                           record.status === 'Atrasado' ? 'warning' : 
+        <ion-badge [color]="record.status === 'Presente' ? 'success' :
+                           record.status === 'Atrasado' ? 'warning' :
                            record.status === 'Em exercício' ? 'primary' :
                            record.status === 'Saída' ? 'tertiary' :
                            record.status === 'Justificado' ? 'secondary' : 'danger'">
@@ -80,8 +82,8 @@
         </ion-badge>
       </ion-item>
 
-      <ion-item *ngIf="todayAttendance.length === 0">
-        <ion-label color="medium" class="ion-text-center">
+      <ion-item *ngIf="todayAttendance.length === 0" class="empty-state">
+        <ion-label color="medium" class="ion-text-center text-body">
           Nenhum registro para hoje
         </ion-label>
       </ion-item>
@@ -89,10 +91,10 @@
   </ion-list>
 
   <ng-template #noEmployees>
-    <div class="ion-text-center ion-padding">
+    <div class="ion-text-center ion-padding empty-state-container">
       <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
-      <p>Nenhum funcionário cadastrado</p>
-      <ion-button routerLink="/employee" expand="block" color="primary">
+      <p class="text-body">Nenhum funcionário cadastrado</p>
+      <ion-button routerLink="/employee" expand="block" color="primary" class="app-button">
         <ion-icon name="add-outline" slot="start"></ion-icon>
         Cadastrar Funcionários
       </ion-button>

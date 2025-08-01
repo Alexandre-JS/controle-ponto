@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+ion-toolbar {
+  --background: var(--app-topbar-background);
+  --color: var(--app-text-primary);
+}
+
+.title-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  font-size: 1.2rem;
+  color: var(--app-primary);
+}
+
+ion-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  ion-title {
+    font-size: 1rem;
+  }
+}

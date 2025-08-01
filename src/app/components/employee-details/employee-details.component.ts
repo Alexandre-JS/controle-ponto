@@ -8,7 +8,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
   selector: 'app-employee-details',
   template: `
     <ion-header class="ion-no-border">
-      <ion-toolbar color="light">
+      <ion-toolbar>
         <ion-buttons slot="end">
           <ion-button (click)="dismiss()" color="medium">
             <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -22,7 +22,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
         <div class="avatar">
           <ion-icon name="person-circle"></ion-icon>
         </div>
-        <h1>{{ employee.name }}</h1>
+        <h1 class="text-heading">{{ employee.name }}</h1>
         <div class="employee-code">
           <ion-chip color="primary" outline="true">
             <ion-icon name="barcode-outline"></ion-icon>
@@ -31,7 +31,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
         </div>
       </div>
 
-      <ion-list lines="none" class="details-list">
+      <ion-list lines="none" class="details-list app-card">
         <!-- <ion-item>
           <ion-icon name="finger-print-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
@@ -40,7 +40,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
           </ion-label>
         </ion-item> -->
 
-        <ion-item>
+        <ion-item class="detail-item">
           <ion-icon name="briefcase-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>Cargo</h3>
@@ -48,7 +48,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
           </ion-label>
         </ion-item>
 
-        <ion-item>
+        <ion-item class="detail-item">
           <ion-icon name="business-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>Departamento</h3>
@@ -64,7 +64,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
           </ion-label>
         </ion-item> -->
 
-        <ion-item>
+        <ion-item class="detail-item">
           <ion-icon name="qr-code-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
             <h3>QR Code de Identificação</h3>
@@ -73,7 +73,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
                 [value]="getQRCodeValue()"
                 cssClass="qr-code-image">
               </app-qr-code> -->
-              <ion-button size="small" (click)="downloadQRCode()">
+              <ion-button size="small" (click)="downloadQRCode()" class="app-button-secondary">
                 <ion-icon name="download-outline" slot="start"></ion-icon>
                 Download QR Code
               </ion-button>
@@ -83,12 +83,12 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
       </ion-list>
 
       <div class="action-buttons">
-        <ion-button expand="block" (click)="editEmployee()" color="primary" class="edit-button">
+        <ion-button expand="block" (click)="editEmployee()" color="primary" class="edit-button app-button">
           <ion-icon name="create-outline" slot="start"></ion-icon>
           Editar Funcionário
         </ion-button>
-        
-        <ion-button expand="block" (click)="confirmDelete()" color="danger" fill="outline" class="delete-button">
+
+        <ion-button expand="block" (click)="confirmDelete()" color="danger" fill="outline" class="delete-button app-button-secondary">
           <ion-icon name="trash-outline" slot="start"></ion-icon>
           Excluir Funcionário
         </ion-button>
@@ -182,7 +182,7 @@ import { AppQRCodeModule } from '../../shared/qr-code.module';
         height: 48px;
         --border-radius: 12px;
         font-weight: 500;
-        
+
         &:last-child {
           margin-bottom: 0;
         }

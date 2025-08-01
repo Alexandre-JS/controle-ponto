@@ -1,23 +1,26 @@
 <ion-content class="ion-padding">
+  <div class="theme-toggle-container">
+    <app-theme-toggle></app-theme-toggle>
+  </div>
   <div class="login-container">
-    <ion-card>
+    <ion-card class="app-card">
       <ion-card-header>
-        <ion-card-title>Login</ion-card-title>
+        <ion-card-title class="text-heading">Login</ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-          <ion-item>
+          <ion-item class="form-item">
             <ion-label position="floating">Email</ion-label>
             <ion-input type="email" formControlName="email"></ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item class="form-item">
             <ion-label position="floating">Senha</ion-label>
             <ion-input type="password" formControlName="password"></ion-input>
           </ion-item>
 
-          <ion-button expand="block" type="submit" [disabled]="!loginForm.valid || isLoading">
+          <ion-button expand="block" type="submit" [disabled]="!loginForm.valid || isLoading" class="app-button">
             <ion-icon name="log-in-outline" slot="start"></ion-icon>
             Entrar
           </ion-button>

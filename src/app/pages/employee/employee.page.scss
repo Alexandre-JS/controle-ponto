@@ -1,3 +1,119 @@
 :host {
   display: block;
 }
+
+ion-content {
+  --background: var(--app-background);
+}
+
+.add-employee-card {
+  margin-bottom: 24px;
+  padding: 24px;
+}
+
+.add-employee-button {
+  --border-radius: 12px;
+  --box-shadow: var(--app-elevation-level1);
+  height: 56px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: var(--app-font-family);
+}
+
+.add-employee-button:hover {
+  --box-shadow: var(--app-elevation-level2);
+  transform: translateY(-2px);
+}
+
+.employees-card {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 24px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: var(--app-font-family);
+}
+
+.section-title ion-button {
+  margin-left: auto;
+  --color: var(--app-primary);
+  --border: 1px solid var(--app-primary);
+  --border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.employee-list {
+  background: transparent;
+}
+
+.employee-item {
+  --background: var(--app-surface);
+  --border-radius: 12px;
+  --border-color: var(--app-divider);
+  margin-bottom: 12px;
+  box-shadow: var(--app-elevation-level1);
+  transition: all 0.3s ease;
+}
+
+.employee-item:hover {
+  box-shadow: var(--app-elevation-level2);
+  transform: translateY(-1px);
+}
+
+.employee-item ion-label h2 {
+  color: var(--app-heading-color);
+  font-weight: 600;
+  font-family: var(--app-font-family);
+  margin-bottom: 4px;
+}
+
+.employee-item ion-label p {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-family);
+  font-size: 0.9rem;
+}
+
+.avatar-icon {
+  font-size: 2.2rem;
+  color: var(--app-primary);
+}
+
+.empty-state {
+  --background: transparent;
+  --border-color: transparent;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.empty-state ion-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--app-text-secondary);
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-family);
+  font-size: 1rem;
+  margin: 0;
+}
+
+ion-chip {
+  --background: var(--app-primary);
+  --color: white;
+  font-family: var(--app-font-family);
+  font-weight: 500;
+}

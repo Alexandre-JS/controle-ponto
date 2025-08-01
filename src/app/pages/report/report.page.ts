@@ -7,6 +7,8 @@ import { Attendance, AttendanceStatus, WorkStatus } from '../../models/employee.
 import { Chart } from 'chart.js/auto';
 import * as XLSX from 'xlsx';
 import { StatusService } from '../../services/status.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 
 interface MonthlyReport {
   employeeId: number; // Changed from string to number
@@ -52,7 +54,7 @@ interface DetailedReport {
   templateUrl: './report.page.html',
   styleUrls: ['./report.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, ThemeToggleComponent, AppHeaderComponent]
 })
 export class ReportPage implements OnInit, OnDestroy {
   @ViewChild('attendanceChart') attendanceChart!: ElementRef;
@@ -72,15 +74,15 @@ export class ReportPage implements OnInit, OnDestroy {
   // Date filters
   startDate: string;
   endDate: string;
-  
+
   // Department filter
   departments: Department[] = [];
   selectedDepartment: number = 0;
-  
+
   // Employee filter
   filteredEmployees: Employee[] = [];
   selectedEmployeeId: number = 0;
-  
+
   // Report data
   detailedReports: DetailedReport[] = [];
 
@@ -96,19 +98,19 @@ export class ReportPage implements OnInit, OnDestroy {
   ) {
     const now = new Date();
     this.selectedDate = now.toISOString();
-    
+
     // Definir intervalo de datas permitido (1 ano para trás e 1 mês para frente)
     const min = new Date();
     min.setFullYear(min.getFullYear() - 1);
     this.minDate = min.toISOString();
-    
+
     const max = new Date();
     max.setMonth(max.getMonth() + 1);
     this.maxDate = max.toISOString();
 
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    
+
     this.startDate = firstDayOfMonth.toISOString();
     this.endDate = today.toISOString();
   }
@@ -142,7 +144,7 @@ export class ReportPage implements OnInit, OnDestroy {
         this.currentMonth
       );
       const schedule = await this.employeeService.getWorkSchedule();
-      
+
       this.monthlyReports = this.employees
         .filter(emp => !this.selectedEmployee || emp.id === this.selectedEmployee.toString())
         .map(employee => {
@@ -168,7 +170,7 @@ export class ReportPage implements OnInit, OnDestroy {
               (total, record) => total + (record.late_minutes || 0),
               0
             ),
-            attendanceRecords: employeeRecords.sort((a, b) => 
+            attendanceRecords: employeeRecords.sort((a, b) =>
               new Date(b.date).getTime() - new Date(a.date).getTime()
             ),
             overtimeBalance: 0, // Placeholder value
@@ -205,12 +207,12 @@ export class ReportPage implements OnInit, OnDestroy {
   }
 
   getTotalWorkDays(): number {
-    return this.monthlyReports.reduce((total, report) => 
+    return this.monthlyReports.reduce((total, report) =>
       total + report.totalWorkDays, 0);
   }
 
   getTotalLateDays(): number {
-    return this.monthlyReports.reduce((total, report) => 
+    return this.monthlyReports.reduce((total, report) =>
       total + report.totalLateDays, 0);
   }
 
@@ -264,7 +266,7 @@ export class ReportPage implements OnInit, OnDestroy {
   }
 
   getAverageDelayForEmployee(report: MonthlyReport): number {
-    return report.totalWorkDays ? 
+    return report.totalWorkDays ?
       Math.round(report.totalLateMinutes / report.totalWorkDays) : 0;
   }
 
@@ -276,13 +278,13 @@ export class ReportPage implements OnInit, OnDestroy {
   async exportReport() {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(this.generateExcelData());
-    
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório');
     XLSX.writeFile(workbook, `relatorio_${this.currentMonth}_${this.currentYear}.xlsx`);
   }
 
   private generateExcelData() {
-    return this.monthlyReports.flatMap(report => 
+    return this.monthlyReports.flatMap(report =>
       report.attendanceRecords.map(record => ({
         Funcionário: report.employeeName,
         Data: record.date,
@@ -308,7 +310,7 @@ export class ReportPage implements OnInit, OnDestroy {
 
   private initCharts() {
     const ctx = this.attendanceChart.nativeElement.getContext('2d');
-    
+
     if (this.attendanceChartInstance) {
       this.attendanceChartInstance.destroy();
     }
@@ -347,7 +349,7 @@ export class ReportPage implements OnInit, OnDestroy {
 
   private getAttendanceData(): number[] {
     // Implementação básica - pode ser expandida conforme necessidade
-    return this.getLast30Days().map(() => 
+    return this.getLast30Days().map(() =>
       Math.floor(Math.random() * 100)
     );
   }
@@ -465,7 +467,7 @@ export class ReportPage implements OnInit, OnDestroy {
     this.isLoading = true;
     try {
       const workbook = XLSX.utils.book_new();
-      
+
       // Convert report data to Excel format
       const excelData = this.detailedReports.map(report => ({
         'Código': report.internal_code,
@@ -474,14 +476,14 @@ export class ReportPage implements OnInit, OnDestroy {
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-      
+
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório de Atrasos');
-      
+
       // Generate filename with current date
       const date = new Date();
       const fileName = `relatorio_atrasos_${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}.xlsx`;
-      
+
       // Save file
       XLSX.writeFile(workbook, fileName);
 
