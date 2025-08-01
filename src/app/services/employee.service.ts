@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Employee, Attendance, WorkSchedule, CreateEmployeeDto, AttendanceStatus } from '../models/employee.model';
+interface UpdateAttendanceData {
+  date: string;
+  employee_id: number;
+  check_in?: string;
+  check_out?: string;
+  late_minutes: number;
+  is_absence: boolean;
+}
 import { environment } from '../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { StatusService } from './status.service';
@@ -26,6 +34,17 @@ export interface AttendanceRecord {
   check_out: string;
   late_minutes: number;
 }
+
+
+interface UpdateAttendanceData {
+  date: string;
+  employee_id: number;
+  check_in?: string;
+  check_out?: string;
+  late_minutes: number;
+  is_absence: boolean;
+}
+
 
 @Injectable({
   providedIn: 'root'

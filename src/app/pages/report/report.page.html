@@ -105,6 +105,11 @@
                 </ng-container>
                 <ng-template #atraso>{{ formatLateTime(detail.late_minutes) }}</ng-template>
               </td>
+              <td class="action-column">
+                <ion-button fill="clear" size="small" (click)="editAttendance(detail)">
+                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </td>
             </tr>
           </tbody>
         </table>

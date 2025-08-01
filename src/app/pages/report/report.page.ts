@@ -5,18 +5,22 @@ interface DailyDetail {
   check_out?: string;
   late_minutes: number;
   isAbsence?: boolean;
+  employee_id?: string;
 }
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { EmployeeService } from '../../services/employee.service';
+// import { EditAttendanceModalComponent } from '../../components/edit-attendance-modal/edit-attendance-modal.component';
 import { Attendance, AttendanceStatus, WorkStatus } from '../../models/employee.model';
 import { Chart } from 'chart.js/auto';
 import * as XLSX from 'xlsx';
 import { StatusService } from '../../services/status.service';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
+import { EditAttendanceModalComponent } from '../../components/edit-attendance-modal/edit-attendance-modal.component';
+import { ModalController, ToastController } from '@ionic/angular';
 
 interface MonthlyReport {
   employeeId: number; // Changed from string to number
@@ -62,7 +66,7 @@ interface DetailedReport {
   templateUrl: './report.page.html',
   styleUrls: ['./report.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, ThemeToggleComponent, AppHeaderComponent]
+  imports: [CommonModule, FormsModule, IonicModule, ThemeToggleComponent, AppHeaderComponent, EditAttendanceModalComponent]
 })
 export class ReportPage implements OnInit, OnDestroy {
   // Detalhamento diário
@@ -104,7 +108,9 @@ export class ReportPage implements OnInit, OnDestroy {
 
   constructor(
     private employeeService: EmployeeService,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private modalController: ModalController,
+    private toastController: ToastController
   ) {
     const now = new Date();
     this.selectedDate = now.toISOString();
@@ -535,6 +541,62 @@ export class ReportPage implements OnInit, OnDestroy {
     if (this.currentPage > 1) {
       this.currentPage--;
       this.updatePaginatedReports();
+    }
+  }
+
+  async editAttendance(detail: DailyDetail) {
+    const modal = await this.modalController.create({
+      component: EditAttendanceModalComponent,
+      componentProps: {
+        attendance: { ...detail }
+      }
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if (data?.changed) {
+      try {
+        // Find the attendance record for this day and employee
+        const attendanceRecord = this.attendanceRecords.find(r =>
+          r.employee_id === detail.employee_id && r.date.startsWith(detail.date)
+        );
+        if (!attendanceRecord || !attendanceRecord.id) {
+          throw new Error('Registro de presença não encontrado para edição.');
+        }
+        await this.employeeService.updateAttendanceRecord(attendanceRecord.id, {
+          check_in: data.attendance.check_in,
+          check_out: data.attendance.check_out,
+          late_minutes: data.attendance.late_minutes
+        });
+
+        // Update the local data
+        const index = this.dailyDetails.findIndex(d => 
+          d.date === data.attendance.date && 
+          d.employeeName === data.attendance.employeeName
+        );
+        if (index !== -1) {
+          this.dailyDetails[index] = data.attendance;
+        }
+
+        const toast = await this.toastController.create({
+          message: 'Registro atualizado com sucesso',
+          duration: 2000,
+          position: 'bottom',
+          color: 'success'
+        });
+        await toast.present();
+
+      } catch (error) {
+        console.error('Erro ao atualizar registro:', error);
+        const toast = await this.toastController.create({
+          message: 'Erro ao atualizar registro',
+          duration: 2000,
+          position: 'bottom',
+          color: 'danger'
+        });
+        await toast.present();
+      }
     }
   }
 
