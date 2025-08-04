@@ -1,0 +1,265 @@
+:host {
+  display: block;
+}
+
+ion-content {
+  --background: var(--app-background);
+}
+
+.welcome-card {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+
+  .card-bg-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.05) 50%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .welcome-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .greeting-text {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    .date-text {
+      margin-top: 0.5rem;
+    }
+
+    .time-display {
+      text-align: right;
+
+      .clock {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--app-primary);
+        font-family: var(--app-font-family);
+      }
+
+      .seconds {
+        font-size: 0.9rem;
+        color: var(--app-text-secondary);
+        font-family: var(--app-font-family);
+      }
+    }
+  }
+
+  .status-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .status-chip {
+      --background: var(--app-accent);
+      --color: white;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+}
+
+.stats-grid {
+  margin-bottom: 1.5rem;
+
+  .stat-card {
+    &.present-card {
+      --ion-color-primary: var(--ion-color-success);
+      border-left: 4px solid var(--ion-color-success);
+    }
+
+    &.absent-card {
+      --ion-color-primary: var(--ion-color-danger);
+      border-left: 4px solid var(--ion-color-danger);
+    }
+
+    ion-card-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .stat-icon-container {
+        .stat-icon {
+          font-size: 2.5rem;
+          color: var(--ion-color-primary);
+        }
+      }
+
+      .stat-content {
+        flex: 1;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: bold;
+          margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+          font-size: 0.875rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-progress {
+          height: 4px;
+          background: var(--app-divider);
+          border-radius: 2px;
+          overflow: hidden;
+
+          .progress-bar {
+            height: 100%;
+            background: var(--ion-color-primary);
+            transition: width 0.3s ease;
+          }
+        }
+      }
+    }
+  }
+}
+
+.attendance-card {
+  .attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+
+      ion-icon {
+        color: var(--app-primary);
+      }
+    }
+  }
+}
+
+.attendance-list {
+  .table-container {
+    overflow-x: auto;
+
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--app-font-family);
+
+      thead {
+        th {
+          background: var(--app-surface);
+          color: var(--app-text-secondary);
+          padding: 0.75rem;
+          text-align: left;
+          font-weight: 600;
+          font-size: 0.875rem;
+          border-bottom: 1px solid var(--app-divider);
+        }
+      }
+
+      tbody {
+        .record-row {
+          border-bottom: 1px solid var(--app-divider);
+
+          &:hover {
+            background: var(--app-surface);
+          }
+
+          td {
+            padding: 0.75rem;
+            vertical-align: middle;
+
+            &.employee-col {
+              .employee-info {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+
+                .employee-avatar {
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 50%;
+                  background: var(--app-primary);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+
+                  ion-icon {
+                    color: white;
+                    font-size: 1.2rem;
+                  }
+                }
+
+                .employee-name {
+                  font-weight: 500;
+                  color: var(--app-text-primary);
+                }
+              }
+            }
+
+            &.time-col {
+              .time-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .time-icon {
+                  color: var(--app-text-secondary);
+                  font-size: 0.875rem;
+                }
+              }
+            }
+
+            &.status-col {
+              .status-badge {
+                font-size: 0.75rem;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-header {
+    flex-direction: column;
+    gap: 1rem;
+
+    .time-display {
+      text-align: left;
+    }
+  }
+
+  .stats-grid {
+    .stat-card {
+      ion-card-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+      }
+    }
+  }
+
+  .attendance-table {
+    font-size: 0.875rem;
+
+    .employee-info {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  }
+}

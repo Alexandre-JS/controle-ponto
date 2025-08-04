@@ -135,4 +135,32 @@ export class AuthService {
   isAuthenticated(): Observable<boolean> {
     return this.authStateSubject.asObservable();
   }
+
+  /**
+   * Verifica se o usuário atual tem permissões de administrador
+   * @returns True se o usuário tiver permissões de admin
+   */
+  isAdmin(): boolean {
+    // Verificar a partir do usuário atual, assumindo que existe uma propriedade role ou similar
+    const user = this.getCurrentUserSync();
+    if (!user) return false;
+    
+    // Ajuste isso de acordo com sua estrutura de usuário
+    return user.role === 'admin' || user.is_admin === true;
+  }
+
+  /**
+   * Obter usuário atual sincronamente do armazenamento local
+   * @returns O usuário atual ou null
+   */
+  getCurrentUserSync(): any {
+    try {
+      const userJson = localStorage.getItem('user');
+      if (!userJson) return null;
+      return JSON.parse(userJson);
+    } catch (error) {
+      console.error('Erro ao obter usuário do localStorage:', error);
+      return null;
+    }
+  }
 }

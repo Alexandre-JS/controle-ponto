@@ -1,13 +1,17 @@
-<ion-header class="modern-header">
-  <ion-toolbar color="primary">
-    <ion-title>Relatório de Presenças</ion-title>
-  </ion-toolbar>
-</ion-header>
+  <!-- Relatório Detalhado Diário -->
+ 
+<app-header
+  title="Relatório de Presenças"
+  icon="document-text-outline"
+  [showMenu]="true"
+  [showThemeToggle]="true"
+  [showNotifications]="false">
+</app-header>
 
-<ion-content class="ion-padding custom-background">
-  <ion-card class="filter-card">
+<ion-content class="ion-padding">
+  <ion-card class="filter-card app-card">
     <ion-card-header>
-      <ion-card-title class="filter-title">
+      <ion-card-title class="filter-title text-heading">
         <ion-icon name="filter-outline" class="filter-icon"></ion-icon>
         Filtros
       </ion-card-title>
@@ -16,7 +20,7 @@
       <ion-grid>
         <ion-row>
           <ion-col size="12" size-md="3">
-            <ion-item class="custom-item">
+            <ion-item class="custom-item form-item">
               <ion-label position="stacked">Data Inicial</ion-label>
               <ion-input
                 type="date"
@@ -27,7 +31,7 @@
             </ion-item>
           </ion-col>
           <ion-col size="12" size-md="3">
-            <ion-item class="custom-item">
+            <ion-item class="custom-item form-item">
               <ion-label position="stacked">Data Final</ion-label>
               <ion-input
                 type="date"
@@ -37,8 +41,8 @@
               </ion-input>
             </ion-item>
           </ion-col>
-          <ion-col size="12" size-md="3">
-            <ion-item class="custom-item">
+          <!-- <ion-col size="12" size-md="3">
+            <ion-item class="custom-item form-item">
               <ion-label position="stacked">Departamento</ion-label>
               <ion-select [(ngModel)]="selectedDepartment" (ionChange)="onFilterChange()" class="custom-select">
                 <ion-select-option value="">Todos</ion-select-option>
@@ -47,7 +51,7 @@
                 </ion-select-option>
               </ion-select>
             </ion-item>
-          </ion-col>
+          </ion-col> -->
           <ion-col size="12" size-md="3">
             <ion-item class="custom-item">
               <ion-label position="stacked">Funcionário</ion-label>
@@ -70,7 +74,48 @@
       Exportar Relatório
     </ion-button>
   </div>
-
+ <ion-card class="report-card">
+    <ion-card-header>
+      <ion-card-title class="report-title">
+        <ion-icon name="calendar-outline" class="report-icon"></ion-icon>
+        Detalhamento Diário
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nome</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Atraso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detail of dailyDetails" class="table-row">
+              <td>{{ detail.date | date:'dd/MM/yyyy' }}</td>
+              <td class="name-column">{{ detail.employeeName }}</td>
+              <td>{{ detail.check_in || '-' }}</td>
+              <td>{{ detail.check_out || '-' }}</td>
+              <td [class.negative]="detail.isAbsence || detail.late_minutes > 0" class="delay-column">
+                <ng-container *ngIf="detail.isAbsence; else atraso">
+                  <span class="negative">Falta</span>
+                </ng-container>
+                <ng-template #atraso>{{ formatLateTime(detail.late_minutes) }}</ng-template>
+              </td>
+              <td class="action-column">
+                <ion-button fill="clear" size="small" (click)="editAttendance(detail)">
+                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ion-card-content>
+  </ion-card>
   <ion-card class="report-card">
     <ion-card-header>
       <ion-card-title class="report-title">
@@ -100,22 +145,22 @@
         </table>
 
         <div class="pagination-controls modern-pagination" *ngIf="totalPages > 1">
-          <ion-button 
-            class="pagination-button" 
-            fill="clear" 
-            (click)="previousPage()" 
+          <ion-button
+            class="pagination-button"
+            fill="clear"
+            (click)="previousPage()"
             [disabled]="currentPage === 1">
             <ion-icon name="chevron-back"></ion-icon>
           </ion-button>
-          
+
           <div class="page-info">
             <span>Página {{ currentPage }} de {{ totalPages }}</span>
           </div>
 
-          <ion-button 
-            class="pagination-button" 
-            fill="clear" 
-            (click)="nextPage()" 
+          <ion-button
+            class="pagination-button"
+            fill="clear"
+            (click)="nextPage()"
             [disabled]="currentPage === totalPages">
             <ion-icon name="chevron-forward"></ion-icon>
           </ion-button>
@@ -123,6 +168,7 @@
       </div>
     </ion-card-content>
   </ion-card>
+
 
   <ion-loading [isOpen]="isLoading" message="Gerando relatório..."></ion-loading>
 </ion-content>

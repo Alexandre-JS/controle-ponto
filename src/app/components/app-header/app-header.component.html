@@ -1,0 +1,17 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start" *ngIf="showMenu">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon [name]="icon" class="title-icon"></ion-icon>
+      {{ title }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <app-theme-toggle *ngIf="showThemeToggle"></app-theme-toggle>
+      <ion-button *ngIf="showNotifications">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>

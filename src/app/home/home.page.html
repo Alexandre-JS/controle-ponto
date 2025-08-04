@@ -1,20 +1,35 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<!-- <app-header
+  title="Controle de Ponto"
+  icon="home-outline"
+  [showMenu]="true"
+  [showThemeToggle]="true"
+  [showNotifications]="true">
+</app-header> -->
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="ion-padding">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      <ion-title size="large" class="text-heading">Controle de Ponto</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <div id="container" class="home-container">
+    <div class="welcome-section app-card">
+      <ion-icon name="time-outline" class="welcome-icon"></ion-icon>
+      <h1 class="text-heading">Bem-vindo ao Sistema</h1>
+      <p class="text-body">Gerencie a presença de funcionários de forma fácil e eficiente</p>
+
+      <div class="action-buttons">
+        <ion-button expand="block" routerLink="/kiosk" class="app-button">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Marcar Ponto
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" routerLink="/admin/daily-attendance" class="app-button-secondary">
+          <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+          Dashboard Admin
+        </ion-button>
+      </div>
+    </div>
   </div>
 </ion-content>
