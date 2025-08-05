@@ -8,13 +8,14 @@ import { ThemeService } from './services/theme.service';
 import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 import { NetworkService } from './services/network.service';
 import { Subscription } from 'rxjs';
+import { SidebarChangelogComponent } from './components/sidebar-changelog/sidebar-changelog.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, ThemeToggleComponent]
+  imports: [CommonModule, RouterModule, IonicModule, ThemeToggleComponent, SidebarChangelogComponent]
 })
 export class AppComponent implements OnInit, OnDestroy {
   isAuthenticated = false;

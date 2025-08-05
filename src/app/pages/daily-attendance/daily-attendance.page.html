@@ -167,7 +167,7 @@
       </ion-card-header>
       <ion-card-content>
         <ion-list *ngIf="todayAttendance.length > 0; else noRecords" class="attendance-list">
-          <!-- <div class="table-container">
+           <div class="table-container">
             <table class="attendance-table">
               <thead>
                 <tr>
@@ -209,7 +209,7 @@
                 </tr>
               </tbody>
             </table>
-          </div> -->
+          </div> 
 
           <!-- Empty state -->
           <div *ngIf="!isLoading && todayAttendance.length === 0" class="empty-state">
@@ -218,7 +218,7 @@
           </div>
 
           <!-- Attendance data -->
-          <ion-item *ngFor="let record of todayAttendance" class="record-row">
+          <!-- <ion-item *ngFor="let record of todayAttendance" class="record-row">
             <ion-avatar slot="start" class="avatar-initials">
               <div class="avatar-circle">
                 {{
@@ -249,7 +249,7 @@
                 <ion-icon name="create-outline" color="primary"></ion-icon>
               </ion-button>
             </ion-buttons>
-          </ion-item>
+          </ion-item> -->
         </ion-list>
         <ng-template #noRecords>
           <div class="empty-state">
