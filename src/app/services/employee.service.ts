@@ -12,10 +12,10 @@ interface UpdateAttendanceData {
 import { environment } from '../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { StatusService } from './status.service';
-import { LocalStorageService } from './local-storage.service';
+// import { LocalStorageService } from './local-storage.service';
 import { NetworkService } from './network.service';
 
-export type AuthMethod = 'code' | 'face' | 'fingerprint' | 'qr';
+export type AuthMethod = 'code'
 
 export interface QRCodeData {
   internal_code: string;
@@ -58,7 +58,7 @@ export class EmployeeService {
   constructor(
     private supabaseService: SupabaseService,
     private statusService: StatusService,
-    private localStorageService: LocalStorageService,
+    // private localStorageService: LocalStorageService,
     private networkService: NetworkService
   ) {
     this.supabase = this.supabaseService.getClient();
@@ -135,21 +135,6 @@ export class EmployeeService {
     try {
       console.log('Fetching employees...');
       
-      // Se offline, usar apenas cache
-      if (!this.networkService.isOnline()) {
-        console.log('Offline: usando cache local para funcionários');
-        return this.localStorageService.getEmployeesSync();
-      }
-
-      // Se cache não está expirado, usar cache
-      if (!this.localStorageService.isDataStale('employees', 30)) {
-        console.log('Cache válido: usando funcionários do cache');
-        const cachedEmployees = this.localStorageService.getEmployeesSync();
-        if (cachedEmployees.length > 0) {
-          return cachedEmployees;
-        }
-      }
-
       // Buscar do servidor
       console.log('Buscando funcionários do servidor...');
       const { data, error } = await this.supabase
@@ -159,12 +144,6 @@ export class EmployeeService {
 
       if (error) {
         console.error('Database error:', error);
-        // Em caso de erro, tentar usar cache
-        const cachedEmployees = this.localStorageService.getEmployeesSync();
-        if (cachedEmployees.length > 0) {
-          console.log('Erro no servidor: usando cache como fallback');
-          return cachedEmployees;
-        }
         throw error;
       }
 
@@ -174,47 +153,18 @@ export class EmployeeService {
       }
 
       console.log('Fetched employees from server:', data);
-      
-      // Salvar no cache
-      this.localStorageService.saveEmployees(data as Employee[]);
-      
       return data;
     } catch (error) {
       console.error('Error in getEmployees:', error);
-      
-      // Último recurso: tentar cache local
-      const cachedEmployees = this.localStorageService.getEmployeesSync();
-      if (cachedEmployees.length > 0) {
-        console.log('Usando cache como último recurso');
-        return cachedEmployees;
-      }
-      
       throw error;
     }
   }
 
   async findEmployeeByCode(code: string): Promise<Employee | null> {
     try {
-      // Primeiro verificar no cache local
-      console.log('Procurando funcionário com código:', code);
-      const cachedEmployees = this.localStorageService.getEmployeesSync();
-      const normalizedCode = code.toUpperCase();
-      const cachedEmployee = cachedEmployees.find(e => e.internal_code === normalizedCode);
-      
-      // Se encontrado no cache, retornar imediatamente
-      if (cachedEmployee) {
-        console.log('Funcionário encontrado no cache local:', cachedEmployee.name);
-        return cachedEmployee;
-      }
-      
-      // Se não encontrou no cache e está offline, retornar null
-      if (!this.networkService.isOnline()) {
-        console.error('Offline: Funcionário não encontrado no cache local');
-        return null;
-      }
-      
-      // Se online, buscar do servidor
+      // Buscar do servidor
       console.log('Buscando funcionário do servidor...');
+      const normalizedCode = code.toUpperCase();
       const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .select('*')
@@ -231,11 +181,7 @@ export class EmployeeService {
         return null;
       }
       
-      // Salvar no cache local para uso futuro
-      if (data) {
-        console.log('Salvando funcionário no cache local:', data.name);
-        this.localStorageService.saveEmployee(data as Employee);
-      }
+      // Não salvar no cache
 
       return data as Employee;
     } catch (error) {
@@ -246,36 +192,22 @@ export class EmployeeService {
 
   async findEmployeeById(id: string): Promise<Employee | null> {
     try {
-      // Primeiro verificar no cache local
-      const cachedEmployees = this.localStorageService.getEmployeesSync();
-      const cachedEmployee = cachedEmployees.find(e => e.id === id);
-      
-      if (cachedEmployee) {
-        return cachedEmployee;
-      }
-      
-      // Se não encontrou no cache e está online, buscar do servidor
+      // Buscar do servidor
       if (!this.networkService.isOnline()) {
-        return null; // Offline e não está no cache
+        return null;
       }
-      
       const { data, error } = await this.supabase
         .from(this.EMPLOYEES_TABLE)
         .select('*')
         .eq('id', id)
         .single();
-      
       if (error) {
         console.error('Erro ao buscar funcionário por ID:', error);
         return null;
       }
-      
       if (data) {
-        // Salvar no cache
-        this.localStorageService.saveEmployee(data as Employee);
         return data as Employee;
       }
-      
       return null;
     } catch (error) {
       console.error('Erro ao buscar funcionário por ID:', error);
@@ -299,45 +231,25 @@ export class EmployeeService {
     const today = this.formatDateToYYYYMMDD(now);
     const currentTime = now.toLocaleTimeString('pt-BR', { hour12: false }).substring(0, 5);
     
-    // Obter o schedule do cache local
+    // Buscar schedule do servidor
     let schedule: WorkSchedule;
-    const cachedSchedule = this.localStorageService.getWorkScheduleSync();
-    if (cachedSchedule) {
-      schedule = cachedSchedule;
-    } else {
-      // Se não há schedule no cache, usar padrão
-      schedule = {
-        start_time: '08:00',
-        end_time: '16:00',
-        work_days: [1, 2, 3, 4, 5]
-      };
-      // Salvar no cache para uso futuro
-      this.localStorageService.saveWorkSchedule(schedule);
-    }
+    schedule = await this.getWorkSchedule();
 
-    // Verificar registro existente no cache local primeiro
-    const todayAttendance = this.localStorageService.getTodayAttendance();
-    let existingRecord = todayAttendance.find(att => att.employee_id === employee.id);
-
-    // Se não encontrar no cache e estiver online, verificar no servidor
-    if (!existingRecord && this.networkService.isOnline()) {
-      try {
-        const { data: serverRecord } = await this.supabase
-          .from('attendance')
-          .select('*')
-          .eq('employee_id', employee.id)
-          .eq('date', today)
-          .single();
-        
-        if (serverRecord) {
-          existingRecord = serverRecord as Attendance;
-          // Salvar no cache local
-          this.localStorageService.saveAttendance(existingRecord);
-        }
-      } catch (error) {
-        console.warn('Erro ao verificar registro no servidor:', error);
-        // Ignorar erro, assumir que não existe registro
+    // Buscar registro do servidor
+    let existingRecord: Attendance | undefined;
+    try {
+      const { data: serverRecord } = await this.supabase
+        .from('attendance')
+        .select('*')
+        .eq('employee_id', employee.id)
+        .eq('date', today)
+        .single();
+      if (serverRecord) {
+        existingRecord = serverRecord as Attendance;
       }
+    } catch (error) {
+      console.warn('Erro ao verificar registro no servidor:', error);
+      // Ignorar erro, assumir que não existe registro
     }
 
     let attendanceData: Attendance;
@@ -370,43 +282,28 @@ export class EmployeeService {
       throw new Error(`${employee.name} já registrou entrada e saída hoje`);
     }
 
-    // SEMPRE salvar no cache local primeiro
-    this.localStorageService.saveAttendance(attendanceData);
-    console.log('Dados de presença salvos localmente com sucesso');
+    // Não salvar no cache
 
-    // Se online, tentar sincronizar com o servidor
-    if (this.networkService.isOnline()) {
-      try {
-        if (!existingRecord) {
-          // Inserir no servidor
-          const { error } = await this.supabase
-            .from('attendance')
-            .insert([attendanceData]);
-
-          if (error) throw error;
-          
-        } else {
-          // Atualizar no servidor
-          const { error } = await this.supabase
-            .from('attendance')
-            .update({ check_out: currentTime, status: 'Presente' })
-            .eq('id', existingRecord.id);
-
-          if (error) throw error;
-        }
-
-        console.log('Presença sincronizada com servidor com sucesso');
-        
-        // Marcar como sincronizado no cache
-        attendanceData.synced = true;
-        this.localStorageService.saveAttendance(attendanceData);
-        
-      } catch (error) {
-        console.warn('Erro ao sincronizar com servidor, dados salvos apenas localmente:', error);
-        // Dados já estão salvos localmente, sincronização será feita depois
+    // Salvar no servidor
+    try {
+      if (!existingRecord) {
+        // Inserir no servidor
+        const { error } = await this.supabase
+          .from('attendance')
+          .insert([attendanceData]);
+        if (error) throw error;
+      } else {
+        // Atualizar no servidor
+        const { error } = await this.supabase
+          .from('attendance')
+          .update({ check_out: currentTime, status: 'Presente' })
+          .eq('id', existingRecord.id);
+        if (error) throw error;
       }
-    } else {
-      console.log('Modo offline: presença salva localmente, será sincronizada quando conectar à internet');
+      console.log('Presença sincronizada com servidor com sucesso');
+    } catch (error) {
+      console.warn('Erro ao sincronizar com servidor:', error);
+      throw error;
     }
 
   } catch (error) {
@@ -445,7 +342,7 @@ export class EmployeeService {
 
       // Melhorar mensagens de feedback
       if (!lastRecord) {
-        const result = await this.registerCheckIn(employee, today, currentTime, 'qr');
+        const result = await this.registerCheckIn(employee, today, currentTime, 'code');
         await this.updateEmployeeStatus(employee.id, 'Presente');
         return {
           success: true,
@@ -453,7 +350,7 @@ export class EmployeeService {
           data: result
         };
       } else if (!lastRecord.check_out && now.getHours() >= 12) {
-        const result = await this.registerCheckOut(lastRecord, currentTime, 'qr');
+        const result = await this.registerCheckOut(lastRecord, currentTime, 'code');
         await this.updateEmployeeStatus(employee.id, 'Ausente');
         return {
           success: true,
@@ -563,23 +460,10 @@ export class EmployeeService {
 
       if (error) {
         console.error('Erro no servidor:', error);
-        // Fallback para cache em caso de erro
-        // if (cachedAttendance.length > 0) {
-        //   console.log('Usando cache como fallback');
-        //   return cachedAttendance;
-        // }
-        throw error;
+      throw error;
       }
 
-      // Salvar no cache
-      if (data) {
-        data.forEach((attendance: any) => {
-          this.localStorageService.saveAttendance({
-            ...attendance,
-            synced: true
-          } as Attendance);
-        });
-      }
+      // Não salvar no cache
 
       if (error) {
         console.error('Erro Supabase:', error);
@@ -593,13 +477,6 @@ export class EmployeeService {
       return data;
     } catch (error) {
       console.error('Erro ao buscar presenças:', error);
-      
-      // Último recurso: usar cache disponível
-      const cachedAttendance = this.localStorageService.getAttendanceByMonth(year, month);
-      if (cachedAttendance.length > 0) {
-        console.log('Usando cache como último recurso');
-        return cachedAttendance;
-      }
       
       return [];
     }
@@ -640,14 +517,7 @@ export class EmployeeService {
 
   async getWorkSchedule(): Promise<WorkSchedule> {
     try {
-      // Primeiro verificar no cache local
-      const cachedSchedule = this.localStorageService.getWorkScheduleSync();
-      if (cachedSchedule) {
-        console.log('Usando configuração de horário do cache local');
-        return cachedSchedule;
-      }
-      
-      // Se offline e não tem cache, usar padrão
+      // Buscar do servidor
       if (!this.networkService.isOnline()) {
         const defaultSchedule = {
           start_time: '08:00',
@@ -655,11 +525,8 @@ export class EmployeeService {
           work_days: [1, 2, 3, 4, 5]
         };
         console.log('Offline: usando configuração padrão de horário');
-        // Salvar no cache para uso futuro
-        this.localStorageService.saveWorkSchedule(defaultSchedule);
         return defaultSchedule;
       }
-      
       // Se online, buscar do servidor
       console.log('Buscando configuração de horário do servidor');
       const { data, error } = await this.supabase
@@ -668,7 +535,6 @@ export class EmployeeService {
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
-
       if (error || !data) {
         console.log('Servidor não retornou configuração, usando padrão');
         const defaultSchedule = {
@@ -676,13 +542,8 @@ export class EmployeeService {
           end_time: '16:00',
           work_days: [1, 2, 3, 4, 5]
         };
-        // Salvar no cache para uso futuro
-        this.localStorageService.saveWorkSchedule(defaultSchedule);
         return defaultSchedule;
       }
-      
-      // Salvar no cache
-      this.localStorageService.saveWorkSchedule(data);
       return data;
     } catch (error) {
       console.error('Erro ao buscar horário:', error);
@@ -691,8 +552,6 @@ export class EmployeeService {
         end_time: '16:00',
         work_days: [1, 2, 3, 4, 5]
       };
-      // Salvar no cache para uso futuro
-      this.localStorageService.saveWorkSchedule(defaultSchedule);
       return defaultSchedule;
     }
   }
@@ -771,11 +630,7 @@ export class EmployeeService {
         throw error;
       }
 
-      // Remover funcionário do cache local
-      this.localStorageService.removeEmployee(id);
-
-      // Remover presenças do funcionário do cache local
-      this.localStorageService.removeAttendanceByEmployeeId(id);
+      // Não remover do cache, apenas do servidor
     } catch (error) {
       console.error('Erro ao excluir funcionário:', error);
       throw error;
@@ -852,14 +707,7 @@ export class EmployeeService {
     try {
       console.log(`Buscando presenças para a data: ${date}`);
       
-      // Verificar cache local primeiro
-      const cachedAttendance = this.localStorageService.getTodayAttendance();
-      if (cachedAttendance.length > 0 && !this.networkService.isOnline()) {
-        console.log('Offline: usando cache local para presenças');
-        return cachedAttendance;
-      }
-      
-      // Se online, buscar do servidor
+      // Buscar do servidor
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .select(`
@@ -871,17 +719,10 @@ export class EmployeeService {
           )
         `)
         .eq('date', date);
-
       if (error) {
         console.error('Erro ao buscar presenças do servidor:', error);
-        // Fallback para cache
-        if (cachedAttendance.length > 0) {
-          console.log('Usando cache como fallback');
-          return cachedAttendance;
-        }
         throw error;
       }
-
       console.log(`Encontradas ${data?.length || 0} presenças para hoje`);
       return data || [];
     } catch (error) {
@@ -894,40 +735,21 @@ export class EmployeeService {
     try {
       console.log(`Verificando registro para funcionário ${employeeId} na data ${date}`);
       
-      // Primeiro verificar no cache local
-      const cachedAttendance = this.localStorageService.getTodayAttendance();
-      const cachedRecord = cachedAttendance.find(att => 
-        att.employee_id === employeeId && att.date === date
-      );
-      
-      if (cachedRecord) {
-        console.log('Registro encontrado no cache local:', cachedRecord);
-        return {
-          exists: true,
-          hasCheckIn: !!cachedRecord.check_in,
-          hasCheckOut: !!cachedRecord.check_out
-        };
-      }
-      
-      // Se não encontrado no cache e offline, retornar não encontrado
+      // Buscar do servidor
       if (!this.networkService.isOnline()) {
-        console.log('Offline: registro não encontrado no cache local');
+        console.log('Offline: registro não encontrado');
         return { exists: false, hasCheckIn: false, hasCheckOut: false };
       }
-      
-      // Buscar do servidor
       const { data, error } = await this.supabase
         .from(this.ATTENDANCE_TABLE)
         .select('*')
         .eq('employee_id', employeeId)
         .eq('date', date)
         .single();
-      
       if (error) {
         console.log('Erro ao verificar registro no servidor:', error);
         return { exists: false, hasCheckIn: false, hasCheckOut: false };
       }
-      
       console.log('Registro encontrado no servidor:', data);
       return {
         exists: !!data,
@@ -976,13 +798,7 @@ async updateAttendanceRecord(attendanceId: string, data: Partial<Attendance>): P
     
     console.log('Registro atualizado com sucesso:', updatedRecord);
     
-    // Atualizar no cache local
-    if (updatedRecord) {
-      this.localStorageService.saveAttendance({
-        ...updatedRecord,
-        synced: true
-      } as Attendance);
-    }
+    // Não atualizar no cache
     
     return updatedRecord;
   } catch (error) {

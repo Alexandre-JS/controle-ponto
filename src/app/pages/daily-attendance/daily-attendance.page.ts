@@ -7,16 +7,14 @@ import { AuthService } from '../../services/auth.service';
 import { StatusService, WorkStatus } from '../../services/status.service';
 import { interval, Subscription } from 'rxjs';
 import { AttendanceStatus } from '../../models/employee.model';
-import { SyncStatusComponent } from '../../components/sync-status/sync-status.component';
 import { NetworkService } from '../../services/network.service';
-import { SyncService } from '../../services/sync.service';
 import { AttendanceEditModalComponent } from '../../components/attendance-edit-modal/attendance-edit-modal.component';
 
 @Component({
   selector: 'app-daily-attendance',
   templateUrl: './daily-attendance.page.html',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, SyncStatusComponent]
+  imports: [CommonModule, IonicModule, RouterModule]
 })
 export class DailyAttendancePageComponent implements OnInit, OnDestroy {
   currentTime = new Date();
@@ -42,7 +40,6 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     public statusService: StatusService,
     private networkService: NetworkService,
-    private syncService: SyncService,
     private modalController: ModalController,
     private toastController: ToastController
   ) {
@@ -52,10 +49,7 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
       this.isOnline = isOnline;
       this.isOfflineMode = !isOnline;
     });
-    // Monitorar pendências de sincronização
-    this.syncService.syncStats$.subscribe(stats => {
-      this.pendingSyncCount = stats.pendingItems;
-    });
+    // Não há mais monitoramento de sincronização
   }
 
   async ngOnInit() {
@@ -185,17 +179,6 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     return status; // No need for switch since we only have two states
   }
 
-  async syncData(showToast = true) {
-    try {
-      await this.syncService.forcSync();
-      if (showToast) {
-        // Opcional: mostrar toast de sucesso
-      }
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-    }
-  }
-
   async refreshData(event: any) {
     await this.loadEmployees();
     await this.loadTodayAttendance();
@@ -207,12 +190,6 @@ export class DailyAttendancePageComponent implements OnInit, OnDestroy {
     await this.loadEmployees();
     await this.loadTodayAttendance();
     this.lastUpdate = new Date();
-  }
-
-  clearAllPendingSync() {
-    this.syncService['localStorageService'].clearSyncQueue();
-    this.syncService['updateSyncStats']?.();
-    this.pendingSyncCount = 0;
   }
 
   getLastUpdateTime(): string {

@@ -7,7 +7,7 @@
       <ion-icon name="speedometer-outline" class="title-icon"></ion-icon>
       Dashboard
     </ion-title>
-    <ion-buttons slot="end">
+    <!-- <ion-buttons slot="end">
       <ion-button (click)="syncData(true)" [disabled]="!isOnline || pendingSyncCount === 0">
         <ion-icon slot="icon-only" name="sync-outline"></ion-icon>
         <ion-badge *ngIf="pendingSyncCount > 0" color="warning" class="sync-badge">{{ pendingSyncCount }}</ion-badge>
@@ -18,7 +18,7 @@
       <ion-button>
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
       </ion-button>
-    </ion-buttons>
+    </ion-buttons> -->
   </ion-toolbar>
 
   <!-- Status offline -->
@@ -39,7 +39,7 @@
   </ion-refresher>
 
   <!-- Opções do Usuário / Ações Manuais -->
-  <div class="user-options" style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+  <!-- <div class="user-options" style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
     <ion-button color="primary" (click)="onManualUpdate()" [disabled]="isLoading" *ngIf="isOfflineMode">
       <ion-icon slot="start" name="refresh"></ion-icon>
       Atualizar dados
@@ -54,7 +54,7 @@
       Limpar fila
     </ion-button>
     <ion-note *ngIf="!isOnline" color="warning">Você está offline</ion-note>
-  </div>
+  </div> -->
 
   <!-- Welcome Section -->
   <div class="page-container">
@@ -261,9 +261,9 @@
     </ion-card>
 
     <!-- Sync status at the bottom -->
-    <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
+    <!-- <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
       <app-sync-status></app-sync-status>
-    </div>
+    </div> -->
   </div>
 </ion-content>
 

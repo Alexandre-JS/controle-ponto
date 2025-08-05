@@ -11,9 +11,6 @@ import { AppRoutingModule } from './app-routing.module';
 
 // Importar serviços principais
 import { NetworkService } from './services/network.service';
-import { LocalStorageService } from './services/local-storage.service';
-import { SyncService } from './services/sync.service';
-import { CacheService } from './services/cache.service';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 /**
  * NOTA IMPORTANTE: Esta aplicação usa a arquitetura Angular standalone e bootstrapApplication
@@ -38,9 +35,6 @@ import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     NetworkService,
-    LocalStorageService,
-    SyncService,
-    CacheService,
     BarcodeScanner
   ]
 })

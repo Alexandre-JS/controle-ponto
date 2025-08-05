@@ -61,7 +61,7 @@ export class AttendanceKioskPage implements OnInit {
         this.onCodeChange({ detail: { value: barcodeData.text } });
         // Só marca presença se o código for válido
         if (this.isValidCode) {
-            await this.markAttendance('qrCode' as AuthMethod);
+            await this.markAttendance('code' as AuthMethod);
         } else {
           this.showToast('Código escaneado inválido', 'warning');
         }

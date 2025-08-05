@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EmployeeService } from './employee.service';
-import { LocalStorageService } from './local-storage.service';
 import { NetworkService } from './network.service';
-import { CacheService } from './cache.service';
 import { Employee } from '../models/employee.model';
 
 interface QRCodeCacheItem {
@@ -28,9 +26,7 @@ export class QrCodeService {
   
   constructor(
     private employeeService: EmployeeService,
-    private localStorageService: LocalStorageService,
-    private networkService: NetworkService,
-    private cacheService: CacheService
+    private networkService: NetworkService
   ) {}
 
   async generateQRCode(employeeId: string): Promise<string> {
@@ -50,12 +46,8 @@ export class QrCodeService {
       
       let employee: Employee | null = null;
       
-      // Verificar funcionário no cache local
-      const localEmployees = this.localStorageService.getEmployeesSync();
-      employee = localEmployees.find(e => e.id === employeeId) || null;
-      
-      // Se não encontrou localmente e tem conexão, buscar do servidor
-      if (!employee && this.networkService.isOnline()) {
+      // Buscar do servidor
+      if (this.networkService.isOnline()) {
         try {
           employee = await this.employeeService.findEmployeeById(employeeId);
           if (!employee) {

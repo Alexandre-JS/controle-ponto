@@ -7,18 +7,14 @@ import { filter } from 'rxjs/operators';
 import { ThemeService } from './services/theme.service';
 import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 import { NetworkService } from './services/network.service';
-import { SyncService } from './services/sync.service';
-import { CacheService } from './services/cache.service';
-import { LocalStorageService } from './services/local-storage.service';
 import { Subscription } from 'rxjs';
-import { SyncStatusComponent } from './components/sync-status/sync-status.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, SyncStatusComponent, ThemeToggleComponent]
+  imports: [CommonModule, RouterModule, IonicModule, ThemeToggleComponent]
 })
 export class AppComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
@@ -44,9 +40,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     private themeService: ThemeService,
     private networkService: NetworkService,
-    private syncService: SyncService,
-    private cacheService: CacheService,
-    private localStorageService: LocalStorageService,
     private toastController: ToastController
   ) {
     // Initialize auth state on app start
@@ -74,30 +67,28 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isLoginPage = window.location.href.includes('/login');
 
     // Monitorar estado da conexão
-    this.subscriptions.push(
-      this.networkService.isOnline$.subscribe(isOnline => {
-        const wasOffline = !this.isOnline && isOnline;
-        this.isOnline = isOnline;
-        this.isOfflineMode = !isOnline; // Atualiza isOfflineMode conforme o estado da conexão
+    // this.subscriptions.push(
+    //   this.networkService.isOnline$.subscribe(isOnline => {
+    //     const wasOffline = !this.isOnline && isOnline;
+    //     this.isOnline = isOnline;
+    //     this.isOfflineMode = !isOnline; // Atualiza isOfflineMode conforme o estado da conexão
 
-        // Se voltou a ficar online, tentar sincronizar
-        if (wasOffline) {
-          this.showToast('Conexão restaurada', 'success');
-          this.syncService.syncAll().catch(err => {
-            console.error('Erro ao sincronizar após reconexão:', err);
-          });
-        } else if (!isOnline) {
-          this.showToast('Modo offline - Os dados serão sincronizados quando a conexão for restaurada', 'warning');
-        }
-      })
-    );
+    //     // Se voltou a ficar online, tentar sincronizar
+    //     if (wasOffline) {
+    //       this.showToast('Conexão restaurada', 'success');
+    //       this.syncService.syncAll().catch(err => {
+    //         console.error('Erro ao sincronizar após reconexão:', err);
+    //       });
+    //     } else if (!isOnline) {
+    //       this.showToast('Modo offline - Os dados serão sincronizados quando a conexão for restaurada', 'warning');
+    //     }
+    //   })
+    // );
   }
 
   ngOnInit() {
     this.loadUserProfile();
     this.setupNetworkListeners();
-    this.setupSyncStatus();
-    this.preloadEssentialData();
   }
 
   ngOnDestroy() {
@@ -128,22 +119,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async logout() {
     try {
-      // Sincronizar dados pendentes antes de sair
-      if (this.isOnline && this.pendingSyncCount > 0) {
-        try {
-          await this.showToast('Sincronizando dados pendentes antes de sair...', 'warning');
-          await this.syncService.syncAll();
-        } catch (syncError) {
-          console.warn('Não foi possível sincronizar antes de sair:', syncError);
-          // Continue com logout mesmo se a sincronização falhar
-        }
-      }
-
       // Sair do aplicativo
       await this.authService.logout();
-
-      // Limpar cache ao sair (opcional)
-      this.localStorageService.clearAllData();
 
       // Redirecionar para login
       await this.router.navigate(['/login'], { replaceUrl: true });
@@ -169,67 +146,14 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isOnline = isOnline;
         this.isOfflineMode = !isOnline; // Atualiza isOfflineMode conforme o estado da conexão
 
-        // Se voltou a ficar online, tentar sincronizar
+        // Notificar o usuário sobre o estado da conexão
         if (wasOffline) {
           this.showToast('Conexão restaurada', 'success');
-          this.syncService.syncAll().catch(err => {
-            console.error('Erro ao sincronizar após reconexão:', err);
-          });
         } else if (!isOnline) {
-          this.showToast('Modo offline - Os dados serão sincronizados quando a conexão for restaurada', 'warning');
+          this.showToast('Sem conexão com a internet', 'warning');
         }
       })
     );
-  }
-
-  private setupSyncStatus() {
-    // Monitorar status de sincronização
-    this.subscriptions.push(
-      this.syncService.isSyncing$.subscribe(isSyncing => {
-        if (!isSyncing) {
-          this.pendingSyncCount = this.syncService.getPendingSyncCount();
-        }
-      })
-    );
-
-    // Monitorar erros de sincronização
-    this.subscriptions.push(
-      this.syncService.syncError$.subscribe(error => {
-        if (error) {
-          this.showToast(`Erro na sincronização: ${error}`, 'danger');
-        }
-      })
-    );
-  }
-
-  private async preloadEssentialData() {
-    try {
-      // Pré-carregar dados essenciais para funcionamento offline
-      await this.cacheService.preloadEssentialData();
-    } catch (error) {
-      console.error('Erro ao pré-carregar dados:', error);
-    }
-  }
-
-  async syncNow() {
-    if (!this.isOnline) {
-      this.showToast('Sem conexão com a internet', 'warning');
-      return;
-    }
-
-    try {
-      await this.syncService.forcSync();
-      this.pendingSyncCount = this.syncService.getPendingSyncCount();
-
-      if (this.pendingSyncCount === 0) {
-        this.showToast('Sincronização concluída com sucesso', 'success');
-      } else {
-        this.showToast(`${this.pendingSyncCount} itens pendentes de sincronização`, 'warning');
-      }
-    } catch (error) {
-      console.error('Erro na sincronização manual:', error);
-      this.showToast('Erro na sincronização', 'danger');
-    }
   }
 
   private async showToast(message: string, color: 'success' | 'warning' | 'danger' = 'success') {

@@ -8,9 +8,6 @@ import { HttpClientModule } from '@angular/common/http';
 
 // Importar serviços principais
 import { NetworkService } from './app/services/network.service';
-import { LocalStorageService } from './app/services/local-storage.service';
-import { SyncService } from './app/services/sync.service';
-import { CacheService } from './app/services/cache.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -23,9 +20,6 @@ bootstrapApplication(AppComponent, {
     importProvidersFrom(HttpClientModule),
     
     // Serviços principais da aplicação
-    NetworkService,
-    LocalStorageService,
-    SyncService,
-    CacheService
+    NetworkService
   ]
 }).catch(err => console.error('Error bootstrapping app:', err));

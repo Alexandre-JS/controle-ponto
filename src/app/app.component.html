@@ -34,9 +34,9 @@
           </ion-item>
         </ion-list>
 
-        <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
+        <!-- <div class="sync-status-container ion-padding-top" *ngIf="isOfflineMode">
           <app-sync-status></app-sync-status>
-        </div>
+        </div> -->
       </ion-content>
     </ion-menu>
 
@@ -59,7 +59,7 @@
   </ion-split-pane>
 
   <!-- Banner de status offline -->
-  <div class="offline-banner" *ngIf="!isOnline && !isLoginPage" [class.hidden]="isLoginPage">
+  <!-- <div class="offline-banner" *ngIf="!isOnline && !isLoginPage" [class.hidden]="isLoginPage">
     <div class="offline-content">
       <ion-icon name="cloud-offline-outline"></ion-icon>
       <span>Você está offline. Dados serão sincronizados quando a conexão for restaurada.</span>
@@ -67,13 +67,13 @@
     <ion-button size="small" fill="outline" color="light" (click)="syncNow()" [disabled]="!isOnline">
       Sincronizar
     </ion-button>
-  </div>
+  </div> -->
 
   <!-- Indicador de pendências de sincronização (sempre visível) -->
-  <div class="sync-indicator" *ngIf="pendingSyncCount > 0 && isOnline && !isLoginPage"
+  <!-- <div class="sync-indicator" *ngIf="pendingSyncCount > 0 && isOnline && !isLoginPage"
        (click)="syncNow()">
     <ion-badge color="warning">{{ pendingSyncCount }}</ion-badge>
-  </div>
+  </div> -->
 
   <!-- Banner de modo offline -->
   <div *ngIf="!isOnline" class="offline-banner">
